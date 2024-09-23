@@ -6,7 +6,7 @@
 * Currently no protections on main
 ### Directories
 * Progress Reports - latex uncompiled code
-* Research - Papers and links with research
+* Research - Papers and links with research, formatted as .md for readibility.
 * BiBTex - Citations
 ### Languages
 * Maybe use Golang?
@@ -18,6 +18,6 @@
 * Shared outlook calender
 * No group meetings after 8pm
 * Default to meeting in the classroom
-* Expected to work during class, and some during the afternoon
+* Expected to work during class and at various points throughout the afternoon
 * No issues if the work gets done  
 * Once we have a clearer set of tasks, we will make a system of allocating and following each task
