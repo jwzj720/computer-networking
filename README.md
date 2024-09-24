@@ -21,3 +21,5 @@
 * Expected to work during class and at various points throughout the afternoon
 * No issues if the work gets done  
 * Once we have a clearer set of tasks, we will make a system of allocating and following each task
+### Pinout Diagram
+- https://pinout.xyz/
