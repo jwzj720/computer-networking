@@ -1,0 +1,37 @@
+
+%% Preamble stuff needed so that LaTeX can do the right thing
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+%% Section enumerating upcoming tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+\item Light experiment - Walt
+\item Read basic networking background material - Group
+\item Timing, clocks, etc, (documentation, NRZ) - Stuart
+\item Error detection/correction - Deferred
+\item Update project outline - next update Thursday
+\end{itemize}
+%% Section enumerating progress from the previous day. Items people were
+responsible for in the last progress report must appear. Additional tasks that the
+group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+\item Setup private github repo (DONE) - Walt (jwzj720/computer-networking)
+\item Commit README.md with practices (DONE) - Day 1 team meeting, commit by Walt
+\item HW Pin Mapping (DONE) - all, commit by Walt
+\item Reading textbook, Bibtex to be added.
+\end{itemize}
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+\item We worked on determining the basic issues we need to solve this week. We identified three issues: clocks/timing, floating ground (flipped bits, error correcting), and network design (general principle/designs)
+\item Investigating the issues, we read this introduction: \begin{verbatim}
+    https://csc-knu.github.io/sys-prog/books/Andrew%20S.%20Tanenbaum%20-%20Computer%20Networks.pdf
+\end{verbatim} and this:
+
+\item We will continue to research these issues, but we decided that having hands on with the hardware will help us to understand what sort of issues we will be facing at an implementation level.
+\end{itemize}
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}
