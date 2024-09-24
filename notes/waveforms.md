@@ -1,0 +1,2 @@
+## Notes looking at how to quickly send data using pigpio
+* We have looked at waveforms, which are precreated arrays of pulses that encode bit signals. This is supposed to be a way of sending serial data on multiple different ports all at once
