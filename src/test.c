@@ -15,10 +15,10 @@ int main()
     }
     else
     {
-        printf("initialization success\n")
+        printf("initialization success\n");
     }
 
-    int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT)
+    int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT);
     if (status==0)
     {
         printf("0 status received\n");
@@ -32,7 +32,7 @@ int main()
         gpio_write(pinit,LED_GPIO_PIN,0);
         printf("%d\n",gpio_read(pinit,GPIO_RECEIVE));
 
-        time_sleep(2)
+        time_sleep(2);
     }
     return 0;
 }
