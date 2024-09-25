@@ -2,9 +2,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+uint32_t time = 0;
+
+void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
+{
+    if (tick>((time/2)+1))
+    {
+        time = tick;
+        printf("GPIO pin: %x | Level: %x\n",gpio,level);
+
+    }
+}
+
 int main()
 {
-    int LED_GPIO_PIN = 23;
+    int GPIO_SEND = 23;
     int GPIO_RECEIVE = 20;
     int pinit = pigpio_start(NULL,NULL);
 
@@ -18,7 +30,7 @@ int main()
         printf("initialization success\n");
     }
 
-    int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT);
+    int status = set_mode(pinit,GPIO_SEND,PI_OUTPUT);
     if (status==0)
     {
         printf("0 status received\n");
@@ -29,16 +41,10 @@ int main()
     {
         printf("0 status received\n");
     }
-
-    for (int i=0;i<10;i++)
-    {
-        gpio_write(pinit,LED_GPIO_PIN,1);
-        printf("%d\n",gpio_read(pinit,GPIO_RECEIVE));
-        time_sleep(2);
-        gpio_write(pinit,LED_GPIO_PIN,0);
-        printf("%d\n",gpio_read(pinit,GPIO_RECEIVE));
-
-        time_sleep(2);
+    int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE,call_back);
+    while(1)
+    {  
+        fflush(stdout); //Forces system to empty buffered prints.
     }
     return 0;
 }
