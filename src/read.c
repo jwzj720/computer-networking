@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-uint32_t time = 0;
+uint32_t rate = 0;
 
 void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
-    if (tick>((time/2)+1))
+    if (tick<((rate/2)+1))
     {
-        time = tick;
+        rate = tick;
         printf("GPIO pin: %x | Level: %x\n",gpio,level);
 
     }
@@ -17,7 +17,7 @@ void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
 int main()
 {
     int GPIO_SEND = 23;
-    int GPIO_RECEIVE = 20;
+    int GPIO_RECEIVE = 26;
     int pinit = pigpio_start(NULL,NULL);
 
     if (pinit<0)
@@ -42,6 +42,7 @@ int main()
         printf("0 status received\n");
     }
     int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE,call_back);
+    printf("ID: %d\n",id);
     while(1)
     {  
         fflush(stdout); //Forces system to empty buffered prints.
