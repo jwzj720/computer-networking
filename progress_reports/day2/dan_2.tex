@@ -5,10 +5,11 @@
 %% tasks and task owners for roughly the next 24 hours
 \section*{Next Goals and Deliverables}
 \begin{itemize}
-\item Conduct an experiment to measure bit flipping and devise approaches to handling this phenomena
-\item Compare the clocks between two pis to understand their differences
-\item Implement a protocol that 
-
+\item Continue research into timing, error detection/correction - Group
+\item Max speed and size experiment - Stuart/Walt
+\item Two pi clock comparison experiment - Dan/Walt
+\item Waveform v. serialized approach research and evaluation - Group
+\item Make bash script command for mounting USB on the Pi - Walt
 \end{itemize}
 
 %% Section enumerating progress from the previous day. Items people were
@@ -16,12 +17,13 @@ responsible for in the last progress report must appear. Additional tasks that t
 group agreed to add since the last progress report may be presented here.
 \section*{Previous Goals and Deliverables}
 \begin{itemize}
-    \item Light experiment - Group
-    \item Read basic networking background material - Group
-    \item Timing, clocks, etc, (documentation, NRZ) - Stuart
-    \item Error detection/correction research - Dan
+    \item Light experiment (DONE) - pushed by Stuart (/src/test.c)
+    \item Read basic networking background material (done), going to continue this more in-depth as development continues (see new directory: /resources)
+    \item Timing, clocks, etc, (partial) - Stuart (more of a group responsibility now) 
+    \item Error detection/correction research (partial) - Dan (more of a group responsibility now)
     \item Update project outline - next update Thursday
-    \item Group name: 
+    \item Group name decision: We are "Bitties"
+    \item Uploaded updated pin mapping for important GPIOs (DONE) - Dan (/progress_reports/day2/Pin outs NIC-Pi 3 B+ - Important Pin Outs.csv)
 \end{itemize}
 
 %% Sections above should be short bullets. Longer free form discussion of
@@ -32,8 +34,13 @@ design document.
 \begin{itemize}
 \item After getting our footing connecting the Pi and the NIC, we worked on a light experiment. After some
 painful troubleshooting, we discovered errors in our pin mapping from yesterday, and then managed to make all
-the transmitter lights turn on and off (see how with test.c in experiments).
-\item 
+transmitter lights turn on and off (see how we did it in test.c in /experiments).
+\item We have stumbled upon multiple approaches to developing our link layer when it comes to dealing with timing and error detection/correction. 
+Before we decide on which approach is best, we want to do some basic experiments (max speed and size, two pi clock comparison) to gain a better understanding
+of the problems (timing, bit flipping) that were outlined today in discussion.
+\item We are curious about creating a waveform for sending a packet from one pi to another because this approach might not be as affected by timing errors as NRZ. This is
+a topic of discussion we will continue tomorrow and potentially devise an experiment for if we deem it as a viable option. 
+\item Interfacing with the pi and a USB is tedious. We will write a bash script command tomorrow to make this process more pleasent. 
 \end{itemize}
 
 %% The appendix pages go here if there are any...
