@@ -19,6 +19,7 @@ int main()
     }
 
     int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT)
+    
     if (status==0)
     {
         printf("0 status received\n");
