@@ -1,0 +1,9 @@
+GPIO,NIC Port
+20,port4 receive
+21,port4 transmit
+22,port3 receive
+23,port3 transmit
+24,port2 receive
+25,port2 transmit
+26,port1 receive
+27,port1 transmit
