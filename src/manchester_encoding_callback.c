@@ -6,6 +6,19 @@
 #define RX_PIN 26 
 #define BAUD_RATE 50
 
+#ifndef RISING_EDGE
+#define RISING_EDGE 1
+#endif
+
+#ifndef FALLING_EDGE
+#define FALLING_EDGE 0
+#endif
+
+#ifndef EITHER_EDGE
+#define EITHER_EDGE 2
+#endif
+
+
 typedef struct {
     uint32_t last_tick;
     unsigned last_edge;
@@ -15,7 +28,49 @@ typedef struct {
     int receiving;
 } decoder_state_t;
 
-void call_back(unsigned gpio, unsigned edge, uint32_t tick, void *userdata);
+void call_back(unsigned gpio, unsigned edge, uint32_t tick, void *recieving_data) {
+    if (edge == 2) {
+        return;
+    }
+
+    decoder_state_t *state = (decoder_state_t *)recieving_data;
+
+    // 1. if this is the first edge, initialize last_tick
+    if (state->last_tick == 0) {
+        state->last_tick = tick;
+        state->last_edge = edge;
+        return;
+    }
+
+    // 2. Calculate time since last edge
+    uint32_t dt = tick - state->last_tick;
+
+    if (dt >= (state->half_bit_time_us - state->tolerance) && dt <= (state->half_bit_time_us + state->tolerance)) {
+        // The edge should have occurred after ~ half of a bit time
+
+        // Determine the bit value based on transition
+        if (state->last_edge == FALLING_EDGE && edge == RISING_EDGE) {
+            // Low-to-High transition represents '0'
+            printf("0");
+            fflush(stdout);
+        } else if (state->last_edge == RISING_EDGE && edge == FALLING_EDGE) {
+            // High-to-Low transition represents '1'
+            printf("1");
+            fflush(stdout);
+        } else {
+            // Not a good transition
+        }
+    } else if (dt > (state->bit_time_us + state->tolerance)) {
+        // this would be the case where we have a gap in the transmission, maybe we print a new line?
+        printf("\n");
+        fflush(stdout);
+    }
+
+    // Update state
+    state->last_tick = tick;
+    state->last_edge = edge;
+}
+
 
 int main() {
     int pi = pigpio_start(NULL, NULL);
@@ -54,45 +109,3 @@ int main() {
     return 0;
 }
 
-void call_back(unsigned gpio, unsigned edge, uint32_t tick, void *userdata) {
-    if (edge == 2) {
-        return;
-    }
-
-    decoder_state_t *state = (decoder_state_t *)userdata;
-
-    // If this is the first edge, initialize last_tick
-    if (state->last_tick == 0) {
-        state->last_tick = tick;
-        state->last_edge = edge;
-        return;
-    }
-
-    // Calculate time since last edge
-    uint32_t dt = tick - state->last_tick;
-
-    if (dt >= (state->half_bit_time_us - state->tolerance) && dt <= (state->half_bit_time_us + state->tolerance)) {
-        // Edge occurred after ~ half of a bit time
-
-        // Determine the bit value based on transition
-        if (state->last_edge == FALLING_EDGE && edge == RISING_EDGE) {
-            // Low-to-High transition represents '0'
-            printf("0");
-            fflush(stdout);
-        } else if (state->last_edge == RISING_EDGE && edge == FALLING_EDGE) {
-            // High-to-Low transition represents '1'
-            printf("1");
-            fflush(stdout);
-        } else {
-            // Not a good transition
-        }
-    } else if (dt > (state->bit_time_us + state->tolerance)) {
-        // this would be the case where we have a gap in the transmission, maybe we print a new line?
-        printf("\n");
-        fflush(stdout);
-    }
-
-    // Update state
-    state->last_tick = tick;
-    state->last_edge = edge;
-}
