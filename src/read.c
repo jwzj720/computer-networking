@@ -1,17 +1,41 @@
 #include <pigpiod_if2.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
-uint32_t rate = 0;
+uint32_t READRATE=0; //preset rate expected between bits.
+uint32_t ptime;
+uint32_t tick1;
+int rateset = 0;
 
 void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
-    if (tick<((rate/2)+1))
+    printf("Tick: %"PRIu32"",tick);
+    if (!rateset)
     {
-        rate = tick;
-        printf("GPIO pin: %x | Level: %x\n",gpio,level);
-
+        tick1 = tick;
+        rateset++;
     }
+    else if (rateset==1)
+    {
+        READRATE = tick-tick1;
+        ptime = tick;
+        rateset++;
+    }
+    else
+    {
+        
+        // if the difference since the last tick is significantly less than expected readtime,
+        // it is probably one that we want to ignore.
+        if ((tick-ptime)+1 > READRATE)
+        {
+            printf("GPIO pin: %x | Level: %x\n",gpio,level);
+            ptime = tick;
+
+        }
+    }
+    
+    
 }
 
 int main()
