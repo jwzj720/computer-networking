@@ -24,18 +24,14 @@ void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }
     else
     {
-        
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
         if ((tick-ptime)+1 > READRATE)
         {
             printf("GPIO pin: %x | Level: %x\n",gpio,level);
             ptime = tick;
-
         }
-    }
-    
-    
+    }   
 }
 
 int main()
