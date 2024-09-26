@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "text_6bit.h"
 
-#define MAX_INPUT_LENGTH 280
-
-const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 =";
 
 char* text_to_binary(const char* text) {
     size_t len = strlen(text);
