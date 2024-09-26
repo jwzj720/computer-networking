@@ -33,11 +33,8 @@ void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
         {
             printf("GPIO pin: %x | Level: %x\n",gpio,level);
             ptime = tick;
-
         }
-    }
-    
-    
+    }   
 }
 
 int main()
