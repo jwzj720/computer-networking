@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include "read.h"
 
 uint32_t READRATE=0; //preset rate expected between bits.
 uint32_t ptime;
 uint32_t tick1;
 int rateset = 0;
 
-void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
+void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
     printf("READRATE: %"PRIu32"\n",READRATE);
     //printf("Tick: %"PRIu32"\n",tick);
@@ -37,10 +38,8 @@ void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }   
 }
 
-int main()
+int readBits(int GPIO_SEND, int GPIO_RECEIVE)
 {
-    int GPIO_SEND = 23;
-    int GPIO_RECEIVE = 26;
     int pinit = pigpio_start(NULL,NULL);
 
     if (pinit<0)
@@ -64,7 +63,7 @@ int main()
     {
         printf("0 status received\n");
     }
-    int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE,call_back);
+    int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE, _callback);
     printf("ID: %d\n",id);
     while(1)
     {  
