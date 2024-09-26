@@ -18,10 +18,6 @@ int main()
         printf("initialization success\n");
     }
 
-<<<<<<< HEAD
-    int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT)
-    
-=======
     int status = set_mode(pinit,LED_GPIO_PIN,PI_OUTPUT);
     if (status==0)
     {
@@ -29,7 +25,6 @@ int main()
     }
 
     status = set_mode(pinit,GPIO_RECEIVE,PI_INPUT);
->>>>>>> b422a8aad991afc596cd13b905aeec0759977171
     if (status==0)
     {
         printf("0 status received\n");

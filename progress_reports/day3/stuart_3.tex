@@ -5,8 +5,10 @@
 %% tasks and task owners for roughly the next 24 hours
 \section*{Next Goals and Deliverables}
 \begin{itemize}
-\item
-
+\item Debug program for receiving manchester encoding data - Stuart
+\item Develop standard packet expectations - group
+\item Create character encoding/decoding to allow text transfer - Walt
+\item develop functionality for repairing broken packets using error detection and bit replacement.
 \end{itemize}
 
 %% Section enumerating progress from the previous day. Items people were
@@ -14,7 +16,12 @@ responsible for in the last progress report must appear. Additional tasks that t
 group agreed to add since the last progress report may be presented here.
 \section*{Previous Goals and Deliverables}
 \begin{itemize}
-\item 
+    \item Make bash script command for mounting USB on the Pi (DONE) - Walt
+    \item Timing, error detection/correction research (in progress) - group
+    \item Manchester encoding output program (DONE) - created by Walt (src/machester_encoding_send.c)
+    \item Bash script for compiling and running files (DONE) - Walt
+    \item Create program for reading the manchester encoding ouput(in progress) - Stuart
+    \item Further research error detection and brainstorm bit correction functionality (in progress) - Dan
 \end{itemize}
 
 %% Sections above should be short bullets. Longer free form discussion of
@@ -23,7 +30,12 @@ sentences and the discussion is better suited as a results write-up, appendix, o
 design document.
 \section*{Discussion}
 \begin{itemize}
-\item 
+\item We decided to move forward with manchester encoding because we felt that it would best solve our biggest anticipated issue: timing drift.
+\item For our manchester coding reader, there seems to be an error with starting synchronization that is causing bits from the message to be the opposite of what is expected.
+We're going to try and troubleshoot this in coming days to fix the consistency of the reading.
+\item We were able to get a successful bit transmission, so now that we know how to communicate between two machines, an important
+next step will be to build upon our bitwise communication. Our bits need to encode information, and as a group we will be deciding 
+what our bits represent.
 \end{itemize}
 
 %% The appendix pages go here if there are any...
