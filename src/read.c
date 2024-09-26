@@ -1,9 +1,10 @@
 #include <pigpiod_if2.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include "read.h"
-#define MAXBITS 600
+#define MAX_BITS 600
 
 
 uint32_t READRATE=0; //preset rate expected between bits.
@@ -64,7 +65,7 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }
 }
 
-int readBits(int GPIO_SEND, int GPIO_RECEIVE)
+int* readBits(int GPIO_SEND, int GPIO_RECEIVE)
 {
 
     uint32_t* data = malloc(MAX_BITS*sizeof(uint32_t));
@@ -99,5 +100,5 @@ int readBits(int GPIO_SEND, int GPIO_RECEIVE)
     {  
         fflush(stdout); //Forces system to empty buffered prints.
     }
-    return 0;
+    return data;
 }
