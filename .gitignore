@@ -42,6 +42,15 @@
 *.idb
 *.pdb
 
+# Latex
+*.aux
+*.bbl
+*.synctex.gz
+*.log
+*.fls
+*.fdb_latexmk
+
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
