@@ -65,11 +65,11 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }
 }
 
-int* readBits(int GPIO_SEND, int GPIO_RECEIVE)
+uint32_t* readBits(int GPIO_SEND, int GPIO_RECEIVE)
 {
 
     uint32_t* data = malloc(MAX_BITS*sizeof(uint32_t));
-    memset(data, -1, sizeof(u_int32_t)*MAX_BITS);
+    memset(data, 0, sizeof(u_int32_t)*MAX_BITS);
 
     int pinit = pigpio_start(NULL,NULL);
 
