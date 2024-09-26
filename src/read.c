@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "read.h"
+#define MAXBITS 600
 
-int MAX_BITS = 600;
+
 uint32_t READRATE=0; //preset rate expected between bits.
 uint32_t ptime;
 uint32_t tick1;
