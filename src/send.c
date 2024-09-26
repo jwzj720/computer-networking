@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define TX_PIN 27 
-#define BAUD_RATE 50
+#define BAUD_RATE 3000
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    gpio_write(pi, TX_PIN, 0);
+   // gpio_write(pi, TX_PIN, 0);
 
     pigpio_stop(pi);
     return 0;
