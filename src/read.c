@@ -10,7 +10,8 @@ int rateset = 0;
 
 void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
-    printf("Tick: %"PRIu32"",tick);
+    printf("READRATE: %"PRIu32"\n",READRATE);
+    //printf("Tick: %"PRIu32"\n",tick);
     if (!rateset)
     {
         tick1 = tick;
@@ -19,15 +20,16 @@ void call_back(int pi, unsigned gpio, unsigned level, uint32_t tick)
     else if (rateset==1)
     {
         READRATE = tick-tick1;
+	//READRATE = READRATE*2;
         ptime = tick;
         rateset++;
     }
     else
     {
-        
+        printf("timegap: %"PRIu32"\n",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
-        if ((tick-ptime)+1 > READRATE)
+        if (((tick-ptime)+(READRATE*.25) > READRATE) /*&& ((tick-ptime)-(READRATE*.25) < READRATE)*/)
         {
             printf("GPIO pin: %x | Level: %x\n",gpio,level);
             ptime = tick;
