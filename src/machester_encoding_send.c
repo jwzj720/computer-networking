@@ -46,20 +46,20 @@ int main(int argc, char *argv[]) {
             // Logical '0': Low to High transition
             // First half: Set pin LOW
             gpio_write(pi, TX_PIN, 0);
-            time_sleep(half_bit_time_us);
+            usleep(half_bit_time_us);
 
             // Second half: Set pin HIGH
             gpio_write(pi, TX_PIN, 1);
-            time_sleep(half_bit_time_us);
+            usleep(half_bit_time_us);
         } else {
             // Logical '1': High to Low transition
             // First half: Set pin HIGH
             gpio_write(pi, TX_PIN, 1);
-            time_sleep(half_bit_time_us);
+            usleep(half_bit_time_us);
 
             // Second half: Set pin LOW
             gpio_write(pi, TX_PIN, 0);
-            time_sleep(half_bit_time_us);
+            usleep(half_bit_time_us);
         }
     }
 
