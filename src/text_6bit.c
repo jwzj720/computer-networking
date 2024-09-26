@@ -44,7 +44,7 @@ char* text_to_binary(const char* text) {
     return binary;
 }
 
-int main() {
+int prompt() {
     char input[MAX_INPUT_LENGTH + 1];
     printf("Enter text (max %d characters): ", MAX_INPUT_LENGTH);
     fgets(input, sizeof(input), stdin);
@@ -59,6 +59,5 @@ int main() {
 
     printf("Binary: %s\n", binary);
 
-    free(binary);
-    return 0;
+    return binary;
 }
