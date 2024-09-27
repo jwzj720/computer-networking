@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
+
 #include "read.h"
 #define MAX_BITS 600
 
@@ -15,7 +16,7 @@ int counter = 0;
 uint32_t values = 0;
 // TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
 // and then we just have to convert resulting uint6_t values to characters.
-int* data;
+char* data;
 
 int run=1;
 
@@ -39,21 +40,23 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }
     else
     {
-        // printf("timegap: %"PRIu32"\n",tick-ptime);
+        //printf("timegap: %"PRIu32"\n",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
         if (((tick-ptime)+(READRATE*.25) > READRATE) /*&& ((tick-ptime)-(READRATE*.25) < READRATE)*/)
         {
-            // printf("GPIO pin: %x | Level: %x\n",gpio,level);
-            data[counter] = level;
-            values += level; // Add the level value to the
+            //printf("Level: %x\n",level);
+            data[counter] = ((int) level) ? "0" : "1";
+            values += data[counter]; // Add the level value to the values counter
             counter++;
             ptime = tick;
         }
     }
     if (counter%6 ==0) //Every 6 values...
     {
-        if (values==0) //If values is still 0, there have been 6 in a row.
+	printf("Counter is zeroed\n");
+	printf("Values: %x\n",values);
+        if ((int) values==6) //If values is still 0, there have been 6 in a row.
         {
             counter= MAX_BITS; //Set the counter to end reading. 
         }
@@ -62,14 +65,16 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
     if (counter == MAX_BITS)
     {
         run = 0; //Stops the infinite while loop
+        data[MAX_BITS] = '\0';
     }
 }
 
-uint32_t* readBits(int GPIO_SEND, int GPIO_RECEIVE)
+char* readBits(int GPIO_SEND, int GPIO_RECEIVE)
 {
 
-    uint32_t* data = malloc(MAX_BITS*sizeof(uint32_t));
-    memset(data, 0, sizeof(u_int32_t)*MAX_BITS);
+	
+    data = malloc(MAX_BITS*sizeof(char)+1);
+    memset(data, 0, sizeof(char)*MAX_BITS);
 
     int pinit = pigpio_start(NULL,NULL);
 
@@ -94,11 +99,19 @@ uint32_t* readBits(int GPIO_SEND, int GPIO_RECEIVE)
     {
         printf("0 status received\n");
     }
+    //Try to reset gpio to 0
+    set_pull_up_down(pinit,GPIO_RECEIVE,PI_PUD_DOWN);
+
     int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE, _callback);
     printf("ID: %d\n",id);
     while(run)
     {  
         fflush(stdout); //Forces system to empty buffered prints.
     }
+
+	for (int i=0;i<MAX_BITS;i++)
+	{
+		printf("%d",data[i]);
+	}
     return data;
 }
