@@ -4,7 +4,7 @@
 #include "text_6bit.h"
 
 
-char* text_to_binary(const char* text) {
+char* text_to_binary6(const char* text) {
     size_t len = strlen(text);
     size_t binary_len = 2 + len * 6 + 6; // 2 for "10" + 6 bits per char + 6 for "111111"
     char* binary = malloc(binary_len + 1); // +1 for null terminator (for printing purposes only)
@@ -32,7 +32,7 @@ char* text_to_binary(const char* text) {
         }
     }
     
-    // add "111111" to the end
+    // add "111111" for endvalue
     for (int i = 0; i < 6; i++) {
         binary[bin_index++] = '1';
     }
