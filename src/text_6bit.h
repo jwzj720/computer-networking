@@ -11,4 +11,6 @@
 char* text_to_binary6(const char* text);
 
 
+int prompt()
+
 #endif /*SEND_H*/
