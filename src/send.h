@@ -12,6 +12,6 @@
 #define TX_PIN 27 
 #define BAUD_RATE 3000
 
-int send(char *bitstring);
+int send_bits(char *bitstring);
 
 #endif /*SEND_H*/
