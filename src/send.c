@@ -7,7 +7,7 @@
 #include <string.h>
 
 
-int send(char *bitstring) {
+int send_bits(char *bitstring) {
     
     int bitstring_length = strlen(bitstring);
 
