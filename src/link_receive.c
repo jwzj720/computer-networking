@@ -13,7 +13,8 @@
 
 int main()
 {
-    uint32_t* results = readBits(GPIO_SEND, GPIO_RECEIVE);
-    printf("Results: %"PRIu32"\n",results);
+    char* result = readBits(GPIO_SEND, GPIO_RECEIVE);
+    //printf("Success: %d",result);
+    //printf("Results: %"PRIu32"\n",*results); //comment
     return 0;
 }
