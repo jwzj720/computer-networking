@@ -69,7 +69,7 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
     }
 }
 
-char* readBits(int GPIO_SEND, int GPIO_RECEIVE)
+char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
 {
 
 	
@@ -109,9 +109,5 @@ char* readBits(int GPIO_SEND, int GPIO_RECEIVE)
         fflush(stdout); //Forces system to empty buffered prints.
     }
 
-	for (int i=0;i<MAX_BITS;i++)
-	{
-		printf("%d",data[i]);
-	}
     return data;
 }
