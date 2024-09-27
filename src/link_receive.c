@@ -6,15 +6,16 @@
 
 #include "read.h"
 #include "send.h"
-#include "text_6bit.h"
+#include "text_7bit.h"
 
 #define GPIO_SEND 23
 #define GPIO_RECEIVE 26
 
 int main()
 {
-    char* result = readBits(GPIO_SEND, GPIO_RECEIVE);
-    //printf("Success: %d",result);
-    //printf("Results: %"PRIu32"\n",*results); //comment
+    char* result = read_bits(GPIO_SEND, GPIO_RECEIVE);
+    printf("Binary received: %s\n",result);
+    char* final = binary_to_text7(result);
+    printf("Results: %s\n",final); //comment
     return 0;
 }
