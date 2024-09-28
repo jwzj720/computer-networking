@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 5}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+\item Clean up code, write documentation - Walt
+\item Make one class to read and write in parallel (may require threading/simultaneos execution)- Stuart + Walt
+\item Agree on error correction details - Group
+\item Begin work on error detection implementation + details - Dan
+\item Begin working on network layer design - Group
+\item Testing ASCII to bitstream and bitstream to ASCII - Group
+\item Thorough testing of the manchester encoding/decoding - Walt/Stuart
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item ASCII to bitstream converter method - Dan (DONE)
+    \item Bitstream to ASCII converter method - Dan + Stuart (DONE, in need of debugging)
+    \item Code to take the received data and convert it to a compatible format for the decoder to turn it to written text - Stuart (DONE)
+    \item develop functionality for repairing broken packets using error detection and bit replacement - Dan (ON HOLD/DONE FOR NOW)
+        \subitem Group needs to agree on architecture and then implement 
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item We made a text encoder that takes ASCII85 characters and converts them to 7-bit binary. All 7-bit strings are joined to form
+    a long string that can be fed to the send function. This functionality seems ot be working on the Pi.
+    \item We receive data from the bitstream, convert it to char*, then use a decoder to turn it to ACII85 characters. We are still debugging
+    this on the Pi. It receives the data, but it does not stop listening, to begein decoding. Once this functionality is successfully we will
+    be able to send written English messages from one Pi to the other.
+    \item After more testing, our send and receive seems to work with good accuracy. Implementing single error error detection will allow data transmission
+    with great accuracy with messages at our current length threshold of 28- characters. 
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}
