@@ -6,7 +6,6 @@
 
 #include "read.h"
 #include "send.h"
-#include "text_6bit.h"
 #include "text_7bit.h"
 
 
@@ -25,5 +24,6 @@ int send_to_file()
     printf("Binary %s\n", binary);
 
     send_bits(binary);
+    free(binary);
     return 0;
 }

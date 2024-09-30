@@ -110,6 +110,7 @@ char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
     {  
         fflush(stdout); //Forces system to empty buffered prints.
     }
+    callback_cancel(id);
 
     return data;
 }
