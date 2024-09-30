@@ -1,4 +1,18 @@
+<<<<<<< HEAD
 #include "link_send.h"
+=======
+#include <stdlib.h>
+#include <stdio.h>
+#include <pigpiod_if2.h>
+#include <string.h>
+#include <inttypes.h>
+
+#include "read.h"
+#include "send.h"
+#include "text_6bit.h"
+#include "text_7bit.h"
+
+>>>>>>> c2d5ea376abc7551edae591c69ed932c0ecf0a24
 
 int send_to_file()
 {
