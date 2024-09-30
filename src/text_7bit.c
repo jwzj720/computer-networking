@@ -76,24 +76,24 @@ char* binary_to_text7(const char* binary) {
 }
 
 // LOCAL TESTS
-int main() {
-    char input[MAX_INPUT_LENGTH + 1];
-    printf("Enter text (max %d characters): ", MAX_INPUT_LENGTH);
-    fgets(input, sizeof(input), stdin);
+// int main() {
+//     char input[MAX_INPUT_LENGTH + 1];
+//     printf("Enter text (max %d characters): ", MAX_INPUT_LENGTH);
+//     fgets(input, sizeof(input), stdin);
 
-    // remove newline character
-    size_t input_len = strlen(input);
-    if (input[input_len - 1] == '\n') {
-        input[input_len - 1] = '\0';
-    }
+//     // remove newline character
+//     size_t input_len = strlen(input);
+//     if (input[input_len - 1] == '\n') {
+//         input[input_len - 1] = '\0';
+//     }
 
-    char* binary = text_to_binary7(input);
+//     char* binary = text_to_binary7(input);
 
-    printf("Binary: %s\n", binary);
+//     printf("Binary: %s\n", binary);
 
-    char* text = binary_to_text7(binary);
+//     char* text = binary_to_text7(binary);
 
-    printf("Text: %s\n", text);
+//     printf("Text: %s\n", text);
 
-    return 0;
-}
+//     return 0;
+// }
