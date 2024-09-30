@@ -10,7 +10,7 @@
 #include "text_7bit.h"
 
 
-int main()
+int send_to_file()
 {
     char input[MAX_INPUT_LENGTH + 1];
     printf("Enter text to send: ");
