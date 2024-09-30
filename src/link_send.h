@@ -1,5 +1,5 @@
-#ifndef LINK_RECEIVE_H
-#define LINK_RECEIVE_H
+#ifndef LINK_SEND_H
+#define LINK_SEND_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -9,7 +9,6 @@
 
 #include "read.h"
 #include "send.h"
-#include "text_6bit.h"
 #include "text_7bit.h"
 
 #define GPIO_SEND 23

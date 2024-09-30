@@ -6,11 +6,11 @@ CFLAGS = -Wall -pthread
 # Libraries
 LIBS = -lpigpiod_if2 -lrt
 
-SEND_SRCS = link_send.c send.c text_7bit.c
+SEND_SRCS = one_way_link_send.c send.c text_7bit.c link_send.c
 
-RECEIVE_SRCS = link_receive.c text_7bit.c read.c
+RECEIVE_SRCS = one_way_link_receive.c text_7bit.c read.c link_receive.c
 
-MULTI_THREAD_SRCS = multi_thread.c link_receive.c text_7bit.c read.c send.c
+MULTI_THREAD_SRCS = multithread.c link_receive.c text_7bit.c read.c send.c link_send.c
 
 SEND_TARGET = send
 RECEIVE_TARGET = receive

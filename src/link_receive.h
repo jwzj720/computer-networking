@@ -8,7 +8,7 @@
 #include <inttypes.h>
 
 #include "text_7bit.h"
-
+#include "read.h"
 #define GPIO_SEND 23
 #define GPIO_RECEIVE 26
 

@@ -1,14 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <pigpiod_if2.h>
-#include <string.h>
-#include <inttypes.h>
-
-#include "read.h"
-#include "send.h"
-#include "text_6bit.h"
-#include "text_7bit.h"
-
+#include "link_send.h"
 
 int send_to_file()
 {
