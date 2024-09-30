@@ -5,7 +5,8 @@
 #include <inttypes.h>
 
 #include "read.h"
-#define MAX_BITS 600
+#define MAX_BITS 700
+#define BIT_COUNT 7
 
 
 uint32_t READRATE=0; //preset rate expected between bits.
@@ -13,7 +14,7 @@ uint32_t ptime;
 uint32_t tick1;
 int rateset = 0;
 int counter = 0;
-uint32_t values = 0;
+int values = 0;
 // TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
 // and then we just have to convert resulting uint6_t values to characters.
 char* data;
@@ -24,7 +25,7 @@ int run=1;
 
 void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
-    // printf("READRATE: %"PRIu32"\n",READRATE);
+    //printf("READRATE: %"PRIu32"\n",READRATE);
     //printf("Tick: %"PRIu32"\n",tick);
     if (!rateset)
     {
@@ -45,28 +46,29 @@ void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
         // it is probably one that we want to ignore.
         if (((tick-ptime)+(READRATE*.25) > READRATE) /*&& ((tick-ptime)-(READRATE*.25) < READRATE)*/)
         {
-            //printf("Level: %x\n",level);
-            data[counter] = ((int) level) ? "0" : "1";
-            values += data[counter]; // Add the level value to the values counter
+            printf("Level: %x\n",level);
+            data[counter] = ((int) level) ? '0' : '1';
+            values += atoi(&data[counter]); // Add the level value to the values counter
             counter++;
             ptime = tick;
         }
     }
-    if (counter%6 ==0) //Every 6 values...
+    if (counter%BIT_COUNT ==0) //Every x values...
     {
 	printf("Counter is zeroed\n");
 	printf("Values: %x\n",values);
-        if ((int) values==6) //If values is still 0, there have been 6 in a row.
+        if (values==BIT_COUNT) //If values is still 0, there have been 6 in a row.
         {
-            counter= MAX_BITS; //Set the counter to end reading. 
+            data[counter] = '\0'; //Set the counter to end reading. 
+	    run=0;
         }
         values = 0; //Reached if values were greater than 0. 
     }
-    if (counter == MAX_BITS)
-    {
-        run = 0; //Stops the infinite while loop
-        data[MAX_BITS] = '\0';
-    }
+    //if (counter == MAX_BITS)
+    //{
+    //    run = 0; //Stops the infinite while loop
+    //    data[MAX_BITS] = '\0';
+    //}
 }
 
 char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
@@ -81,7 +83,7 @@ char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
     if (pinit<0)
     {
         printf("failed start");
-        return -1;
+        return "GPIO start failed";
     }
     else
     {
@@ -100,7 +102,7 @@ char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
         printf("0 status received\n");
     }
     //Try to reset gpio to 0
-    set_pull_up_down(pinit,GPIO_RECEIVE,PI_PUD_DOWN);
+    //set_pull_up_down(pinit,GPIO_RECEIVE,PI_PUD_DOWN);
 
     int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE, _callback);
     printf("ID: %d\n",id);

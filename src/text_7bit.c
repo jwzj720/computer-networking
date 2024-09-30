@@ -39,8 +39,10 @@ char* text_to_binary7(const char* text) {
     // Add "111111" suffix
     for (int i = 0; i < 7; i++) {
         binary[bin_index++] = '1';
+   
     }
-    
+    binary[bin_index++] = '0'; // end
+
     binary[bin_index] = '\0';  // null terminator (for printing purposes)
     
     return binary;
@@ -50,15 +52,15 @@ char* binary_to_text7(const char* binary) {
     size_t binary_len = strlen(binary);
 
     // COMMENT FOR PRODUCTION
-    size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
+   // size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
 
-    // UNCOMMENT FOR PRODUCTION 
-    // size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
+	 // UNCOMMENT FOR PRODUCTION 
+    size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
 
     char* text = malloc(text_len + 1);  // +1 for null terminator
     
     // COMMENT FOR PRODUCTION - remove this in production as read code will deal with the "10"
-    size_t bin_index = 2; // skip the first two bits ("10")
+    size_t bin_index = 0; // skip the first two bits ("10")
     
     for (size_t i = 0; i < text_len; i++) {
         char septet[8] = {0};
@@ -76,24 +78,24 @@ char* binary_to_text7(const char* binary) {
 }
 
 // LOCAL TESTS
-// int main() {
-//     char input[MAX_INPUT_LENGTH + 1];
-//     printf("Enter text (max %d characters): ", MAX_INPUT_LENGTH);
-//     fgets(input, sizeof(input), stdin);
-
-//     // remove newline character
-//     size_t input_len = strlen(input);
-//     if (input[input_len - 1] == '\n') {
-//         input[input_len - 1] = '\0';
-//     }
-
-//     char* binary = text_to_binary7(input);
-
-//     printf("Binary: %s\n", binary);
-
-//     char* text = binary_to_text7(binary);
-
-//     printf("Text: %s\n", text);
-
-//     return 0;
-// }
+//int main() {
+//    char input[MAX_INPUT_LENGTH + 1];
+//    printf("Enter text (max %d characters): ", MAX_INPUT_LENGTH);
+//    fgets(input, sizeof(input), stdin);
+//
+//    // remove newline character
+//    size_t input_len = strlen(input);
+//    if (input[input_len - 1] == '\n') {
+//        input[input_len - 1] = '\0';
+//    }
+//
+//    char* binary = text_to_binary7(input);
+//
+//    printf("Binary: %s\n", binary);
+//
+//    char* text = binary_to_text7(binary);
+//
+//    printf("Text: %s\n", text);
+//
+//    return 0;
+//}
