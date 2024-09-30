@@ -37,21 +37,22 @@ int send_bits(char *bitstring) {
         // Logical '1': High to Low transition
 
         if (bit == 0) {
-            // Logical '0': Low to High transition
-            // First half: Set pin LOW
+            // 0: Low to High transition
+            // First we set pin LOW
             gpio_write(pi, TX_PIN, 0);
             usleep(half_bit_time_us);
 
-            // Second half: Set pin HIGH
+            // Second w set pin HIGH
             gpio_write(pi, TX_PIN, 1);
             usleep(half_bit_time_us);
         } else {
-            // Logical '1': High to Low transition
-            // First half: Set pin HIGH
+            // 1: High to Low transition
+
+            // HIGH
             gpio_write(pi, TX_PIN, 1);
             usleep(half_bit_time_us);
 
-            // Second half: Set pin LOW
+            //LOW
             gpio_write(pi, TX_PIN, 0);
             usleep(half_bit_time_us);
         }
@@ -95,6 +96,7 @@ int send_bits(char *bitstring) {
 
 //         int bit = bit_char - '0';
 
+<<<<<<< HEAD
 //         // Logical '0': Low to High transition
 //         // Logical '1': High to Low transition
 
@@ -118,6 +120,28 @@ int send_bits(char *bitstring) {
 //             usleep(half_bit_time_us);
 //         }
 //     }
+=======
+        
+
+        if (bit == 0) {
+           
+            gpio_write(pi, TX_PIN, 0);
+            usleep(half_bit_time_us);
+
+            
+            gpio_write(pi, TX_PIN, 1);
+            usleep(half_bit_time_us);
+        } else {
+
+            gpio_write(pi, TX_PIN, 1);
+            usleep(half_bit_time_us);
+
+
+            gpio_write(pi, TX_PIN, 0);
+            usleep(half_bit_time_us);
+        }
+    }
+>>>>>>> 583c1e59cb73a9eddeafb53e38d33f37c5344c4e
 
 //    // gpio_write(pi, TX_PIN, 0);
 
