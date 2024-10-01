@@ -15,6 +15,5 @@ int send_to_file()
     printf("Binary %s\n", binary);
 
     send_bits(binary);
-    free(binary);
     return 0;
 }
