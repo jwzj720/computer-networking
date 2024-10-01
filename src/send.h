@@ -8,7 +8,6 @@
 #include <pigpiod_if2.h>
 #include <string.h>
 
-#define TX_PIN 27 
 #define BAUD_RATE 1000
 
 int send_bits(char *bitstring);

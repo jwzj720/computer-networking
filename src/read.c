@@ -12,96 +12,96 @@ char* data;
 
 int run=1;
 
-// Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits. 
+// Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
 
-void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
+
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadData* rd) // added userdata for struct
 {
-    //printf("READRATE: %"PRIu32"\n",READRATE);
-    //printf("Tick: %"PRIu32"\n",tick);
-    if (!rateset)
+    //printf("READRATE: %"PRIu32"\n",rd->READRATE);
+    //printf("Tick: %"PRIu32"\n",rd->tick);
+    if(!(rd->run))
     {
-        tick1 = tick;
-        rateset++;
+        return;
     }
-    else if (rateset==1)
+    if (!(rd->rateset))
     {
-        READRATE = tick-tick1;
-	//READRATE = READRATE*2;
-        ptime = tick;
-        rateset++;
+        rd->tick1 = tick;
+        rd->rateset++;
+    }
+    else if (rd->rateset == 1)
+    {
+        rd->READRATE = tick - rd->tick1;
+        rd->ptime = tick;
+        rd->rateset++;
     }
     else
     {
         //printf("timegap: %"PRIu32"\n",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
-        if (((tick-ptime)+(READRATE*.25) > READRATE) /*&& ((tick-ptime)-(READRATE*.25) < READRATE)*/)
+        if (((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE))
         {
-            printf("Level: %x\n",level);
-            data[counter] = ((int) level) ? '0' : '1';
-            values += atoi(&data[counter]); // Add the level value to the values counter
-            counter++;
-            ptime = tick;
+            printf("Level: %u\n", level);
+            rd->data[rd->counter] = level ? '0' : '1';
+            rd->values += level ? 0 : 1; // Add the level value to the values counter
+            rd->counter++;
+            rd->ptime = tick;
         }
     }
-    if (counter%BIT_COUNT ==0) //Every x values...
+
+    if (rd->counter % BIT_COUNT == 0 && rd->counter > 0) //Every x values...
     {
-	printf("Counter is zeroed\n");
-	printf("Values: %x\n",values);
-        if (values==BIT_COUNT) //If values is still 0, there have been 6 in a row.
+        printf("Counter is zeroed\n");
+        printf("Values: %d\n", rd->values);
+        if (rd->values == BIT_COUNT) // If values equal BIT_COUNT, all bits are '1'
         {
-            data[counter] = '\0'; //Set the counter to end reading. 
-	    run=0;
+            rd->data[rd->counter] = '\0'; 
+            rd->run = 0; // Stop the loop
         }
-        values = 0; //Reached if values were greater than 0. 
+        rd->values = 0; // Reset the values counter
     }
-    //if (counter == MAX_BITS)
-    //{
-    //    run = 0; //Stops the infinite while loop
-    //    data[MAX_BITS] = '\0';
-    //}
+
+    if (rd->counter >= MAX_BITS)
+    {
+        rd->run = 0; 
+        rd->data[MAX_BITS - 1] = '\0'; // Ensure null termination
+    }
+    return;
 }
 
-char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
+struct ReadData* create_reader()
 {
+    struct ReadData *rd = malloc(sizeof(struct ReadData));
+    rd->READRATE = 0;
+    rd->ptime = 0;
+    rd->tick1 = 0;
+    rd->rateset = 0;
+    rd->counter = 0;
+    rd->values = 0;
+    rd->run = 1;
+    rd->data = malloc(MAX_BITS * sizeof(char) + 1);
+    
+    return rd;
+}
 
-	
-    data = malloc(MAX_BITS*sizeof(char)+1);
-    memset(data, 0, sizeof(char)*MAX_BITS);
+void reset_reader(struct ReadData* rd)
+{
+    rd->READRATE = 0;
+    rd->ptime = 0;
+    rd->tick1 = 0;
+    rd->rateset = 0;
+    rd->counter = 0;
+    rd->values = 0;
+    rd->run = 1;
+    memset(rd->data, 0, sizeof(char) * (MAX_BITS + 1));
+}
 
-    int pinit = pigpio_start(NULL,NULL);
-
-    if (pinit<0)
+char* read_message(struct ReadData* rd)
+{
+    while (rd->run)
     {
-        printf("failed start");
-        return "GPIO start failed";
-    }
-    else
-    {
-        printf("initialization success\n");
+        fflush(stdout); // changed to a sleep to reduce CPU usage
     }
 
-    int status = set_mode(pinit,GPIO_SEND,PI_OUTPUT);
-    if (status==0)
-    {
-        printf("0 status received\n");
-    }
-
-    status = set_mode(pinit,GPIO_RECEIVE,PI_INPUT);
-    if (status==0)
-    {
-        printf("0 status received\n");
-    }
-    //Try to reset gpio to 0
-    //set_pull_up_down(pinit,GPIO_RECEIVE,PI_PUD_DOWN);
-
-    int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE, _callback);
-    printf("ID: %d\n",id);
-    while(run)
-    {  
-        fflush(stdout); //Forces system to empty buffered prints.
-    }
-    callback_cancel(id);
-
-    return data;
+    return rd->data;
 }
