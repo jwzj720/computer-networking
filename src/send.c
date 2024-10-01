@@ -7,7 +7,7 @@
 #include <string.h>
 
 
-int send_bits(char *bitstring) {
+int send_bits(char *bitstring, int out_pin) {
     
     int bitstring_length = strlen(bitstring);
 
@@ -17,7 +17,7 @@ int send_bits(char *bitstring) {
         return 1;
     }
 
-    set_mode(pi, TX_PIN, PI_OUTPUT);
+    set_mode(pi, out_pin, PI_OUTPUT);
 
     int bit_time_us = 1000000 / BAUD_RATE;  // how we get time in microseconds
     int half_bit_time_us = bit_time_us / 2; 
@@ -39,21 +39,21 @@ int send_bits(char *bitstring) {
         if (bit == 0) {
             // 0: Low to High transition
             // First we set pin LOW
-            gpio_write(pi, TX_PIN, 0);
+            gpio_write(pi, out_pin, 0);
             usleep(half_bit_time_us);
 
             // Second w set pin HIGH
-            gpio_write(pi, TX_PIN, 1);
+            gpio_write(pi, out_pin, 1);
             usleep(half_bit_time_us);
         } else {
             // 1: High to Low transition
 
             // HIGH
-            gpio_write(pi, TX_PIN, 1);
+            gpio_write(pi, out_pin, 1);
             usleep(half_bit_time_us);
 
             //LOW
-            gpio_write(pi, TX_PIN, 0);
+            gpio_write(pi, out_pin, 0);
             usleep(half_bit_time_us);
         }
     }

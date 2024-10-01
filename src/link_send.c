@@ -14,6 +14,6 @@ int send_to_file()
     char* binary = text_to_binary7(input);
     printf("Binary %s\n", binary);
 
-    send_bits(binary);
+    send_bits(binary, GPIO_SEND);
     return 0;
 }
