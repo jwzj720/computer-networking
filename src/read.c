@@ -1,13 +1,4 @@
-#include <pigpiod_if2.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "read.h"
-#define MAX_BITS 700
-#define BIT_COUNT 7
-
 
 uint32_t READRATE=0; //preset rate expected between bits.
 uint32_t ptime;
