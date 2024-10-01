@@ -92,7 +92,7 @@ char* read_bits(struct ReadData* rd)
     {
         fflush(stdout); // changed to a sleep to reduce CPU usage
     }
-    time_sleep(.5);
+    time_sleep(.5); // This waits so that the resetting zero can be received.
 
     return rd->data;
 }
