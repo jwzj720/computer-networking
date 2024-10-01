@@ -8,7 +8,7 @@
 #include "send.h"
 #include "text_6bit.h"
 #include "text_7bit.h"
-
+#include "hamming.h"
 
 int send_to_file()
 {
@@ -20,10 +20,14 @@ int send_to_file()
     if (input[input_len - 1]=='\n'){
         input[input_len - 1] = '\0';
     }
-    
-    char* binary = text_to_binary7(input);
-    printf("Binary %s\n", binary);
 
-    send_bits(binary);
+    char* binary = text_to_binary7(input);
+
+    // add hamming (7,4) bits
+    char* hamming_binary = hamming_encode_full(binary);
+
+    printf("Binary %s\n", binary);
+    printf("Binary %s\n", hamming_binary);
+    send_bits(hamming_binary);
     return 0;
 }
