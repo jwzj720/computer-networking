@@ -10,8 +10,9 @@ pthread_t write_thread;
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void* read_thread(int* pinit)
+void* read_thread(void* pinit)
 {
+
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader();
     
@@ -22,11 +23,11 @@ void* read_thread(int* pinit)
         return NULL;
     }
     // Register the callback with user data
-    int id = callback_ex(pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+    int id = callback_ex(*(int*)pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
     if (id < 0)
     {
         fprintf(stderr, "Failed to set callback\n");
-        pigpio_stop(pinit);
+        pigpio_stop(*(int*)pinit);
         
         return NULL;
     }
@@ -37,7 +38,11 @@ void* read_thread(int* pinit)
     while(1)
     {
         // read a message
-        read_to_file(rd);
+        if (read_to_file(rd)!=0)
+        {
+            printf("Message read error.\n");
+            return NULL;
+        }
         //pthread_mutex_lock(&read_mutex);
         //reset readrate and run variables each iteration.
         reset_reader(rd);
@@ -57,12 +62,12 @@ void* read_thread(int* pinit)
     return NULL;
 }
 
-void* send_thread(void* arg)
+void* send_thread(void* pinit)
 {
     while(1)
     {
         //pthread_mutex_lock(&send_mutex);
-        send_to_file();
+        send_to_file(*(int*)pinit);
         //pthread_mutex_unlock(&send_mutex);
     }
     return NULL;
@@ -76,7 +81,7 @@ int main()
     if (pinit < 0)
     {
         fprintf(stderr, "Didn't initialize pigpio library\n");
-        return NULL; // Return NULL to indicate failure
+        return 1; // Return NULL to indicate failure
     }
 
     // Set GPIO modes
@@ -84,14 +89,14 @@ int main()
     {
         fprintf(stderr, "Failed to set GPIO_SEND mode\n");
         pigpio_stop(pinit);
-        return NULL;
+        return 1;
     }
 
     if (set_mode(pinit, GPIO_RECEIVE, PI_INPUT) != 0)
     {
         fprintf(stderr, "Failed to set GPIO_RECEIVE mode\n");
         pigpio_stop(pinit);
-        return NULL;
+        return 1;
     }
 
     if(pthread_create(&reading_thread, NULL, read_thread, &pinit) != 0) {
@@ -99,7 +104,7 @@ int main()
         return 1;
     }
 
-    if(pthread_create(&write_thread, NULL, send_thread, NULL) != 0) {
+    if(pthread_create(&write_thread, NULL, send_thread, &pinit) != 0) {
         perror("Could not create writing thread");
         return 1;
     }

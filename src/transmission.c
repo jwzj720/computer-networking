@@ -2,7 +2,7 @@
 
 #include "transmission.h"
 
-int send_to_file()
+int send_to_file(int pi)
 {
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
@@ -17,14 +17,18 @@ int send_to_file()
 
     // encode ASCII to binary and add parity bits according to hamming (7,4)
     char* binary = text_to_binary(input);
-    char* hamming_binary = hamming_encode_full(binary);
+    //char* hamming_binary = hamming_encode_full(binary);
 
     // printing validation
     printf("Binary %s\n", binary);
-    printf("Binary %s\n", hamming_binary);
+    //printf("Binary %s\n", hamming_binary);
 
     // send data over the line (and don't worry if one bit is flipped in transmission!)
-    send_bits(hamming_binary);
+    if (send_bits(binary, GPIO_SEND, pi)!=0)
+    {
+        printf("Bit send error.\n");
+        return 1;
+    }
     return 0;
 }
 
@@ -35,10 +39,10 @@ int read_to_file(struct ReadData* rd)
     printf("Binary received: %s\n", result);
 
     // do error detection/correction and remove redundant data created in hamming encoding (this return should be same binary as text_to_binary return)
-    char* hamming_decode = hamming_decode_full(result);
+    //char* hamming_decode = hamming_decode_full(result);
 
     // convert binary back to ASCII
-    char* final = binary_to_text7(hamming_decode);
+    char* final = binary_to_text(result);
 
     // print final message
     printf( "Results: %s\n", final);

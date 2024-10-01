@@ -15,10 +15,11 @@ int run=1;
 // Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
 
 
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadData* rd) // added userdata for struct
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) // added userdata for struct
 {
     //printf("READRATE: %"PRIu32"\n",rd->READRATE);
     //printf("Tick: %"PRIu32"\n",rd->tick);
+    struct ReadData* rd = (struct ReadData*) user;
     if(!(rd->run))
     {
         return;

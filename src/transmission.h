@@ -11,7 +11,7 @@
 #include "send.h"
 #include "encoding.h"
 
-#define GPIO_SEND 23
+#define GPIO_SEND 27
 #define GPIO_RECEIVE 26
 
 int send_to_file();
