@@ -159,39 +159,39 @@ char* hamming_decode_full(char* encoded_string){
     return decoded_string;
 }
 
-int main() {
-    // Test cases
+// int main() {
+//     // Test cases
 
-    // TAKEAWAYS:
-        // Currently if input is not of a length divisible by 7, decoding will not work
-            // Need to add some sort of padding
+//     // TAKEAWAYS:
+//         // Currently if input is not of a length divisible by 7, decoding will not work
+//             // Need to add some sort of padding
 
-    char* test_inputs[] = {
-        "1011",       // Length 4 (exact)
-        "10110011",   // Length 8 (exact multiple of 4)
-        "101",        // Length 3 (needs padding)
-        "1011001",    // Length 7 (needs padding)
-        "",           // Empty string
-        "110010101011" // Length 12 (exact multiple of 4)
-        "1110001010101010100100010101010100011111001001010101010101001101010"
-    };
+//     char* test_inputs[] = {
+//         "1011",       // Length 4 (exact)
+//         "10110011",   // Length 8 (exact multiple of 4)
+//         "101",        // Length 3 (needs padding)
+//         "1011001",    // Length 7 (needs padding)
+//         "",           // Empty string
+//         "110010101011" // Length 12 (exact multiple of 4)
+//         "1110001010101010100100010101010100011111001001010101010101001101010"
+//     };
 
-    size_t num_tests = sizeof(test_inputs) / sizeof(test_inputs[0]);
+//     size_t num_tests = sizeof(test_inputs) / sizeof(test_inputs[0]);
 
-    for (size_t i = 0; i < num_tests; i++) {
-        printf("Test Input %zu: %s\n", i + 1, test_inputs[i]);
-        char* encoded = hamming_encode_full(test_inputs[i]);
-        char* decoded = hamming_decode_full(test_inputs[i]);
-        if (encoded != NULL) {
-            printf("Encoded Hamming (7,4) binary: %s\n", encoded);
-            printf("Decoded Hamming (7,4) binary: %s\n", decoded);
-            free(encoded);
-            free(decoded);
-        } else {
-            printf("Encoding failed for Test Input %zu.\n\n", i + 1);
-        }
-    }
-    return 0;
-}
+//     for (size_t i = 0; i < num_tests; i++) {
+//         printf("Test Input %zu: %s\n", i + 1, test_inputs[i]);
+//         char* encoded = hamming_encode_full(test_inputs[i]);
+//         char* decoded = hamming_decode_full(test_inputs[i]);
+//         if (encoded != NULL) {
+//             printf("Encoded Hamming (7,4) binary: %s\n", encoded);
+//             printf("Decoded Hamming (7,4) binary: %s\n", decoded);
+//             free(encoded);
+//             free(decoded);
+//         } else {
+//             printf("Encoding failed for Test Input %zu.\n\n", i + 1);
+//         }
+//     }
+//     return 0;
+// }
 
 

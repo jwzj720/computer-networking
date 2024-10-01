@@ -52,15 +52,15 @@ char* binary_to_text7(const char* binary) {
     size_t binary_len = strlen(binary);
 
     // COMMENT FOR PRODUCTION
-   // size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
+   size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
 
-	 // UNCOMMENT FOR PRODUCTION 
-    size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
+	// UNCOMMENT FOR PRODUCTION 
+    // size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
 
     char* text = malloc(text_len + 1);  // +1 for null terminator
     
     // COMMENT FOR PRODUCTION - remove this in production as read code will deal with the "10"
-    size_t bin_index = 0; // skip the first two bits ("10")
+    size_t bin_index = 2; // skip the first two bits ("10")
     
     for (size_t i = 0; i < text_len; i++) {
         char septet[8] = {0};
