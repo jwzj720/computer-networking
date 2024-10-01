@@ -1,4 +1,4 @@
-#include "link_receive.h"
+#include "transmission.h"
 
 int main()
 {
