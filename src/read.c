@@ -1,10 +1,16 @@
-#include <pigpiod_if2.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "read.h"
+
+uint32_t READRATE=0; //preset rate expected between bits.
+uint32_t ptime;
+uint32_t tick1;
+int rateset = 0;
+int counter = 0;
+int values = 0;
+// TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
+// and then we just have to convert resulting uint6_t values to characters.
+char* data;
+
+int run=1;
 
 // Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
 

@@ -1,0 +1,41 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 6}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Finish parallel read/write - Stuart/Walt
+    \item Implement error correction code - Dan
+    \item Begin modifying code to receive packet structure - group
+    \item Start adding error checking in packet data. - group
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Clean up code, write documentation (DONE) - Walt
+    \item Make one class to read and write in parallel (In Progress)- Stuart + Walt
+    \item Agree on error correction details (DONE)- Group
+    \item Begin work on error detection implementation + details (In Progress) - Dan
+    \item Begin working on network layer design (Postponed) - Group
+    \item Testing ASCII to bitstream and bitstream to ASCII (DONE) - Group
+    \item Thorough testing of the manchester encoding/decoding (Postponed) - Walt/Stuart
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item We were able to get an initial test to work running a general multithread app today. However this could only send one message from either side.
+    \item We created helper functions to try and make our reading run continuously but are running into errors with redefining the callback function.
+    \item We have success transmitting messages at low baud rates, but still have to experiment with our ceiling in terms of how fast we can accurately transmit data.
+    \item As we scale up our project, we are going to have to add more threading functionality like locking and unlocking to make sure 
+    data isn't being overwritten by unexpected functionality.
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}

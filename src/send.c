@@ -1,10 +1,4 @@
 #include "send.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <pigpiod_if2.h>
-#include <string.h>
 
 
 int send_bits(char *bitstring, int out_pin) {
