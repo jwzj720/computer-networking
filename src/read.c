@@ -96,7 +96,7 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(char) * (MAX_BITS + 1));
 }
 
-char* read_message(struct ReadData* rd)
+char* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {

@@ -37,7 +37,7 @@ void* read_thread(int* pinit)
     while(1)
     {
         // read a message
-        read_message(rd);
+        read_to_file(rd);
         //pthread_mutex_lock(&read_mutex);
         //reset readrate and run variables each iteration.
         reset_reader(rd);

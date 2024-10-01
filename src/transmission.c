@@ -28,10 +28,10 @@ int send_to_file()
     return 0;
 }
 
-int read_to_file()
+int read_to_file(struct ReadData* rd)
 {
     // read bits from line and store as char*
-    char* result = read_bits(GPIO_SEND, GPIO_RECEIVE);
+    char* result = read_bits(rd);
     printf("Binary received: %s\n", result);
 
     // do error detection/correction and remove redundant data created in hamming encoding (this return should be same binary as text_to_binary return)

@@ -21,7 +21,9 @@ struct ReadData{
     char* data;
 };
 
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
-char* read_bits(int GPIO_SEND, int GPIO_RECEIVE); /* An example function declaration */
+struct ReadData* create_reader();
+void reset_reader(struct ReadData* rd);
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadData* user);
+char* read_bits(struct ReadData* rd); /* An example function declaration */
 
 #endif

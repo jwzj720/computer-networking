@@ -15,6 +15,6 @@
 #define GPIO_RECEIVE 26
 
 int send_to_file();
-int read_to_file();
+int read_to_file(struct ReadData* rd);
 
 #endif
