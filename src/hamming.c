@@ -164,6 +164,7 @@ int main() {
 
     // TAKEAWAYS:
         // Currently if input is not of a length divisible by 7, decoding will not work
+            // Need to add some sort of padding
 
     char* test_inputs[] = {
         "1011",       // Length 4 (exact)
