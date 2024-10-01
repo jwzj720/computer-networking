@@ -5,112 +5,146 @@
 #include <inttypes.h>
 
 #include "read.h"
+
+
 #define MAX_BITS 700
 #define BIT_COUNT 7
 
+typedef struct {
+    uint32_t READRATE;
+    uint32_t ptime;
+    uint32_t tick1;
+    int rateset;
+    int counter;
+    int values;
+    int run;
+    char* data;
+} ReadData;
 
-uint32_t READRATE=0; //preset rate expected between bits.
-uint32_t ptime;
-uint32_t tick1;
-int rateset = 0;
-int counter = 0;
-int values = 0;
-// TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
-// and then we just have to convert resulting uint6_t values to characters.
-char* data;
+// Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
 
-int run=1;
 
-// Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits. 
-
-void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick)
+void _callback(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) // added userdata for struct
 {
-    //printf("READRATE: %"PRIu32"\n",READRATE);
-    //printf("Tick: %"PRIu32"\n",tick);
-    if (!rateset)
+    ReadData* rd = (ReadData*)user;
+    //printf("READRATE: %"PRIu32"\n",rd->READRATE);
+    //printf("Tick: %"PRIu32"\n",rd->tick);
+
+    if (!(rd->rateset))
     {
-        tick1 = tick;
-        rateset++;
+        rd->tick1 = tick;
+        rd->rateset++;
     }
-    else if (rateset==1)
+    else if (rd->rateset == 1)
     {
-        READRATE = tick-tick1;
-	//READRATE = READRATE*2;
-        ptime = tick;
-        rateset++;
+        rd->READRATE = tick - rd->tick1;
+        rd->ptime = tick;
+        rd->rateset++;
     }
     else
     {
         //printf("timegap: %"PRIu32"\n",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
-        if (((tick-ptime)+(READRATE*.25) > READRATE) /*&& ((tick-ptime)-(READRATE*.25) < READRATE)*/)
+        if (((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE))
         {
-            printf("Level: %x\n",level);
-            data[counter] = ((int) level) ? '0' : '1';
-            values += atoi(&data[counter]); // Add the level value to the values counter
-            counter++;
-            ptime = tick;
+            printf("Level: %u\n", level);
+            rd->data[rd->counter] = level ? '1' : '0';
+            rd->values += level ? 1 : 0; // Add the level value to the values counter
+            rd->counter++;
+            rd->ptime = tick;
         }
     }
-    if (counter%BIT_COUNT ==0) //Every x values...
+
+    if (rd->counter % BIT_COUNT == 0 && rd->counter > 0) //Every x values...
     {
-	printf("Counter is zeroed\n");
-	printf("Values: %x\n",values);
-        if (values==BIT_COUNT) //If values is still 0, there have been 6 in a row.
+        printf("Counter is zeroed\n");
+        printf("Values: %d\n", rd->values);
+        if (rd->values == BIT_COUNT) // If values equal BIT_COUNT, all bits are '1'
         {
-            data[counter] = '\0'; //Set the counter to end reading. 
-	    run=0;
+            rd->data[rd->counter] = '\0'; 
+            rd->run = 0; // Stop the loop
         }
-        values = 0; //Reached if values were greater than 0. 
+        rd->values = 0; // Reset the values counter
     }
-    //if (counter == MAX_BITS)
-    //{
-    //    run = 0; //Stops the infinite while loop
-    //    data[MAX_BITS] = '\0';
-    //}
+
+    if (rd->counter >= MAX_BITS)
+    {
+        rd->run = 0; 
+        rd->data[MAX_BITS - 1] = '\0'; // Ensure null termination
+    }
 }
 
 char* read_bits(int GPIO_SEND, int GPIO_RECEIVE)
 {
-
-	
-    data = malloc(MAX_BITS*sizeof(char)+1);
-    memset(data, 0, sizeof(char)*MAX_BITS);
-
-    int pinit = pigpio_start(NULL,NULL);
-
-    if (pinit<0)
+    // Create and initialize the ReadData struct
+    ReadData rd;
+    rd.READRATE = 0;
+    rd.ptime = 0;
+    rd.tick1 = 0;
+    rd.rateset = 0;
+    rd.counter = 0;
+    rd.values = 0;
+    rd.run = 1;
+    rd.data = malloc(MAX_BITS * sizeof(char) + 1);
+    if (rd.data == NULL)
     {
-        printf("failed start");
-        return "GPIO start failed";
+        fprintf(stderr, "Couldn't allocate memory for data\n");
+        return NULL;
+    }
+    memset(rd.data, 0, sizeof(char) * (MAX_BITS + 1));
+
+    int pinit = pigpio_start(NULL, NULL);
+
+    if (pinit < 0)
+    {
+        fprintf(stderr, "Didn't initialize pigpio library\n");
+        free(rd.data);
+        return NULL; // Return NULL to indicate failure
     }
     else
     {
-        printf("initialization success\n");
+        printf("Initialization success\n");
     }
 
-    int status = set_mode(pinit,GPIO_SEND,PI_OUTPUT);
-    if (status==0)
+    // Set GPIO modes
+    if (set_mode(pinit, GPIO_SEND, PI_OUTPUT) != 0)
     {
-        printf("0 status received\n");
+        fprintf(stderr, "Failed to set GPIO_SEND mode\n");
+        pigpio_stop(pinit);
+        free(rd.data);
+        return NULL;
     }
 
-    status = set_mode(pinit,GPIO_RECEIVE,PI_INPUT);
-    if (status==0)
+    if (set_mode(pinit, GPIO_RECEIVE, PI_INPUT) != 0)
     {
-        printf("0 status received\n");
+        fprintf(stderr, "Failed to set GPIO_RECEIVE mode\n");
+        pigpio_stop(pinit);
+        free(rd.data);
+        return NULL;
     }
-    //Try to reset gpio to 0
-    //set_pull_up_down(pinit,GPIO_RECEIVE,PI_PUD_DOWN);
 
-    int id = callback(pinit,GPIO_RECEIVE,EITHER_EDGE, _callback);
-    printf("ID: %d\n",id);
-    while(run)
-    {  
-        fflush(stdout); //Forces system to empty buffered prints.
+    // Register the callback with user data
+    int id = callback_ex(pinit, GPIO_RECEIVE, EITHER_EDGE, _callback, &rd);
+    if (id < 0)
+    {
+        fprintf(stderr, "Failed to set callback\n");
+        pigpio_stop(pinit);
+        free(rd.data);
+        return NULL;
     }
+    printf("Callback ID: %d\n", id);
+
+    // Wait until the reading is done
+    while (rd.run)
+    {
+        usleep(1000); // changed to a sleep to reduce CPU usage
+    }
+
+    // Clean up
     callback_cancel(id);
+    pigpio_stop(pinit);
 
-    return data;
+    // Return the received data
+    return rd.data;
 }
