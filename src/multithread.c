@@ -46,6 +46,7 @@ void* read_thread(void* pinit)
         //pthread_mutex_lock(&read_mutex);
         //reset readrate and run variables each iteration.
         reset_reader(rd);
+	printf("new readrate: %"PRIu32"\n",rd->READRATE);
         //pthread_mutex_unlock(&read_mutex);
         
     }
