@@ -7,14 +7,15 @@
 char* text_to_binary(const char* text) {
     size_t len = strlen(text);
     // 2 for "10" + 7 bits per char + 7 for "0000000"
-    size_t binary_len = 2 + len * 7 + 7;
+    //size_t binary_len = len * 7 + 7;
+    size_t binary_len = len * 7;
     char* binary = malloc(binary_len + 1);  // +1 for null terminator (for printing purposes only)
     
     // "10" start
-    binary[0] = '1';
-    binary[1] = '0';
+    // binary[0] = '1';
+    // binary[1] = '0';
     
-    size_t bin_index = 2;
+    size_t bin_index = 0;
     // convert each char to 7-bit binary
     for (size_t i = 0; i < len; i++) {
         char ch = text[i];
@@ -34,11 +35,11 @@ char* text_to_binary(const char* text) {
     }
     
     // Add "111111" suffix
-    for (int i = 0; i < 7; i++) {
-        binary[bin_index++] = '1';
+    //for (int i = 0; i < 7; i++) {
+      //  binary[bin_index++] = '1';
    
-    }
-    binary[bin_index++] = '0'; // end
+    //}
+    //binary[bin_index++] = '0'; // end
 
     binary[bin_index] = '\0';  // null terminator (for printing purposes)
     
@@ -122,9 +123,9 @@ char* hamming_encode_full(char* binary_string)
     size_t length = strlen(binary_string);
     size_t blocks = (length + DATA_BLOCK_SIZE - 1) / DATA_BLOCK_SIZE; // ceiling division so padding is added to cases where length is not divisible by 4
     size_t encoded_length = blocks * CODEWORD_SIZE;
-    char* encoded_string = malloc(encoded_length + 1); 
-
-    encoded_string[0] = '\0'; // Initialize as empty string
+    char* encoded_string = malloc(encoded_length + 1);
+    
+    //encoded_string[0] = '\0'; // Initialize as empty string
 
     for (size_t i = 0; i < blocks; i++) {
         char data_block[DATA_BLOCK_SIZE + 1] = {'0', '0', '0', '0', '\0'}; // Initialize with '0's
