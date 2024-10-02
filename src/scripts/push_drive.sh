@@ -8,9 +8,9 @@ THUMB_DRIVE=/Volumes/BITTIES/computer-networking.git
 cd $LOCAL_REPO
 git add .
 git commit -m "Syncing changes to GitHub"
-git push origin master
+git push origin main
 echo "Changes pushed to GitHub."
 
 # Push to thumb drive for Pi
-git push pi master
+git push pi main
 echo "Changes pushed to thumb drive."
