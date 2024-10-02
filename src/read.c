@@ -101,7 +101,6 @@ void reset_reader(struct ReadData* rd)
 }
 
 char* read_bits(struct ReadData* rd)
-char* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {
