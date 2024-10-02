@@ -10,6 +10,6 @@
 
 #define BAUD_RATE 1000
 
-int send_bits(char *bitstring);
+int send_bits(char *bitstring, int out_pin, int pi);
 
 #endif /*SEND_H*/

@@ -42,7 +42,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
         //printf("timegap: %"PRIu32" ; ",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
-        if (((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE))
+        if ((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE)
         {
   //          printf("Level: %u ;\n", level);
             rd->data[rd->counter] = level ? '0' : '1';
@@ -66,6 +66,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
     if (rd->counter >= MAX_BITS)
     {
         rd->run = 0; 
+        rd->data[MAX_BITS] = '\0'; // Ensure null termination
         rd->data[MAX_BITS] = '\0'; // Ensure null termination
     }
     return;
@@ -99,6 +100,7 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(char) * (MAX_BITS + 1));
 }
 
+char* read_bits(struct ReadData* rd)
 char* read_bits(struct ReadData* rd)
 {
     while (rd->run)

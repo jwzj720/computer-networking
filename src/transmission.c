@@ -3,6 +3,7 @@
 #include "transmission.h"
 
 int send_to_file(int pi)
+int send_to_file(int pi)
 {
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
@@ -17,7 +18,7 @@ int send_to_file(int pi)
 
     // encode ASCII to binary and add parity bits according to hamming (7,4)
     char* binary = text_to_binary(input);
-    char* hamming_binary = hamming_encode_full(binary);
+    //char* hamming_binary = hamming_encode_full(binary);
 
     // printing validation
     //printf("Binary %s\n", hamming_binary);
@@ -50,6 +51,7 @@ int send_to_file(int pi)
     return 0;
 }
 
+int read_to_file(struct ReadData* rd)
 int read_to_file(struct ReadData* rd)
 {
     // read bits from line and store as char*
