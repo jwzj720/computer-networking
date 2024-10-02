@@ -11,7 +11,6 @@ Stuart, Walt, Dan
     \item Optimize callback funcitonality to not create new callback every time new message sent.
 
     \item Finish parallel read/write - Stuart/Walt
-    \item Implement error correction code - Dan
     \item Begin modifying code to receive packet structure - group
     \item Start adding error checking in packet data. - group
 \end{itemize}
@@ -26,6 +25,11 @@ Stuart, Walt, Dan
     \item Begin working on network layer design (Postponed) - Group
     \item Testing ASCII to bitstream and bitstream to ASCII (DONE) - Group
     \item Thorough testing of the manchester encoding/decoding (Postponed) - Walt/Stuart
+
+
+    \item Implement Hamming (7,4) error correction code (DONE) - Dan
+    \item Test Hamming (7,4) error detection by randomly flipping a singular bit and seeing if it is corrected (DONE) - Dan
+    \item Refactor codebase to consolidate encoding and decoding functions (DONE) - Dan
 \end{itemize}
 
 %% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.

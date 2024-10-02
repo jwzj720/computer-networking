@@ -1,26 +1,29 @@
 #include "read.h"
 
-uint32_t READRATE=0; //preset rate expected between bits.
-uint32_t ptime;
-uint32_t tick1;
-int rateset = 0;
-int counter = 0;
-int values = 0;
-// TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
-// and then we just have to convert resulting uint6_t values to characters.
-char* data;
-
-int run=1;
-
+//uint32_t READRATE=0; //preset rate expected between bits.
+//uint32_t ptime;
+//uint32_t tick1;
+//int rateset = 0;
+//int counter = 0;
+//int values = 0;
+//// TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
+//// and then we just have to convert resulting uint6_t values to characters.
+//char* data;
+//
+//int run=1;
+//
 // Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
 
 
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadData* rd) // added userdata for struct
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) // added userdata for struct
 {
-    //printf("READRATE: %"PRIu32"\n",rd->READRATE);
-    //printf("Tick: %"PRIu32"\n",rd->tick);
+    struct ReadData* rd = (struct ReadData*) user;
+  //  printf("READRATE: %"PRIu32" ; ",rd->READRATE);
+   // printf("Tick: %"PRIu32" ; ",tick);
     if(!(rd->run))
+    
     {
+//	printf("Bit should not read");    
         return;
     }
     if (!(rd->rateset))
@@ -36,12 +39,12 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadDa
     }
     else
     {
-        //printf("timegap: %"PRIu32"\n",tick-ptime);
+        //printf("timegap: %"PRIu32" ; ",tick-ptime);
         // if the difference since the last tick is significantly less than expected readtime,
         // it is probably one that we want to ignore.
         if (((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE))
         {
-            printf("Level: %u\n", level);
+  //          printf("Level: %u ;\n", level);
             rd->data[rd->counter] = level ? '0' : '1';
             rd->values += level ? 0 : 1; // Add the level value to the values counter
             rd->counter++;
@@ -51,8 +54,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadDa
 
     if (rd->counter % BIT_COUNT == 0 && rd->counter > 0) //Every x values...
     {
-        printf("Counter is zeroed\n");
-        printf("Values: %d\n", rd->values);
+    //    printf("Values: %d ; ", rd->values);
         if (rd->values == BIT_COUNT) // If values equal BIT_COUNT, all bits are '1'
         {
             rd->data[rd->counter] = '\0'; 
@@ -64,7 +66,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, struct ReadDa
     if (rd->counter >= MAX_BITS)
     {
         rd->run = 0; 
-        rd->data[MAX_BITS - 1] = '\0'; // Ensure null termination
+        rd->data[MAX_BITS] = '\0'; // Ensure null termination
     }
     return;
 }
@@ -86,6 +88,7 @@ struct ReadData* create_reader()
 
 void reset_reader(struct ReadData* rd)
 {
+//	printf("Resetting values...\n");
     rd->READRATE = 0;
     rd->ptime = 0;
     rd->tick1 = 0;
@@ -96,12 +99,12 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(char) * (MAX_BITS + 1));
 }
 
-char* read_message(struct ReadData* rd)
+char* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {
         fflush(stdout); // changed to a sleep to reduce CPU usage
     }
-
+    time_sleep(.5);
     return rd->data;
 }
