@@ -1,6 +1,6 @@
 // main.c
-#include "link_receive.h"
-#include "link_send.h"
+#include "encoding.h"
+#include "transmission.h"
 #include <pthread.h>
 #include "read.h"
 
