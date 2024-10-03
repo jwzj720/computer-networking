@@ -15,7 +15,7 @@
 char* text_to_binary(const char* text);
 char* binary_to_text(const char* text);
 char* pack(char* ASCII_binary);
-char* unpack(char* hamming_binary)
+char* unpack(char* hamming_binary);
 char* hamming_encode_full(char* packed_string);
 char* hamming_decode_full(char* packed_string);
 

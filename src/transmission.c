@@ -44,7 +44,6 @@ int read_to_file(struct ReadData* rd)
 
     // remove '1111111' from the tail
     char* cleaned = unpack(result);
-    free(result);
 
     // do error detection/correction and remove redundant data created in hamming encoding
     char* hamming_decode = hamming_decode_full(cleaned);
@@ -54,7 +53,7 @@ int read_to_file(struct ReadData* rd)
     printf("Hamming Decoded Binary: %s\n", hamming_decode);
 
     // convert binary back to ASCII
-    char* final = binary_to_text(hamming_decode);
+    char* final = binary_to_text(no_zero);
     free(hamming_decode)
 
     // print final message
