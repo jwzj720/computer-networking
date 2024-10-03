@@ -46,7 +46,7 @@ int send_bits(char *bitstring, int out_pin, int pi) {
     return 0;
 }
 
-int header(int out_pin, int pi, int half_bit_time_us)
+void header(int out_pin, int pi, int half_bit_time_us)
 {
     // 1
     gpio_write(pi, out_pin, 1);  // Set pin HIGH
@@ -64,7 +64,7 @@ int header(int out_pin, int pi, int half_bit_time_us)
     usleep(half_bit_time_us);   // Sleep for the remaining half bit time
 }
 
-int tail(int out_pin, int pi, int half_bit_time_us)
+void tail(int out_pin, int pi, int half_bit_time_us)
 {
     // 1's
     for (int i = 0; i < 8; i++) {
@@ -79,9 +79,6 @@ int tail(int out_pin, int pi, int half_bit_time_us)
 
     gpio_write(pi, out_pin, 0);  // Set pin LOW
     usleep(half_bit_time_us);   // Sleep for half bit time
-
-    gpio_write(pi, out_pin, 1);  // Set pin HIGH
-    usleep(half_bit_time_us);   // Sleep for the remaining half bit time
 
 }
 int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {

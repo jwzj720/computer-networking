@@ -27,6 +27,7 @@ int send_to_file(int pi)
     size_t data_size = sizeof(data);
 
     int packet_size = build_packet(device_addr, receiver_addr, data, data_size, packet);
+    printf("Packet size: %d\n", packet_size);
     //printf("text_to_binary result (COMPARE THIS) %s\n", binary);
 
     //char* hamming_binary = hamming_encode_full(binary);
