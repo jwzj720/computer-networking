@@ -33,13 +33,6 @@ char* text_to_binary(const char* text) {
             binary[bin_index++] = (char_index & (1 << j)) ? '1' : '0';
         }
     }
-    
-    // Add "111111" suffix
-    //for (int i = 0; i < 7; i++) {
-      //  binary[bin_index++] = '1';
-   
-    //}
-    //binary[bin_index++] = '0'; // end
 
     binary[bin_index] = '\0';  // null terminator (for printing purposes)
     
@@ -49,16 +42,11 @@ char* text_to_binary(const char* text) {
 char* binary_to_text(const char* binary) { 
     size_t binary_len = strlen(binary);
 
-    // COMMENT FOR PRODUCTION
-   //size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
-
-	// UNCOMMENT FOR PRODUCTION 
-    size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
+    size_t text_len = (binary_len) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
 
     char* text = malloc(text_len + 1);  // +1 for null terminator
     
-    // COMMENT FOR PRODUCTION - remove this in production as read code will deal with the "10"
-    size_t bin_index = 0; // skip the first two bits ("10")
+    size_t bin_index = 0;
     
     for (size_t i = 0; i < text_len; i++) {
         char septet[8] = {0};
@@ -272,42 +260,6 @@ char* unpack(char* unpack_me)
     }
 
     printf("ones removed: %s\n", no_ones);
-    
+
     return no_ones;
 }
-
-// -------------- MAIN FOR TESTING --------------
-
-// int main(){
-//     char input[MAX_INPUT_LENGTH + 1];
-//     printf("Enter text to send: ");
-//     fgets(input,sizeof(input),stdin);
-
-//     size_t input_len = strlen(input);
-//     if (input[input_len - 1]=='\n'){
-//         input[input_len - 1] = '\0';
-//     }
-
-//     char* binary = text_to_binary7(input);
-//     char* bin_decode = binary_to_text7(binary);
-
-//     // add hamming (7,4) bits
-//     char* hamming_encode = hamming_encode_full(binary);
-//     printf("Hamming Encode %s\n", hamming_encode);
-
-//     // damage the hamming binary
-//     hamming_encode[23] ^= 1;
-//     printf("Fudged Hamming: %s\n", hamming_encode);
-
-//     // decode hamming
-//     char* hamming_decode = hamming_decode_full(hamming_encode);
-
-//     // decode to text
-//     char* text_decode = binary_to_text7(hamming_decode);
-
-//     printf("Binary %s\n", binary);
-//     // printf("Decoded Before Hamming %s\n", bin_decode);
-//     printf("Decoded Text: %s\n", text_decode);
-//     //send_bits(hamming_binary);
-//     return 0;
-// }
