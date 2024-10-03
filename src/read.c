@@ -111,7 +111,7 @@ struct Packet* generate_packet(uint8_t* data)
 
     //Put the remaining data into the newpack->data spot.
     memcpy(newpack->data, &data[4],newpack->dlength);
-
+//    print_packet_binary((uint8_t*)newpack);
     //Packet has been created, now return
 
     return newpack;

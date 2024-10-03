@@ -38,11 +38,11 @@ int send_to_file(int pi)
     
 
    // send data over the line (and don't worry if one bit is flipped in transmission!)
-    if (send_bytes(packet, packet_size, GPIO_SEND, pi)!=0)
-    {
-	printf("Bit send error.\n");
-        return 1;
-    }
+    //if (send_bytes(packet, packet_size, GPIO_SEND, pi)!=0)
+    //{
+	//printf("Bit send error.\n");
+        //return 1;
+    //}
     return 0;
 }
 
