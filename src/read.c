@@ -65,8 +65,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
 
     if (rd->counter >= MAX_BITS)
     {
-        rd->run = 0; 
-        rd->data[MAX_BITS] = '\0'; // Ensure null termination
+        rd->run = 0;
         rd->data[MAX_BITS] = '\0'; // Ensure null termination
     }
     return;

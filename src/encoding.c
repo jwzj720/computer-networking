@@ -232,6 +232,50 @@ char* hamming_decode_full(char* encoded_string)
     return decoded_string;
 }
 
+// -------------- PACKING --------------
+
+// add '10' as leading bits, add '11111110' as tailing bits
+char* pack(char* pack_me)
+{
+    size_t send_len = strlen(pack_me) + 10; // +2 for '10' +7 for '1111111' +1 for '0'
+    char* send_bin = malloc(send_len + 1); // +1 for '\0'
+
+    // add '10' to begin sequence
+    send_bin[0] = '1';
+    send_bin[1] = '0';
+
+    // fill send_bin with hamming_binary data
+    for (size_t i = 2; i < send_len - 8; i++){
+           send_bin[i] = pack_me[i-2];
+    }
+
+    // make the 7 characters 2 from the end of send_bin '1'
+    for (size_t i = send_len - 8; i< send_len; i++){
+           send_bin[i]= '1';
+    }
+
+    send_bin[send_len -1] ='0'; // add final level bit
+    send_bin[send_len] = '\0'; // add null terminator bit
+
+    return send_bin;
+}
+
+// remove tailing '1111111'
+char* unpack(char* unpack_me)
+{
+    size_t len = strlen(unpack_me) - 7;
+    char* no_ones = malloc(len + 1);
+
+    // fill no_ones with unpack_me data
+    for (size_t i = 0; i < len ; i++){
+           no_ones[i] = unpack_me[i];
+    }
+
+    printf("ones removed: %s\n", no_ones);
+    
+    return no_ones;
+}
+
 // -------------- MAIN FOR TESTING --------------
 
 // int main(){
