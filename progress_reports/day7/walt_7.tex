@@ -2,44 +2,39 @@
 \usepackage[a4paper, margin=1in]{geometry}
 \begin{document}
 
-\section*{Progress Report 6}
+\section*{Progress Report 7}
 Stuart, Walt, Dan
 
 %% tasks and task owners for roughly the next 24 hours
 \section*{Next Goals and Deliverables}
 \begin{itemize}
-    \item Optimize callback funcitonality to not create new callback every time new message sent.
-
-    \item Finish parallel read/write - Stuart/Walt
-    \item Begin modifying code to receive packet structure - group
-    \item Start adding error checking in packet data. - group
+    \item Fix error correction - Dan
+    \item Fully test link layer - Walt/Stuart
+    \item Implement waveform functions w/ bit shifting - Stuart
+    \item Begin work on network layer implementation - Walt
+    \item Begin routing table application layer - Walt
 \end{itemize}
 
 %% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
 \section*{Previous Goals and Deliverables}
 \begin{itemize}
-    \item Clean up code, write documentation (DONE) - Walt
-    \item Make one class to read and write in parallel (In Progress)- Stuart + Walt
-    \item Agree on error correction details (DONE)- Group
-    \item Begin work on error detection implementation + details (In Progress) - Dan
-    \item Begin working on network layer design (Postponed) - Group
-    \item Testing ASCII to bitstream and bitstream to ASCII (DONE) - Group
-    \item Thorough testing of the manchester encoding/decoding (Postponed) - Walt/Stuart
-
-
-    \item Implement Hamming (7,4) error correction code (DONE) - Dan
-    \item Test Hamming (7,4) error detection by randomly flipping a singular bit and seeing if it is corrected (DONE) - Dan
-    \item Refactor codebase to consolidate encoding and decoding functions (DONE) - Dan
+    \item Finish parallel read/write (DONE)- Stuart/Walt
+    \item Implement error correction code (ALMOST DONE)- Dan
+    \item Begin modifying code to receive packet structure (ALMOST DONE) - group
+    \item Start adding error checking in packet data (ALMOST DONE) - Dan
 \end{itemize}
 
 %% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
 \section*{Discussion}
 \begin{itemize}
-    \item We were able to get an initial test to work running a general multithread app today. However this could only send one message from either side.
-    \item We created helper functions to try and make our reading run continuously but are running into errors with redefining the callback function.
-    \item We have success transmitting messages at low baud rates, but still have to experiment with our ceiling in terms of how fast we can accurately transmit data.
-    \item As we scale up our project, we are going to have to add more threading functionality like locking and unlocking to make sure 
-    data isn't being overwritten by unexpected functionality.
+    \item Today we refactored the send/receive functions to only make one callback function instead of calling it each time.
+    This allowed us to reduce overhead and elimiante timing errors. Now we only have small errors that should be resolved by 
+    the error checking code. 
+    \item We refactored many functions into larger classes to decrease on complexity. This was a bit of a mistake, as we combined a refactored
+    with debugging functionality and adding error checking, which led to a lot of confusion.
+    \item So far, we have achieved simultanious transmission at low BAUD rates (100 tested). We are going to test higher rates to see how fast we can go.
+    \item Dan did an amazing job implementing Hammings error detection code. We started testing it this evening but it had a few errors. It should be done tommorow.
+    \item We are going to start working on the network layer tommorow. We are going to start with the logic for routing, then move to a static routing table.
 \end{itemize}
 
 %% The appendix pages go here if there are any...

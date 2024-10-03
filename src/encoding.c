@@ -33,13 +33,6 @@ char* text_to_binary(const char* text) {
             binary[bin_index++] = (char_index & (1 << j)) ? '1' : '0';
         }
     }
-    
-    // Add "111111" suffix
-    //for (int i = 0; i < 7; i++) {
-      //  binary[bin_index++] = '1';
-   
-    //}
-    //binary[bin_index++] = '0'; // end
 
     binary[bin_index] = '\0';  // null terminator (for printing purposes)
     
@@ -49,16 +42,11 @@ char* text_to_binary(const char* text) {
 char* binary_to_text(const char* binary) { 
     size_t binary_len = strlen(binary);
 
-    // COMMENT FOR PRODUCTION
-   //size_t text_len = (binary_len - 9) / 7;  // Subtract 9 for addtl bits, divide by 7 bits per char
-
-	// UNCOMMENT FOR PRODUCTION 
-    size_t text_len = (binary_len - 7) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
+    size_t text_len = (binary_len) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
 
     char* text = malloc(text_len + 1);  // +1 for null terminator
     
-    // COMMENT FOR PRODUCTION - remove this in production as read code will deal with the "10"
-    size_t bin_index = 0; // skip the first two bits ("10")
+    size_t bin_index = 0;
     
     for (size_t i = 0; i < text_len; i++) {
         char septet[8] = {0};
@@ -232,38 +220,46 @@ char* hamming_decode_full(char* encoded_string)
     return decoded_string;
 }
 
-// -------------- MAIN FOR TESTING --------------
+// -------------- PACKING --------------
 
-// int main(){
-//     char input[MAX_INPUT_LENGTH + 1];
-//     printf("Enter text to send: ");
-//     fgets(input,sizeof(input),stdin);
+// add '10' as leading bits, add '11111110' as tailing bits
+char* pack(char* pack_me)
+{
+    size_t send_len = strlen(pack_me) + 10; // +2 for '10' +7 for '1111111' +1 for '0'
+    char* send_bin = malloc(send_len + 1); // +1 for '\0'
 
-//     size_t input_len = strlen(input);
-//     if (input[input_len - 1]=='\n'){
-//         input[input_len - 1] = '\0';
-//     }
+    // add '10' to begin sequence
+    send_bin[0] = '1';
+    send_bin[1] = '0';
 
-//     char* binary = text_to_binary7(input);
-//     char* bin_decode = binary_to_text7(binary);
+    // fill send_bin with hamming_binary data
+    for (size_t i = 2; i < send_len - 8; i++){
+           send_bin[i] = pack_me[i-2];
+    }
 
-//     // add hamming (7,4) bits
-//     char* hamming_encode = hamming_encode_full(binary);
-//     printf("Hamming Encode %s\n", hamming_encode);
+    // make the 7 characters 2 from the end of send_bin '1'
+    for (size_t i = send_len - 8; i< send_len; i++){
+           send_bin[i]= '1';
+    }
 
-//     // damage the hamming binary
-//     hamming_encode[23] ^= 1;
-//     printf("Fudged Hamming: %s\n", hamming_encode);
+    send_bin[send_len -1] ='0'; // add final level bit
+    send_bin[send_len] = '\0'; // add null terminator bit
 
-//     // decode hamming
-//     char* hamming_decode = hamming_decode_full(hamming_encode);
+    return send_bin;
+}
 
-//     // decode to text
-//     char* text_decode = binary_to_text7(hamming_decode);
+// remove tailing '1111111'
+char* unpack(char* unpack_me)
+{
+    size_t len = strlen(unpack_me) - 7;
+    char* no_ones = malloc(len + 1);
 
-//     printf("Binary %s\n", binary);
-//     // printf("Decoded Before Hamming %s\n", bin_decode);
-//     printf("Decoded Text: %s\n", text_decode);
-//     //send_bits(hamming_binary);
-//     return 0;
-// }
+    // fill no_ones with unpack_me data
+    for (size_t i = 0; i < len ; i++){
+           no_ones[i] = unpack_me[i];
+    }
+
+    printf("ones removed: %s\n", no_ones);
+
+    return no_ones;
+}
