@@ -1,19 +1,5 @@
 #include "read.h"
 
-//uint32_t READRATE=0; //preset rate expected between bits.
-//uint32_t ptime;
-//uint32_t tick1;
-//int rateset = 0;
-//int counter = 0;
-//int values = 0;
-//// TODO: Conver this array of integers to a smaller array of uint6_t values. That way I set bits into each value,
-//// and then we just have to convert resulting uint6_t values to characters.
-//char* data;
-//
-//int run=1;
-//
-// Want to create 2d array. Parent array contains subarrays of bit values, Maximum some number of bits.
-
 
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) // added userdata for struct
 {
@@ -100,8 +86,8 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(char) * (MAX_BITS + 1));
 }
 
-char* read_bits(struct ReadData* rd)
-char* read_bits(struct ReadData* rd)
+
+char* read_message(struct ReadData* rd)
 {
     while (rd->run)
     {
@@ -109,4 +95,29 @@ char* read_bits(struct ReadData* rd)
     }
     time_sleep(.5);
     return rd->data;
+}
+
+
+/*
+* General message reader. This should always be running, and repeatedly call read_packet
+*/
+char* read_packet(struct ReadData* rd)
+{
+    // Read Byte by Byte. Stop sequence will eventually be removed
+    char currbyte[7] = read_byte(rd);
+    //Set a max_counter according to data_length described in packet header.
+    while (rd->run)
+    {
+        fflush(stdout); // changed to a sleep to reduce CPU usage
+    }
+    time_sleep(.5);
+    return rd->data;
+}
+
+char* read_byte(struct ReadData* rd)
+{
+    while (rd->run)
+    {
+        fflush(stdout); // changed to a sleep to reduce CPU usage
+    }
 }
