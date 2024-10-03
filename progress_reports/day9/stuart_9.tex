@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 9}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Encapsulate header/footer creation into link layer - Walt
+    \item Transition from reading bits as characters to bitmasking using uint8_t bytes. - Stuart
+    \item Change Hamming encoding to 8-5 and working with uint8_t. - Dan
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Finish debugging error correction with init link layer implementation (DONE) - Dan
+    \item Write method signiture for hamming (7,4) error correction to be used in network layer (DONE) - Dan
+    \item Work on send portion of network layer - Walt
+    \item Work on receive portion of network layer - Stuart
+    \item Continue routing table application layer - Walt/Stuart
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item Today, after some github merging issues we confirmed our bidriectional send and receive works continually. Our massive refactor
+    yesterday was a lesson in the importance of gradual pushes instead of full overhauls. 
+    \item Dan continued debugging his error correction code. Merging code created some new issues. Phantom 0s are consistently showing up in the same indexes. 
+    By the end of class tomorrow he is confident this algortithm will be done and he can begin refactoring it to work with the packet based transmission system
+    we are moving towards.
+    \item After discussing its high-level architecture, we delegated roles for developing the network layer. Tomorrow we will work extensivley on building the
+    first iteration of it by transmitting basic packets with error correction. 
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}

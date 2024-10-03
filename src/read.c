@@ -51,8 +51,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
 
     if (rd->counter >= MAX_BITS)
     {
-        rd->run = 0; 
-        rd->data[MAX_BITS] = '\0'; // Ensure null termination
+        rd->run = 0;
         rd->data[MAX_BITS] = '\0'; // Ensure null termination
     }
     return;
@@ -87,22 +86,34 @@ void reset_reader(struct ReadData* rd)
 }
 
 
-char* read_message(struct ReadData* rd)
+char* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {
         fflush(stdout); // changed to a sleep to reduce CPU usage
     }
     time_sleep(.5);
+    //Parse out stop sequence
     return rd->data;
 }
 
 
 /*
-* General message reader. This should always be running, and repeatedly call read_packet
+* Take read data and convert it to packets
 */
-char* read_packet(struct ReadData* rd)
+struct Packet* generate_packet(struct uint8_t* data)
 {
+    struct Packet* newpack = malloc(sizeof(struct Packet));
+    // TODO: Handle bad packet headers (Right now not having enough received data will cause
+    // a seg fault due to ArrayOutOfBounds)
+    newpack->dlength = data[0];
+    newpack->sending_addy = data[2];
+    newpack->receiving_addy = data[3];
+    newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength); //This multiplies by uint16_t, potential undefined behavior?
+
+    //Put the remaining data into the newpack->data spot.
+    memcpy(newpack->data, data[4],newpack->data);
+
     // Read Byte by Byte. Stop sequence will eventually be removed
     char currbyte[7] = read_byte(rd);
     //Set a max_counter according to data_length described in packet header.
@@ -111,13 +122,6 @@ char* read_packet(struct ReadData* rd)
         fflush(stdout); // changed to a sleep to reduce CPU usage
     }
     time_sleep(.5);
-    return rd->data;
+    return newpack
 }
 
-char* read_byte(struct ReadData* rd)
-{
-    while (rd->run)
-    {
-        fflush(stdout); // changed to a sleep to reduce CPU usage
-    }
-}

@@ -15,37 +15,18 @@ int send_to_file(int pi)
         input[input_len - 1] = '\0';
     }
 
-    // encode ASCII to binary and add parity bits according to hamming (7,4)
+    // encode ASCII to binary, add parity bits according to hamming (7,4), add leading and trailing bits
     char* binary = text_to_binary(input);
-    //size_t len = strlen(binary);
-    // char* hamming_binary = hamming_encode_full(binary);
+    free(input);
+    printf("text_to_binary result (COMPARE THIS) %s\n", binary);
 
-    // printing validation
-    //printf("Binary %s\n", hamming_binary);
-    //printf("Binary %s\n", hamming_binary);
-    //printf("Length of og: %ld\n", strlen(binary));
-    size_t send_len = strlen(binary) + 10;
-    //printf("Length of new: %ld\n", send_len);
-    char* send_bin = malloc(send_len+1);
+    char* hamming_binary = hamming_encode_full(binary);
+    free(binary);
+    char* packed = pack(hamming_binary);
+    free(hamming_binary);
 
-    send_bin[0] = '1';
-    send_bin[1] = '0';
-
-   for (size_t i = 2; i < send_len - 8; i++){
-           send_bin[i] = binary[i-2];
-   }
-
-   for (size_t i = send_len - 8; i< send_len; i++){
-           send_bin[i]= '1';
-   }
-
-   send_bin[send_len -1] ='0';// add final level bit
-   send_bin[send_len] = '\0';
-   // printf("Data Being Sent: %s\n", send_bin);
-
-   // // send data over the line (and don't worry if one bit is flipped in transmission!)
-    
-    if (send_bits(send_bin, GPIO_SEND, pi)!=0)
+   // send data over the line (and don't worry if one bit is flipped in transmission!)
+    if (send_bits(packed, GPIO_SEND, pi)!=0)
     {
 	printf("Bit send error.\n");
         return 1;
@@ -57,16 +38,27 @@ int read_to_file(struct ReadData* rd)
 {
     // read bits from line and store as char*
     char* result = read_bits(rd);
-    printf("Binary received: %s\n", result);
 
-    // do error detection/correction and remove redundant data created in hamming encoding (this return should be same binary as text_to_binary return)
-    //char* hamming_decode = hamming_decode_full(result);
-    //printf("Decoded Binary: %s\n", hamming_decode);
+    // '10' should be removed here along with the trailing '0'
+    printf("Binary First Received: %s\n", result);
+
+    // remove '1111111' from the tail
+    char* cleaned = unpack(result);
+    //free(result);
+
+    // do error detection/correction and remove redundant data created in hamming encoding
+    char* hamming_decode = hamming_decode_full(cleaned);
+    free(cleaned);
+
+    // this should print the same result as the text_to_binary print on sending computer
+    printf("Hamming Decoded Binary: %s\n", hamming_decode);
 
     // convert binary back to ASCII
-    char* final = binary_to_text(result);
+    char* final = binary_to_text(hamming_decode);
+    free(hamming_decode)
 
     // print final message
     printf( "Results: %s\n", final);
+    free(final);
     return 0;
 }
