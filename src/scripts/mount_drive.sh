@@ -21,7 +21,8 @@ if [ $? -eq 0 ]; then
 
     # Pull changes from the thumb drive repository
     git pull $THUMB_DRIVE main
-
+    git checkout stuart
+    git pull $THUMB_DRIVE stuart
     echo "Changes pulled from the thumb drive."
 
     # Optionally, unmount the drive after pulling changes
