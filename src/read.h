@@ -33,7 +33,7 @@ struct Packet{
     uint8_t sending_addy; 
     uint8_t receiving_addy;
     uint8_t* data;
-}
+};
 
 struct ReadData* create_reader();
 void reset_reader(struct ReadData* rd);

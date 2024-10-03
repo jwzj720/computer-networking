@@ -27,7 +27,7 @@ int send_to_file(int pi)
     size_t data_size = sizeof(data);
 
     build_packet(device_addr, receiver_addr, data, data_size, packet);
-    printf("text_to_binary result (COMPARE THIS) %s\n", binary);
+    //printf("text_to_binary result (COMPARE THIS) %s\n", binary);
 
     //char* hamming_binary = hamming_encode_full(binary);
     
@@ -65,8 +65,8 @@ int read_to_file(struct ReadData* rd)
     printf("Hamming Decoded Binary: %s\n", hamming_decode);
 
     // convert binary back to ASCII
-    char* final = binary_to_text(no_zero);
-    free(hamming_decode)
+    char* final = binary_to_text(hamming_decode);
+    free(hamming_decode);
 
     // print final message
     printf( "Results: %s\n", final);
