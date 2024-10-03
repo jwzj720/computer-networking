@@ -55,7 +55,7 @@ int read_to_file(struct ReadData* rd)
 
     // convert binary back to ASCII
     char* final = binary_to_text(no_zero);
-    free(hamming_decode)
+    free(hamming_decode);
 
     // print final message
     printf( "Results: %s\n", final);
