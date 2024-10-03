@@ -76,7 +76,7 @@ void reset_reader(struct ReadData* rd)
     rd->counter = 0;
     rd->values = 0;
     rd->run = 1;
-    memset(rd->data, 0, sizeof(char) * (MAX_BYTES));
+    memset(rd->data, 0, sizeof(uint8_t) * MAX_BYTES);
 }
 
 

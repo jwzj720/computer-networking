@@ -5,7 +5,7 @@ void build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, siz
     size_t offset = 0;
 
     
-    memset(packet, 0, 128);  // 128 bytes is the maximum packet size
+    memset(packet, 0, 50);  // 128 bytes is the maximum packet size
 
     uint16_t data_length = data_size;
     packet[offset++] = (data_length >> 8) & 0xFF; // Higher byte

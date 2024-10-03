@@ -3,6 +3,7 @@
 #include "transmission.h"
 #include <pthread.h>
 #include "read.h"
+#include "build_packet.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -38,16 +39,13 @@ void* read_thread(void* pinit)
     while(1)
     {
         // read a message
-        if (read_to_file(rd)!=0)
-        {
-            printf("Message read error.\n");
-            return NULL;
-        }
+        read_bits(rd);
         
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
-        struct Packet* packet = generate_packet(rd->data)
+        struct Packet* packet = generate_packet(rd->data);
+        print_packet_debug(packet->data,packet->dlength);
 
         //reset readrate and run variables each iteration.
         reset_reader(rd);
