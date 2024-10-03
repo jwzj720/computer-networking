@@ -11,4 +11,6 @@
 
 int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet);
 void print_packet_debug(uint8_t *packet, size_t byte_size);
+void print_packet_binary(uint8_t packet[50]);
+
 #endif /*BUILD_PACKET_H*/

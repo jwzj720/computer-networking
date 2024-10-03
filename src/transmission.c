@@ -25,9 +25,9 @@ int send_to_file(int pi)
 
     uint8_t packet[50];
     size_t data_size = sizeof(data);
-
     int packet_size = build_packet(device_addr, receiver_addr, data, data_size, packet);
     printf("Packet size: %d\n", packet_size);
+    print_packet_binary(packet);
     //printf("text_to_binary result (COMPARE THIS) %s\n", binary);
 
     //char* hamming_binary = hamming_encode_full(binary);
@@ -35,7 +35,7 @@ int send_to_file(int pi)
     //free(binary);
     //char* packed = pack(hamming_binary);
     //free(hamming_binary);
-
+    
 
    // send data over the line (and don't worry if one bit is flipped in transmission!)
     if (send_bytes(packet, packet_size, GPIO_SEND, pi)!=0)
