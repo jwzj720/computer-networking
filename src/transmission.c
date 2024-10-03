@@ -26,7 +26,7 @@ int send_to_file(int pi)
     uint8_t packet[50];
     size_t data_size = sizeof(data);
 
-    build_packet(device_addr, receiver_addr, data, data_size, packet);
+    int packet_size = build_packet(device_addr, receiver_addr, data, data_size, packet);
     //printf("text_to_binary result (COMPARE THIS) %s\n", binary);
 
     //char* hamming_binary = hamming_encode_full(binary);
@@ -37,7 +37,7 @@ int send_to_file(int pi)
 
 
    // send data over the line (and don't worry if one bit is flipped in transmission!)
-    if (send_bytes(packet, GPIO_SEND, pi)!=0)
+    if (send_bytes(packet, packet_size, GPIO_SEND, pi)!=0)
     {
 	printf("Bit send error.\n");
         return 1;
@@ -48,7 +48,7 @@ int send_to_file(int pi)
 int read_to_file(struct ReadData* rd)
 {
     // read bits from line and store as char*
-    char* result = read_bits(rd);
+    char* result =(char*) read_bits(rd);
 
     // '10' should be removed here along with the trailing '0'
     printf("Binary First Received: %s\n", result);

@@ -67,12 +67,12 @@ void* read_thread(void* pinit)
 
 void* send_thread(void* pinit)
 {
-    while(1)
-    {
-        //pthread_mutex_lock(&send_mutex);
-        send_to_file(*(int*)pinit);
-        //pthread_mutex_unlock(&send_mutex);
-    }
+    //while(1)
+    //{
+    //    //pthread_mutex_lock(&send_mutex);
+    send_to_file(*(int*)pinit);
+    //    //pthread_mutex_unlock(&send_mutex);
+    //}
     return NULL;
 }
 

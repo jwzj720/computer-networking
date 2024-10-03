@@ -80,7 +80,7 @@ void reset_reader(struct ReadData* rd)
 }
 
 
-char* read_bits(struct ReadData* rd)
+uint8_t* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {

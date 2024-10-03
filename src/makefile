@@ -6,7 +6,7 @@ CFLAGS = -Wall -pthread
 # Libraries
 LIBS = -lpigpiod_if2 -lrt
 
-MULTI_THREAD_SRCS = multithread.c transmission.c encoding.c read.c send.c 
+MULTI_THREAD_SRCS = multithread.c transmission.c encoding.c read.c send.c build_packet.c 
 
 MULTI_THREAD_TARGET = multi_thread
 
