@@ -9,8 +9,9 @@ Stuart, Walt, Dan
 \section*{Next Goals and Deliverables}
 \begin{itemize}
     \item Encapsulate header/footer creation into link layer - Walt
-    \item Transition from reading bits as characters to bitmasking using uint8_t bytes. - Stuart
-    \item Change Hamming encoding to 8-5 and working with uint8_t. - Dan
+    \item Encode packets using uint8t bytes - Walt
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. - Stuart
+    \item Change Hamming encoding to 8-5 and working with uint8t. - Dan
 \end{itemize}
 
 %% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
@@ -18,21 +19,20 @@ Stuart, Walt, Dan
 \begin{itemize}
     \item Finish debugging error correction with init link layer implementation (DONE) - Dan
     \item Write method signiture for hamming (7,4) error correction to be used in network layer (DONE) - Dan
-    \item Work on send portion of network layer - Walt
-    \item Work on receive portion of network layer - Stuart
-    \item Continue routing table application layer - Walt/Stuart
+    \item Work on send portion of network layer (IN PROGRESS) - Walt
+    \item Work on receive portion of network layer (IN PROGRESS) - Stuart
+    \item Continue routing table application layer (IN PROGRESS) - Walt/Stuart
 \end{itemize}
 
 %% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
 \section*{Discussion}
 \begin{itemize}
-    \item Today, after some github merging issues we confirmed our bidriectional send and receive works continually. Our massive refactor
-    yesterday was a lesson in the importance of gradual pushes instead of full overhauls. 
-    \item Dan continued debugging his error correction code. Merging code created some new issues. Phantom 0s are consistently showing up in the same indexes. 
-    By the end of class tomorrow he is confident this algortithm will be done and he can begin refactoring it to work with the packet based transmission system
-    we are moving towards.
-    \item After discussing its high-level architecture, we delegated roles for developing the network layer. Tomorrow we will work extensivley on building the
-    first iteration of it by transmitting basic packets with error correction. 
+    \item We are having to make large refactoring changes to our code now that we are on the network layer. Previously, we had worked entirely in
+    characters, but are realizing it will be much cleaner and more efficient to work entirely in 8-bit integers, where we use bit masking to represent bits.
+    \item We have a good understanding of how our code is working now, and once we get the bit masking to work we are hopeful that it will be
+    easy to write the packets into memory and handle subsequent actions appropriately. 
+    \item This is an unfortunate setback in actually getting our network to communicate, but we believe the logic is much cleaner and more efficient with memory,
+    so the updates to our bit reading process will be worth it in terms of making our final product more understandable. 
 \end{itemize}
 
 %% The appendix pages go here if there are any...
