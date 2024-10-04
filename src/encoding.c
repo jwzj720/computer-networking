@@ -7,7 +7,7 @@
 /*
 Application to take in text and return it as a uint8_t array of hex values
 */
-uint8_t text_to_bytes(size_t* len){
+uint8_t* text_to_bytes(size_t* len){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     printf("Please enter a message: ");

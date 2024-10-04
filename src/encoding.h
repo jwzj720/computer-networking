@@ -11,7 +11,7 @@
 #define DATA_BLOCK_SIZE 4
 #define CODEWORD_SIZE 8
 
-uint8_t text_to_bytes(size_t* length);
+uint8_t* text_to_bytes(size_t* length);
 char* bytes_to_text(uint8_t* bytes, size_t len);
 char* pack(char* ASCII_binary);
 char* unpack(char* hamming_binary);
