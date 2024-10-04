@@ -39,7 +39,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
             // Bit shift expected value to appropriate location
             rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT-1-shift));
 	    printf("pos: %d ;",shift);
-  	    printf("element: %"PRIu8"\n",rd->data[element]);
+  	    printf("element: %d\n",element);
              // Add the level value to the values counter
             rd->counter++;
             rd->ptime = tick;
@@ -71,7 +71,7 @@ struct ReadData* create_reader()
 
 void reset_reader(struct ReadData* rd)
 {
-//	printf("Resetting values...\n");
+    printf("Resetting values...\n");
     rd->READRATE = 0;
     rd->ptime = 0;
     rd->tick1 = 0;
@@ -93,9 +93,12 @@ uint8_t* read_bits(struct ReadData* rd)
 
     //Parse out stop sequence
     printf("Data read\n");
-    uint8_t* data_copy = malloc(MAX_BYTES * sizeof(uint8_t));
-    memcpy(data_copy, rd->data, MAX_BYTES * sizeof(uint8_t));    
-    return data_copy;
+   // uint8_t* data_copy = malloc(MAX_BYTES * sizeof(uint8_t));
+    //memcpy(data_copy, rd->data, MAX_BYTES * sizeof(uint8_t));    
+   // return data_copy;i
+   printf("read_bits data: ");
+   print_packet_binary(rd->data);
+   return rd->data;
 }
 
 
@@ -115,7 +118,7 @@ struct Packet* generate_packet(uint8_t* data)
 
     //Put the remaining data into the newpack->data spot.
     memcpy(newpack->data, &data[4],newpack->dlength);
-//    print_packet_binary((uint8_t*)newpack);
+    print_packet_binary(newpack->data);
     //Packet has been created, now return
 
     return newpack;
