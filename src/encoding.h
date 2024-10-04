@@ -12,7 +12,7 @@
 #define CODEWORD_SIZE 8
 #define ascii85_chars "!\"#$&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwyxz "
 
-uint8_t text_to_bytes();
+uint8_t* text_to_bytes();
 char* bytes_to_text();
 char* pack(char* ASCII_binary);
 char* unpack(char* hamming_binary);
