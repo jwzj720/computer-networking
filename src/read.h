@@ -22,7 +22,7 @@ struct ReadData{
     int counter;
     int values;
     int run;
-    char* data;
+    uint8_t* data;
 };
 
 /*
