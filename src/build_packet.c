@@ -18,7 +18,7 @@ int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size
 
     memcpy(&packet[offset], data, data_size);
 	
-    return sizeof(packet);
+    return 4 + data_size;
 
 }
 
