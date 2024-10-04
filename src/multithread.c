@@ -43,10 +43,14 @@ void* read_thread(void* pinit)
             printf("Message read error.\n");
             return NULL;
         }
-        //pthread_mutex_lock(&read_mutex);
+        
+        // Data received, lock threading to hold reading until packet is interpreted.
+        // We don't want rd->data to be overwritten during this time.
+        pthread_mutex_lock(&read_mutex);
+        struct Packet* packet = generate_packet(rd->data)
+
         //reset readrate and run variables each iteration.
         reset_reader(rd);
-	printf("new readrate: %"PRIu32"\n",rd->READRATE);
         //pthread_mutex_unlock(&read_mutex);
         
     }
@@ -55,7 +59,7 @@ void* read_thread(void* pinit)
     callback_cancel(id);
 
     // Free Data
-    free(rd->data);
+    free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
     free(rd);
 
     

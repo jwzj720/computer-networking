@@ -44,6 +44,7 @@ int read_to_file(struct ReadData* rd)
 
     // remove '1111111' from the tail
     char* cleaned = unpack(result);
+    //free(result);
 
     // do error detection/correction and remove redundant data created in hamming encoding
     char* hamming_decode = hamming_decode_full(cleaned);
