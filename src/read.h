@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#define BIT_COUNT 7
-#define MAX_BITS 100*BIT_COUNT
+#define BIT_COUNT 8
+#define MAX_BYTES 50
 
 /*
  * ReadData struct is implemented at link layer. Used to read correct voltage changes 

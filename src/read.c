@@ -31,28 +31,22 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
         if ((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE)
         {
   //          printf("Level: %u ;\n", level);
-            rd->data[rd->counter] = level ? '0' : '1';
-            rd->values += level ? 0 : 1; // Add the level value to the values counter
+            // Counter doesn't change, should get data counter/8.
+
+            // Get the current int to be looking at, as well as the bit position
+            int element = rd->counter/BIT_COUNT;
+            int shift = rd->counter % BIT_COUNT;
+            // Bit shift expected value to appropriate location
+            rd->data[element] |= ((level ? 0 : 1) << BIT_COUNT-shift);
+             // Add the level value to the values counter
             rd->counter++;
             rd->ptime = tick;
-        }
-    }
 
-    if (rd->counter % BIT_COUNT == 0 && rd->counter > 0) //Every x values...
-    {
-    //    printf("Values: %d ; ", rd->values);
-        if (rd->values == BIT_COUNT) // If values equal BIT_COUNT, all bits are '1'
-        {
-            rd->data[rd->counter] = '\0'; 
-            rd->run = 0; // Stop the loop
+            if ((rd->data[element] == 0xFF) || (rd->counter == MAX_BYTES*BIT_COUNT))
+            {
+                rd->run=0
+            }
         }
-        rd->values = 0; // Reset the values counter
-    }
-
-    if (rd->counter >= MAX_BITS)
-    {
-        rd->run = 0;
-        rd->data[MAX_BITS] = '\0'; // Ensure null termination
     }
     return;
 }
@@ -67,7 +61,7 @@ struct ReadData* create_reader()
     rd->counter = 0;
     rd->values = 0;
     rd->run = 1;
-    rd->data = malloc(MAX_BITS * sizeof(char) + 1);
+    rd->data = malloc(MAX_BYTES * sizeof(uint8_t));
     
     return rd;
 }
@@ -106,22 +100,17 @@ struct Packet* generate_packet(struct uint8_t* data)
     struct Packet* newpack = malloc(sizeof(struct Packet));
     // TODO: Handle bad packet headers (Right now not having enough received data will cause
     // a seg fault due to ArrayOutOfBounds)
-    newpack->dlength = data[0];
-    newpack->sending_addy = data[2];
-    newpack->receiving_addy = data[3];
+    uint16_t temp = ((uint16_t)data[0] << 8) | data[1];
+    newpack->dlength = (size_t)temp;
+    newpack->sending_addy = *data[2];
+    newpack->receiving_addy = *data[3];
     newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength); //This multiplies by uint16_t, potential undefined behavior?
 
     //Put the remaining data into the newpack->data spot.
-    memcpy(newpack->data, data[4],newpack->data);
+    memcpy(newpack->data, data[4],newpack->dlength);
 
-    // Read Byte by Byte. Stop sequence will eventually be removed
-    char currbyte[7] = read_byte(rd);
-    //Set a max_counter according to data_length described in packet header.
-    while (rd->run)
-    {
-        fflush(stdout); // changed to a sleep to reduce CPU usage
-    }
-    time_sleep(.5);
-    return newpack
+    //Packet has been created, now return
+
+    return newpack;
 }
 
