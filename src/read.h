@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
-
+#include "build_packet.h"
 #define BIT_COUNT 8
 #define MAX_BYTES 50
 
@@ -33,12 +33,12 @@ struct Packet{
     uint8_t sending_addy; 
     uint8_t receiving_addy;
     uint8_t* data;
-}
+};
 
 struct ReadData* create_reader();
 void reset_reader(struct ReadData* rd);
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
-char* read_bits(struct ReadData* rd); /* An example function declaration */
-struct Packet* generate_packet(struct uint8_t* data);
+uint8_t* read_bits(struct ReadData* rd); /* An example function declaration */
+struct Packet* generate_packet(uint8_t* data);
 
 #endif

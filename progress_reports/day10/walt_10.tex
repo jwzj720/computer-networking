@@ -1,0 +1,41 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 10}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Read/write packets across the network layer (IN PROGRESS) - Stuart/Walt
+    \item Fix hamming encoding to work on bytes instead of characters (IN PROGRESS) - Dan
+    \item Build routing logic into network layer (IN PROGRESS) - Walt
+    \item Change from fixed stop sequence to timemout - Walt/Stuart
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Encapsulate header/footer creation into link layer (DONE) - Walt
+    \item Encode packets using uint8t bytes (DONE (in part)) - Walt
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. (IN PROGRESS) - Stuart
+    \item Change Hamming encoding to 8-5 and working with uint8t. (IN PROGRESS)- Dan
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item The refactor has continued, and although Stuart and Walt spent a lot of time this weekend on it, we remain unable to transmit bit packets.
+    If we still can't get the refactor to work by tomorrow, we will revert to the old code and try to make it work with the new routing logic, building 
+    packets using characters. 
+    \item This will inform how we continue to implement the Hamming encoding, as we will revert to character encoding versus bit encoding. 
+    \item This has been a substantial setback, but we have a number of troubleshooting efforts we can try to get the refactor to work. We will 
+    change our stop sequence to a timeout, try changing the start state of the reader, and look again at the encodings. 
+    \item The next step is static routing, which shouldn't be too difficult to implement. We will need to build a routing table and have the packets forwarded 
+    correctly. I have a good idea of how to implement this, and will start on it as soon as we have packets sending and being encoded decoded. 
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}

@@ -47,9 +47,11 @@ void* read_thread(void* pinit)
         struct Packet* packet = generate_packet(rd->data);
         print_packet_debug(packet->data,packet->dlength);
 
+	free(packet->data);
+	free(packet);
         //reset readrate and run variables each iteration.
         reset_reader(rd);
-        //pthread_mutex_unlock(&read_mutex);
+        pthread_mutex_unlock(&read_mutex);
         
     }
 
@@ -67,12 +69,12 @@ void* read_thread(void* pinit)
 
 void* send_thread(void* pinit)
 {
-    while(1)
-    {
-        //pthread_mutex_lock(&send_mutex);
-        send_to_file(*(int*)pinit);
-        //pthread_mutex_unlock(&send_mutex);
-    }
+    //while(1)
+    //{
+    //    //pthread_mutex_lock(&send_mutex);
+    send_to_file(*(int*)pinit);
+    //    //pthread_mutex_unlock(&send_mutex);
+    //}
     return NULL;
 }
 

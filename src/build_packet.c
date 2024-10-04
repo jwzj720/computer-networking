@@ -1,9 +1,9 @@
 #include "build_packet.h"
 
 
-void build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
+int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
+    
     size_t offset = 0;
-
     
     memset(packet, 0, 50);  // 128 bytes is the maximum packet size
 
@@ -17,6 +17,9 @@ void build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, siz
     packet[offset++] = receiver_addr;
 
     memcpy(&packet[offset], data, data_size);
+	
+    return sizeof(packet);
+
 }
 
 // Function to print the packet in hex
@@ -24,6 +27,20 @@ void print_packet_debug(uint8_t *packet, size_t byte_size) {
     printf("Packet: ");
     for (size_t i = 0; i < byte_size; i++) {
         printf("%02X ", packet[i]);
+    }
+    printf("\n");
+}
+
+void print_byte_binary(uint8_t byte) {
+    for (int i = 7; i >= 0; i--) {
+        printf("%c", (byte & (1 << i)) ? '1' : '0');
+    }
+}
+
+void print_packet_binary(uint8_t packet[50]) {
+    for (int i = 0; i < 50; i++) {
+        print_byte_binary(packet[i]);
+        printf(" "); 
     }
     printf("\n");
 }
@@ -73,10 +90,3 @@ void test_build_packet() {
         printf("Test failed: Packets do not match.\n");
     }
 }
-
-//int main() {
-    //Run the unit test
-//    test_build_packet();
-
-//    return 0;
-//}
