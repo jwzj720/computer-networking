@@ -1,6 +1,5 @@
 #include "send.h"
 
-
 int send_bits(char *bitstring, int out_pin, int pi) {
     
     int bitstring_length = strlen(bitstring);

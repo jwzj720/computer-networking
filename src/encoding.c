@@ -4,81 +4,59 @@
 
 // -------------- ASCII TEXT ENCODING AND DECODING --------------
 
-char* text_to_binary(const char* text) {
-    size_t len = strlen(text);
-    // 2 for "10" + 7 bits per char + 7 for "0000000"
-    //size_t binary_len = len * 7 + 7;
-    size_t binary_len = len * 7;
-    char* binary = malloc(binary_len + 1);  // +1 for null terminator (for printing purposes only)
+// function to turn text into ASCII byte array (much more efficient than bitstrings) = 1 byte/char
+// INPUTS:
+    // text: char* of ASCII text to be encoded
+    // bytes_out: pointer for the byte array (ensure preceded by &!)
+
+size_t text_to_bytes(const char* text, uint8_t** bytes_out){
+    size_t len = strlen(text); // get length of input string
+    *bytes_out = malloc(len); // allocate memory for byte array (deref)
     
-    // "10" start
-    // binary[0] = '1';
-    // binary[1] = '0';
-    
-    size_t bin_index = 0;
-    // convert each char to 7-bit binary
+    // fill the allocated array with ASCII values
+    for (size_t i = 0; i < len; i++){
+        (*bytes_out)[i] = (uint8_t)text[i];
+    }
+
+    return len; // len of byte array
+}
+
+// function to turn ASCII byte array back to text
+// INPUTS:
+    // bytes: uint8_t* 
+    // len: size_t length of byte array
+    // text_out: pointer for the byte array
+
+size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
+    *text_out = malloc(len+1);
+
     for (size_t i = 0; i < len; i++) {
-        char ch = text[i];
-        // Find the index of the char in ascii85_chars
-        const char* char_pos = strchr(ascii85_chars, ch);
-        if (char_pos == NULL) {
-            // char not found in ascii85_chars
-            printf("Invalid character: '%c', replaced with !\n", ch);  
-            char_pos = ascii85_chars;
-        }
-        int char_index = char_pos - ascii85_chars;
-        
-        // Convert the index to 7-bit binary
-        for (int j = 6; j >= 0; j--) {
-            binary[bin_index++] = (char_index & (1 << j)) ? '1' : '0';
-        }
+        (*text_out)[i] = (char)bytes[i];
     }
 
-    binary[bin_index] = '\0';  // null terminator (for printing purposes)
-    
-    return binary;
+    (*text_out)[len] = '\0';
+    return len;
 }
 
-char* binary_to_text(const char* binary) { 
-    size_t binary_len = strlen(binary);
+// -------------- HAMMING 8,4 ENCODING AND DECODING --------------
 
-    size_t text_len = (binary_len) / 7;  // Subtract 7 for addtl bits, divide by 7 bits per char
-
-    char* text = malloc(text_len + 1);  // +1 for null terminator
-    
-    size_t bin_index = 0;
-    
-    for (size_t i = 0; i < text_len; i++) {
-        char septet[8] = {0};
-        strncpy(septet, binary + bin_index, 7);
-        bin_index += 7;
-        
-        int value = strtol(septet, NULL, 2); // convert base two to a normal number
-
-        text[i] = ascii85_chars[value];
-    }
-    
-    text[text_len] = '\0';
-    
-    return text;
-}
-
-// -------------- HAMMING 7,4 ENCODING AND DECODING --------------
-
-// based on algorithm outlined here: https://www.geeksforgeeks.org/hamming-code-in-computer-network/ 
+// based on (7,4) algorithm outlined here: https://www.geeksforgeeks.org/hamming-code-in-computer-network/ 
 
 // encoding inserts redundant bits in inputted string and then returns for transmission
 // decoding checks for corruption, repairs if so, and then returns output sans redundant bits
 
-// this function calculates and inserts parity bits for a single 4-bit data block in accordince with hamming 7,4
+// this function calculates and inserts parity bits for a single 4-bit data block in accordince with hamming 8,4
 
-char* hamming_encode(char* data_block)
+// INPUTS:
+    // nibble: a half byte of data to be returned as two bytes representing a nibble of og data each
+uint8_t hamming_encode(uint8_t nibble)
 { 
+    uint8_t encoded = 0;
     if (strlen(data_block) != DATA_BLOCK_SIZE) {
         fprintf(stderr, "Data block must be exactly 4 bits.\n");
         return NULL;
     }
-    char* codeword = malloc(CODEWORD_SIZE + 1); // 7-bit codeword + null terminator
+    char* codeword = malloc(CODEWORD_SIZE + 1); // 8-bit codeword + null terminator
 
     // Assign position bits
     // Position: 1 2 3 4 5 6 7

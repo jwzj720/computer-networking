@@ -9,7 +9,7 @@
 
 #define MAX_INPUT_LENGTH 280
 #define DATA_BLOCK_SIZE 4
-#define CODEWORD_SIZE 7
+#define CODEWORD_SIZE 8
 #define ascii85_chars "!\"#$&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwyxz "
 
 char* text_to_binary(const char* text);
