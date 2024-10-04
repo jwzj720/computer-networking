@@ -43,10 +43,11 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
              // Add the level value to the values counter
             rd->counter++;
             rd->ptime = tick;
-
+	    
             if ((rd->data[element] == 0xFF) || (rd->counter == MAX_BYTES*BIT_COUNT))
             {
-                rd->run=0;
+            	printf("end sequence read");
+		rd->run=0;
             }
         }
     }
@@ -89,9 +90,12 @@ uint8_t* read_bits(struct ReadData* rd)
         fflush(stdout); // changed to a sleep to reduce CPU usage
     }
     time_sleep(.5);
+
     //Parse out stop sequence
-    printf("Data read");
-    return rd->data;
+    printf("Data read\n");
+    uint8_t* data_copy = malloc(MAX_BYTES * sizeof(uint8_t));
+    memcpy(data_copy, rd->data, MAX_BYTES * sizeof(uint8_t));    
+    return data_copy;
 }
 
 
