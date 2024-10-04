@@ -1,7 +1,7 @@
 #include "build_packet.h"
 
 
-void build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
+int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
     size_t offset = 0;
 
     
@@ -17,6 +17,8 @@ void build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, siz
     packet[offset++] = receiver_addr;
 
     memcpy(&packet[offset], data, data_size);
+	
+    return sizeof(packet);
 }
 
 // Function to print the packet in hex

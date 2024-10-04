@@ -38,7 +38,7 @@ struct Packet{
 struct ReadData* create_reader();
 void reset_reader(struct ReadData* rd);
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
-char* read_bits(struct ReadData* rd); /* An example function declaration */
+uint8_t* read_bits(struct ReadData* rd); /* An example function declaration */
 struct Packet* generate_packet(uint8_t* data);
 
 #endif
