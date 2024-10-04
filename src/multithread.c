@@ -47,6 +47,7 @@ void* read_thread(void* pinit)
         struct Packet* packet = generate_packet(rd->data);
         print_packet_debug(packet->data,packet->dlength);
 
+
         //reset readrate and run variables each iteration.
         reset_reader(rd);
         //pthread_mutex_unlock(&read_mutex);

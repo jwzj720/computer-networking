@@ -79,8 +79,20 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(uint8_t) * MAX_BYTES);
 }
 
+void reset_packet(struct ReadData* rd)
+{
+//	printf("Resetting values...\n");
+    rd->READRATE = 0;
+    rd->ptime = 0;
+    rd->tick1 = 0;
+    rd->rateset = 0;
+    rd->counter = 0;
+    rd->values = 0;
+    rd->run = 1;
+    memset(rd->data, 0, sizeof(uint8_t) * MAX_BYTES);
+}
 
-char* read_bits(struct ReadData* rd)
+uint8_t* read_bits(struct ReadData* rd)
 {
     while (rd->run)
     {
