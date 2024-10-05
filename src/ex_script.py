@@ -80,3 +80,4 @@ for rate in BAUD_RATES:
         })
 
     print(f"Detected {errors} errors\n")
+    time.sleep(5)
