@@ -108,6 +108,7 @@ int main()
         perror("Could not create reading thread");
         return 1;
     }
+    time_sleep(.5);
 
     if(pthread_create(&write_thread, NULL, send_thread, &pinit) != 0) {
         perror("Could not create writing thread");
