@@ -15,9 +15,9 @@ TIMER_TEST_FILE = 'rtt_log.csv'
 ERROR_TEST_FILE = 'error_tests.csv'
 
 # Ensure output directory exists
-os.makedirs(os.path.dirname(SPEED_TEST_FILE), exist_ok=True)
-os.makedirs(os.path.dirname(TIMER_TEST_FILE), exist_ok=True)
-os.makedirs(os.path.dirname(ERROR_TEST_FILE), exist_ok=True)
+#os.makedirs(os.path.dirname(SPEED_TEST_FILE), exist_ok=True)
+#os.makedirs(os.path.dirname(TIMER_TEST_FILE), exist_ok=True)
+#os.makedirs(os.path.dirname(ERROR_TEST_FILE), exist_ok=True)
 
 # Initialize CSV files
 with open(SPEED_TEST_FILE, mode='w', newline='') as csv_file:

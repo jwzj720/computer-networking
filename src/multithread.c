@@ -4,9 +4,9 @@
 #include "read.h"
 #include "send.h"
 #include "selection.h"
-#include "gui.h"
+//#include "gui.h"
 #include <pthread.h>
-#include <ncurses.h>
+//#include <ncurses.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
 
     // Initialize router connection
     // Pass in pthread address so that 
-    init_screen();
+    //init_screen();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
     }
 
     // App Selection
-    app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
+    app_data.selected_application = 0; //app_select()-1; // Subtract 1 for offbyone error
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
