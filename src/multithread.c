@@ -3,7 +3,6 @@
 #include "transmission.h"
 #include <pthread.h>
 #include "read.h"
-#include "build_packet.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -13,66 +12,67 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* read_thread(void* pinit)
 {
-
     // Create Data reading object, which will store a message's data.
-    struct ReadData *rd = create_reader();
-    
+    create_reader(); // rd is now a global variable
+
     // Check data was allocated
     if (rd->data == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for data\n");
         return NULL;
     }
-    // Register the callback with user data
-    int id = callback_ex(*(int*)pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+
+    // Register the callback without user data
+    int id = callback(*(int*)pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit);
     if (id < 0)
     {
         fprintf(stderr, "Failed to set callback\n");
         pigpio_stop(*(int*)pinit);
-        
         return NULL;
     }
 
-    
-
-    // THIS is the per message read loop
-    while(1)
+    while (1)
     {
         // read a message
         read_bits(rd);
-        
+        printf("Total bits read: %d\n", rd->counter);
+        printf("Data buffer contents:\n");
         // Data received, lock threading to hold reading until packet is interpreted.
-        // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
         struct Packet* packet = generate_packet(rd->data);
-        print_packet_debug(packet->data,packet->dlength);
 
-        //reset readrate and run variables each iteration.
+        if (packet != NULL)
+        {
+            print_packet_debug(packet->data, packet->dlength);
+            free(packet->data);
+            free(packet);
+        }
+        else
+        {
+            printf("Failed to generate packet.\n");
+        }
+
         reset_reader(rd);
-        //pthread_mutex_unlock(&read_mutex);
-        
+        pthread_mutex_unlock(&read_mutex);
     }
 
-    //When done with the reading thread
     callback_cancel(id);
 
     // Free Data
-    free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
+    free(rd->data);
     free(rd);
-
-    
 
     return NULL;
 }
 
 void* send_thread(void* pinit)
 {
-    //while(1)
-    //{
-    //    //pthread_mutex_lock(&send_mutex);
-    send_to_file(*(int*)pinit);
-    //    //pthread_mutex_unlock(&send_mutex);
-    //}
+    while(1)
+    {
+        //pthread_mutex_lock(&send_mutex);
+        send_to_file(*(int*)pinit);
+        //pthread_mutex_unlock(&send_mutex);
+    }
     return NULL;
 }
 
@@ -106,6 +106,7 @@ int main()
         perror("Could not create reading thread");
         return 1;
     }
+    time_sleep(0.1);
 
     if(pthread_create(&write_thread, NULL, send_thread, &pinit) != 0) {
         perror("Could not create writing thread");

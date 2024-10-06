@@ -4,6 +4,8 @@ struct ReadData* rd = NULL; // Global variable to hold ReadData
 
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick)
 {
+    printf("get_bit called: level=%u, tick=%u\n", level, tick);
+    
     if (!(rd->run))
     {
         return;
@@ -94,11 +96,29 @@ struct Packet* generate_packet(uint8_t* data)
 
     uint16_t temp = ((uint16_t)data[0] << 8) | data[1];
     newpack->dlength = (size_t)temp;
+
+    printf("Data length extracted: %zu bytes\n", newpack->dlength);
+    printf("Sending address: %02X\n", data[2]);
+    printf("Receiving address: %02X\n", data[3]);
+
+    if (newpack->dlength > MAX_BYTES - 4) {
+        printf("Invalid data length\n");
+        free(newpack);
+        return NULL;
+    }
+
     newpack->sending_addy = data[2];
     newpack->receiving_addy = data[3];
-    newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength);
+    newpack->data = malloc(newpack->dlength);
 
     memcpy(newpack->data, &data[4], newpack->dlength);
 
+    printf("Packet data:\n");
+    for (size_t i = 0; i < newpack->dlength; i++) {
+        printf("%02X ", newpack->data[i]);
+    }
+    printf("\n");
+
     return newpack;
 }
+
