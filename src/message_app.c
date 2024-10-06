@@ -36,10 +36,10 @@ uint8_t* text_to_bytes(size_t* len, char* message){
         hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
     }
 
-    // for (size_t i = 0; i < *len; i++) {
-    //     printf("%02X ", hexList[i]); // Print each byte in hex format
-    // }
-    // printf("<- Hex values");
+    for (size_t i = 0; i < *len; i++) {
+        printf("%02X ", hexList[i]); // Print each byte in hex format
+    }
+    printf("<- Hex values");
 
     printf("\n");
 
