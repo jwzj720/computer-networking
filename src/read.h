@@ -23,6 +23,8 @@ struct ReadData{
     int values;
     int run;
     uint8_t* data;
+    uint32_t last_bit_time;    // Last time a bit was received
+    uint32_t timeout_duration;
 };
 
 /*
@@ -35,10 +37,10 @@ struct Packet{
     uint8_t* data;
 };
 
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
 struct ReadData* create_reader();
 void reset_reader(struct ReadData* rd);
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
-uint8_t* read_bits(struct ReadData* rd); /* An example function declaration */
+uint8_t* read_bits(struct ReadData* rd);
 struct Packet* generate_packet(uint8_t* data);
 
 #endif
