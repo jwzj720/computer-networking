@@ -86,7 +86,7 @@ void tail(int out_pin, int pi, int half_bit_time_us)
 int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
     int bit_time_us = 1000000 / BAUD_RATE; 
     int half_bit_time_us = bit_time_us / 2;
-    
+    printf("Sending packet of size %zu bytes\n", packet_size);
     header(out_pin, pi, half_bit_time_us);
     // prepend 10 at the beginning of the packet and append 11111110 at the end
     for (size_t i = 0; i < packet_size; i++) {
@@ -99,7 +99,7 @@ int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
 
             if (bit == 0) {
                 // 0: Low to High transition
-		printf("0");
+		        printf("0");
                 gpio_write(pi, out_pin, 0);  // Set pin LOW
                 usleep(half_bit_time_us);   // Sleep for half bit time
 
@@ -107,7 +107,7 @@ int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
                 usleep(half_bit_time_us);   // Sleep for the remaining half bit time
             } else {
                 // 1: High to Low transition
-		printf("1");
+		        printf("1");
                 gpio_write(pi, out_pin, 1);  // Set pin HIGH
                 usleep(half_bit_time_us);   // Sleep for half bit time
 

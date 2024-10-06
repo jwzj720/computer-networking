@@ -1,11 +1,9 @@
 #include "read.h"
 
-struct ReadData* rd = NULL; // Global variable to hold ReadData
-
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick)
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
 {
+    struct ReadData* rd = (struct ReadData*) user;
     printf("get_bit called: level=%u, tick=%u\n", level, tick);
-    
     if (!(rd->run))
     {
         return;
@@ -28,22 +26,24 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick)
             int element = rd->counter / BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT - 1 - shift));
+
             rd->counter++;
             rd->ptime = tick;
-            rd->last_bit_time = tick; // Update last_bit_time when a bit is received
+            rd->last_bit_time = tick; 
 
             if (rd->counter == MAX_BYTES * BIT_COUNT)
             {
-                rd->run = 0; // Stop reading to prevent buffer overflow
+                rd->run = 0; 
             }
         }
     }
+    printf("Bit %d captured: %u\n", rd->counter, level);
     return;
 }
 
 struct ReadData* create_reader()
 {
-    rd = malloc(sizeof(struct ReadData));
+    struct ReadData *rd = malloc(sizeof(struct ReadData));
     rd->READRATE = 0;
     rd->ptime = 0;
     rd->tick1 = 0;
@@ -55,9 +55,8 @@ struct ReadData* create_reader()
 
     rd->last_bit_time = 0;
 
-    // Calculate timeout_duration based on BAUDRATE
-    double bit_time_us = 1e6 / BAUDRATE;
-    rd->timeout_duration = (uint32_t)(3 * bit_time_us); // Timeout after 3 bit times
+    double bit_time_us = 1e6 / BAUD_RATE;
+    rd->timeout_duration = (uint32_t)(3 * bit_time_us); 
 
     return rd;
 }
@@ -83,8 +82,9 @@ uint8_t* read_bits(struct ReadData* rd)
         uint32_t current_time = get_current_tick(1);
         if ((current_time - rd->last_bit_time) > rd->timeout_duration)
         {
-            rd->run = 0;
+            rd->run = 0; // Stop reading due to timeout
         }
+        time_sleep(0.001); // Sleep to reduce CPU usage
     }
     printf("Data read\n");
     return rd->data;
@@ -94,13 +94,16 @@ struct Packet* generate_packet(uint8_t* data)
 {
     struct Packet* newpack = malloc(sizeof(struct Packet));
 
+    // Extract data length
     uint16_t temp = ((uint16_t)data[0] << 8) | data[1];
     newpack->dlength = (size_t)temp;
 
+    // Debug prints
     printf("Data length extracted: %zu bytes\n", newpack->dlength);
     printf("Sending address: %02X\n", data[2]);
     printf("Receiving address: %02X\n", data[3]);
 
+    // Check for valid data length
     if (newpack->dlength > MAX_BYTES - 4) {
         printf("Invalid data length\n");
         free(newpack);
@@ -111,8 +114,10 @@ struct Packet* generate_packet(uint8_t* data)
     newpack->receiving_addy = data[3];
     newpack->data = malloc(newpack->dlength);
 
+    // Copy data
     memcpy(newpack->data, &data[4], newpack->dlength);
 
+    // Print data
     printf("Packet data:\n");
     for (size_t i = 0; i < newpack->dlength; i++) {
         printf("%02X ", newpack->data[i]);
@@ -121,4 +126,3 @@ struct Packet* generate_packet(uint8_t* data)
 
     return newpack;
 }
-
