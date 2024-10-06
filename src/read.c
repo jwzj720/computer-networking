@@ -4,8 +4,8 @@
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) // added userdata for struct
 {
     struct ReadData* rd = (struct ReadData*) user;
-  //  printf("READRATE: %"PRIu32" ; ",rd->READRATE);
-   // printf("Tick: %"PRIu32" ; ",tick);
+    printf("READRATE: %"PRIu32" ; ",rd->READRATE);
+    printf("Tick: %"PRIu32" ; ",tick);
     if(!(rd->run))
     
     {
@@ -30,14 +30,16 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
         // it is probably one that we want to ignore.
         if ((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE)
         {
-  //          printf("Level: %u ;\n", level);
+            printf("Level: %u ;\n", level);
             // Counter doesn't change, should get data counter/8.
 
             // Get the current int to be looking at, as well as the bit position
             int element = rd->counter/BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             // Bit shift expected value to appropriate location
-            rd->data[element] |= ((level ? 0 : 1) << (BIT_COUNT-shift));
+            rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT-1-shift));
+	    printf("pos: %d ;",shift);
+  	    printf("element: %"PRIu8"\n",rd->data[element]);
              // Add the level value to the values counter
             rd->counter++;
             rd->ptime = tick;
@@ -100,6 +102,7 @@ uint8_t* read_bits(struct ReadData* rd)
     }
     time_sleep(.5);
     //Parse out stop sequence
+    printf("Data read");
     return rd->data;
 }
 
@@ -121,7 +124,7 @@ struct Packet* generate_packet(uint8_t* data)
 
     //Put the remaining data into the newpack->data spot.
     memcpy(newpack->data, &data[4],newpack->dlength);
-
+//    print_packet_binary((uint8_t*)newpack);
     //Packet has been created, now return
 
     return newpack;
