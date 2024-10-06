@@ -56,7 +56,7 @@ struct ReadData* create_reader()
     rd->last_bit_time = 0;
 
     double bit_time_us = 1e6 / BAUD_RATE;
-    rd->timeout_duration = (uint32_t)(3 * bit_time_us); 
+    rd->timeout_duration = (uint32_t)(30 * bit_time_us); 
 
     return rd;
 }
@@ -82,9 +82,9 @@ uint8_t* read_bits(struct ReadData* rd)
         uint32_t current_time = get_current_tick(1);
         if ((current_time - rd->last_bit_time) > rd->timeout_duration)
         {
-            rd->run = 0; // Stop reading due to timeout
+            rd->run = 0; 
         }
-        time_sleep(0.001); // Sleep to reduce CPU usage
+        time_sleep(0.001); 
     }
     printf("Data read\n");
     return rd->data;
