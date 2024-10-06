@@ -45,7 +45,7 @@ int relay(struct Packet* pack)
     };
     uint8_t temp_pack[50];
     // Generate a new packet to be sent to next user
-    int packet_size = build_packet(pack->sending_addy, pack->receiving_addy, pack->data, sizeof(pack->data), temp_pack);
+    int packet_size = build_packet(pack->sending_addy, pack->receiving_addy, pack->data, pack->dlength, temp_pack);
 
     //Send the packet!
     // This currently expects a different packet object. Need to generalize with packet struct.

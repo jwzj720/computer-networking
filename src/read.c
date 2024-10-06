@@ -23,7 +23,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
     {
         if ((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE)
         {
-    	    printf("%x", level);
+    	   // printf("%x", level);
             int element = rd->counter/BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT-1-shift));
@@ -94,6 +94,7 @@ struct Packet* generate_packet(uint8_t* data)
     newpack->sending_addy = data[2];
     newpack->receiving_addy = data[3];
     newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength); //This multiplies by uint16_t, potential undefined behavior?
+    printf("newpack->dlength is %zu\n", newpack->dlength);
     //Put the remaining data into the newpack->data spot.
     memcpy(newpack->data, &data[4],newpack->dlength);
     //Packet has been created, now return

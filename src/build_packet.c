@@ -17,7 +17,7 @@ int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size
     packet[offset++] = receiver_addr;
 
     memcpy(&packet[offset], data, data_size);
-	
+    printf("Data size when build_packet called: %zu", data_size);    
     return 4 + data_size;
 
 }
