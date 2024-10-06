@@ -107,7 +107,12 @@ void* read_thread(void* app_dati)
         // TODO: if app[0]:
         read_message(packet->data, packet->dlength, &decoded_len);
 
-        send_response(app_data, packet->data, decoded_len);
+	pthread_mutex_unlock(&send_mutex);
+	usleep(500);
+	pthread_mutex_lock(&send_mutex);
+        //send_response(app_data, packet->data, decoded_len);
+	
+	time_sleep(0.1);
 
 	    free(packet->data);
 	    free(packet);
@@ -167,6 +172,7 @@ void* send_thread(void* app_dati) // passing app_data in instead of pinit
         app_data->send_time = start_time;
 
         pthread_mutex_unlock(&send_mutex);
+	usleep(50000);
     }
     return NULL;
 }
@@ -211,7 +217,8 @@ int main(int argc, char *argv[])
 
     // App Selection
     app_data.selected_application = 0; //app_select()-1; // Subtract 1 for offbyone error
-
+	
+    pthread_mutex_lock(&send_mutex);
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
         perror("Could not create reading thread");
