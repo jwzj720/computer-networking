@@ -1,13 +1,14 @@
 // main.c
+#include "send.h"
 #include "encoding.h"
 #include <pthread.h>
 #include "read.h"
 #include "build_packet.h"
 #include "router.h"
 
-#define BOOKSIZE 2
+#define BOOKSIZE 3
 
-struct User *addressBook[BOOKSIZE]; /* pointer table */
+struct User* addressBook[BOOKSIZE]; /* pointer table */
 
 pthread_t tid[BOOKSIZE];
 pthread_t write_thread;
@@ -38,11 +39,11 @@ int relay(struct Packet* pack)
 
     // Find the destination for packet in the lookup table
     struct User* dest;
-    if (dest = lookup(pack->receiving_addy) == NULL){
+    if ((dest = lookup(pack->receiving_addy)) == NULL){
         fprintf(stderr, "Intended recipient not known by router.\n");
         return 1;
     };
-    uint8_t* temp_pack;
+    uint8_t temp_pack[50];
     // Generate a new packet to be sent to next user
     int packet_size = build_packet(pack->sending_addy, pack->receiving_addy, pack->data, sizeof(pack->data), temp_pack);
 
@@ -66,6 +67,8 @@ void* read_thread(void* port)
     
     // Register the callback with user data
     int id = callback_ex(pinit, user->GPIO_IN, EITHER_EDGE, get_bit, rd);
+    
+    printf("Created thread for user %"PRIu8"\n",user->ID);
 
     // THIS is the per message read loop
     while(1)
@@ -75,12 +78,15 @@ void* read_thread(void* port)
 
         // Generate the packet
         struct Packet* packet = generate_packet(rd->data);
+	printf("Received packet from user %"PRIu8"\n",user->ID);
 
+	// Print out the packet that was received
+	print_packet_debug(packet->data,packet->dlength);
         // Lock the thread so no other threads will try to relay at the same time.
         //pthread_mutex_lock(&lock);
         // Relay the data to user.
         if (relay(packet) !=0){
-            printf("Message relay error\n")
+            printf("Message relay error\n");
         }
 
         //Unlock the thread so that other threads can relay
@@ -113,17 +119,29 @@ int main()
     set_mode(pinit, GPIO_RECEIVE_1, PI_INPUT);
     set_mode(pinit, GPIO_SEND_2, PI_OUTPUT);
     set_mode(pinit, GPIO_RECEIVE_2, PI_INPUT);
+    set_mode(pinit, GPIO_SEND_3, PI_OUTPUT);
+    set_mode(pinit, GPIO_RECEIVE_3, PI_INPUT);
 
     // Populate Addressbook of users
+    //Allocate memory
+    addressBook[0] = (struct User*) malloc(sizeof(struct User*));
+    addressBook[1] = (struct User*) malloc(sizeof(struct User*));
+    addressBook[2] = (struct User*) malloc(sizeof(struct User*));
+
     addressBook[0]->GPIO_OUT = GPIO_SEND_1;
     addressBook[0]->GPIO_IN = GPIO_RECEIVE_1;
-    addressBook[0]->ID = 1;
+    addressBook[0]->ID = 0x01;
     addressBook[0]->next = addressBook[1];
 
     addressBook[1]->GPIO_OUT = GPIO_SEND_2;
     addressBook[1]->GPIO_IN = GPIO_RECEIVE_2;
-    addressBook[1]->ID = 2;
+    addressBook[1]->ID = 0x02;
     addressBook[1]->next = NULL;
+    
+    addressBook[2]->GPIO_OUT = GPIO_SEND_3;
+    addressBook[2]->GPIO_IN = GPIO_RECEIVE_3;
+    addressBook[2]->ID = 0x03;
+    addressBook[2]->next = NULL;
     // Create threads, one for each user
 
     // Initialize thread locking
@@ -133,10 +151,10 @@ int main()
     } 
 
     for (int i = 0; i< BOOKSIZE;i++) { 
-        error = pthread_create(&(tid[i]), NULL, &read_thread, &addressBook[i]); 
+	printf("i=%d\n",i);
+        int error = pthread_create(&(tid[i]), NULL, &read_thread, addressBook[i]); 
         if (error != 0) 
             printf("\nThread can't be created : [%s]", strerror(error)); 
-        i++; 
     } 
 
     pthread_join(tid[0], NULL);

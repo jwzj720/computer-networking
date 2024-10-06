@@ -23,6 +23,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
     {
         if ((tick - rd->ptime) + (rd->READRATE * 0.25) > rd->READRATE)
         {
+    	    printf("%x", level);
             int element = rd->counter/BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT-1-shift));

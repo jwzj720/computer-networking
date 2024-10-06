@@ -11,6 +11,8 @@
 #define GPIO_RECEIVE_1 26
 #define GPIO_SEND_2 25
 #define GPIO_RECEIVE_2 24
+#define GPIO_SEND_3 23
+#define GPIO_RECEIVE_3 22
 
 struct User { /* address book: */
     struct User *next; /* next entry in chain */
@@ -20,6 +22,5 @@ struct User { /* address book: */
 };
 
 
-int router(Packet* packet, uint8_t device_addr);
 
 #endif /*ROUTER_H*/
