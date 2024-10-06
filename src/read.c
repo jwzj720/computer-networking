@@ -1,9 +1,9 @@
 #include "read.h"
 
-void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
-{
-    struct ReadData* rd = (struct ReadData*) user;
+struct ReadData* rd = NULL; // Global variable to hold ReadData
 
+void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick)
+{
     if (!(rd->run))
     {
         return;
@@ -26,7 +26,6 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
             int element = rd->counter / BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             rd->data[element] |= ((level ? 0x00 : 0x01) << (BIT_COUNT - 1 - shift));
-
             rd->counter++;
             rd->ptime = tick;
             rd->last_bit_time = tick; // Update last_bit_time when a bit is received
@@ -42,7 +41,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
 
 struct ReadData* create_reader()
 {
-    struct ReadData *rd = malloc(sizeof(struct ReadData));
+    rd = malloc(sizeof(struct ReadData));
     rd->READRATE = 0;
     rd->ptime = 0;
     rd->tick1 = 0;
@@ -76,15 +75,14 @@ void reset_reader(struct ReadData* rd)
 
 uint8_t* read_bits(struct ReadData* rd)
 {
-    rd->last_bit_time = gpioTick(); // Initialize last_bit_time
+    rd->last_bit_time = get_current_tick(1); 
     while (rd->run)
     {
-        uint32_t current_time = gpioTick();
+        uint32_t current_time = get_current_tick(1);
         if ((current_time - rd->last_bit_time) > rd->timeout_duration)
         {
-            rd->run = 0; // Stop reading due to timeout
+            rd->run = 0;
         }
-        time_sleep(0.001); // Sleep to reduce CPU usage
     }
     printf("Data read\n");
     return rd->data;
