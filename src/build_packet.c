@@ -30,6 +30,20 @@ void print_packet_debug(uint8_t *packet, size_t byte_size) {
     printf("\n");
 }
 
+void print_byte_binary(uint8_t byte) {
+    for (int i = 7; i >= 0; i--) {
+        printf("%c", (byte & (1 << i)) ? '1' : '0');
+    }
+}
+
+void print_packet_binary(uint8_t packet[50]) {
+    for (int i = 0; i < 50; i++) {
+        print_byte_binary(packet[i]);
+        printf(" "); 
+    }
+    printf("\n");
+}
+
 int compare_packets(uint8_t *packet1, uint8_t *packet2, size_t size) {
     for (size_t i = 0; i < size; i++) {
         if (packet1[i] != packet2[i]) {

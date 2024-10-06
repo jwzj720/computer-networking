@@ -37,7 +37,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user) /
             int element = rd->counter/BIT_COUNT;
             int shift = rd->counter % BIT_COUNT;
             // Bit shift expected value to appropriate location
-            rd->data[element] |= ((level ? 0 : 1) << (BIT_COUNT-shift));
+            rd->data[element] |= ((level ? 0 : 1) << (BIT_COUNT - 1 - shift));
              // Add the level value to the values counter
             rd->counter++;
             rd->ptime = tick;
