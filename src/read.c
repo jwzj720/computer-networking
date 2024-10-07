@@ -65,22 +65,6 @@ void reset_reader(struct ReadData* rd)
     memset(rd->data, 0, sizeof(uint8_t) * MAX_BYTES);
 }
 
-<<<<<<< HEAD
-void reset_packet(struct ReadData* rd)
-{
-//	printf("Resetting values...\n");
-    rd->READRATE = 0;
-    rd->ptime = 0;
-    rd->tick1 = 0;
-    rd->rateset = 0;
-    rd->counter = 0;
-    rd->values = 0;
-    rd->run = 1;
-    memset(rd->data, 0, sizeof(uint8_t) * MAX_BYTES);
-}
-
-=======
->>>>>>> main
 uint8_t* read_bits(struct ReadData* rd)
 {
     while (rd->run)
@@ -90,25 +74,14 @@ uint8_t* read_bits(struct ReadData* rd)
     time_sleep(.5);
     //Parse out stop sequence
     printf("Data read\n");
-<<<<<<< HEAD
-   // uint8_t* data_copy = malloc(MAX_BYTES * sizeof(uint8_t));
-    //memcpy(data_copy, rd->data, MAX_BYTES * sizeof(uint8_t));    
-   // return data_copy;i
-    printf("read_bits data: ");
-    print_packet_binary(rd->data);
-=======
->>>>>>> main
     return rd->data;
 }
 
 
-<<<<<<< HEAD
 /*
 * Take read data and convert it to packets
 * Right now this funciton re-allocates memory every packet receipt.
 */
-=======
->>>>>>> main
 struct Packet* generate_packet(uint8_t* data)
 {
     struct Packet* newpack = malloc(sizeof(struct Packet));
