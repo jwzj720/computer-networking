@@ -74,7 +74,7 @@ void tail(int out_pin, int pi, int half_bit_time_us)
         usleep(half_bit_time_us);   // Sleep for half bit time
 
         gpio_write(pi, out_pin, 0);  // Set pin LOW
-        usleep(half_bit_time_us);   // Sleep for the remaining half bit time
+        usleep(half_bit_time_us, 1);   // Sleep for the remaining half bit time
     }
     // 0
     printf("0");
