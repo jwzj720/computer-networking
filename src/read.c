@@ -93,4 +93,3 @@ struct Packet* generate_packet(uint8_t* data)
     //Packet has been created, now return
     return newpack;
 }
-

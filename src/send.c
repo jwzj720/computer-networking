@@ -69,5 +69,3 @@ int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
 
     return 0;
 }
-
-
