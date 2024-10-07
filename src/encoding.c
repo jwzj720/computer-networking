@@ -7,50 +7,47 @@
 /*
 Application to take in text and return it as a uint8_t array of hex values
 */
-uint8_t text_to_bytes(){
+uint8_t text_to_bytes(size_t* len){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     printf("Please enter a message: ");
     fgets(input,sizeof(input),stdin);
 
-    size_t len = strlen(input); // get length of input
-    if (input[len-1] == '\n') input[len-1] = '\0';  // Remove newline character
-    len = strlen(input);
+    *len = strlen(input); // get length of input
+    if (input[*len-1] == '\n') input[*len-1] = '\0';  // Remove newline character
+    *len = strlen(input);
 
     // Allocate memory for the byte list (uint8_t array)
-    uint8_t* hexList = malloc(len * sizeof(uint8_t));
+    uint8_t* hexList = malloc(*len * sizeof(uint8_t));
 
     // convert each char to byte and add to the list
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < *len; i++) {
         hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
     }
 
     printf("Hex values: ");
-    for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < *len; i++) {
         printf("%02X ", hexList[i]); // Print each byte in hex format
     }
+
     printf("\n");
 
-    return *hexList; // return the byte array
+    return hexList; // return the byte array
 }
 
 /*
 Application to turn hex vals back to ASCII text
-
-INPUTS:
-bytes: uint8_t* 
-len: size_t length of byte array
-text_out: pointer for the byte array
 */
-size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
-    *text_out = malloc(len+1);
+uint8_t bytes_to_text(uint8_t* bytes, size_t len){
+    char* text = (char*)malloc(len+1);
 
     for (size_t i = 0; i < len; i++) {
-        (*text_out)[i] = (char)bytes[i];
+        text[i] = (char)bytes[i];  // convert each byte to a char
     }
 
-    (*text_out)[len] = '\0';
-    return len;
+    text[len] = '\0'; 
+
+    return text;
 }
 
 // -------------- HAMMING 8,4 ENCODING AND DECODING --------------
@@ -60,52 +57,28 @@ size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
 // encoding inserts redundant bits in inputted string and then returns for transmission
 // decoding checks for corruption, repairs if so, and then returns output sans redundant bits
 
-// this function calculates and inserts parity bits for a single 4-bit data block in accordince with hamming 8,4
+// this function calculates and inserts parity bits for a single 4-bit data block in accordince with hamming 8,4 (this doubles payload length)
 
 // INPUTS:
     // nibble: a half byte of data to be returned as two bytes representing a nibble of og data each
 
 uint8_t hamload(uint8_t payload)
-{ 
-    uint8_t encoded = 0;
-    if (strlen(data_block) != DATA_BLOCK_SIZE) {
-        fprintf(stderr, "Data block must be exactly 4 bits.\n");
-        return NULL;
-    }
-    char* codeword = malloc(CODEWORD_SIZE + 1); // 8-bit codeword + null terminator
+{
+    // setup
+    size_t len = strlen(payload);
+    size_t blocks = (len + DATA_BLOCK_SIZE - 1) / DATA_BLOCK_SIZE; // ceiling division so padding is added to cases where length is not divisible by 4
+    size_t encoded_len = blocks * CODEWORD_SIZE;
+    uint8_t encoded = malloc(encoded_len + 1);
 
-    // Assign position bits
-    // Position: 1 2 3 4 5 6 7
-    // Bits:     P1 P2 D1 P3 D2 D3 D4
-    codeword[2] = data_block[0];
-    codeword[4] = data_block[1];
-    codeword[5] = data_block[2];
-    codeword[6] = data_block[3];
 
-    // Calculate parity bits
-    // P1 covers bits 1,3,5,7 (P1, D1, D2, D4)
-    int P1 = (data_block[0] - '0') ^ (data_block[1] - '0') ^ (data_block[3] - '0');
-    // P2 covers bits 2,3,6,7 (P2, D1, D3, D4)
-    int P2 = (data_block[0] - '0') ^ (data_block[2] - '0') ^ (data_block[3] - '0');
-    // P3 covers bits 4,5,6,7 (P3, D2, D3, D4)
-    int P3 = (data_block[1] - '0') ^ (data_block[2] - '0') ^ (data_block[3] - '0');
+    // iterate through payload, select item, divide it, encode it
 
-    codeword[0] = P1 + '0'; // P1
-    codeword[1] = P2 + '0'; // P2
-    codeword[3] = P3 + '0'; // P3
 
-    codeword[7] = '\0'; // Null terminator for string
-
-    return codeword;
-    }
+}
 
 // function to encode entire binary string with hamming (7,4)
-char* hamming_encode_full(char* binary_string)
+uint8_t hamming_encode(uint8_t pay_nibble)
 {
-    size_t length = strlen(binary_string);
-    size_t blocks = (length + DATA_BLOCK_SIZE - 1) / DATA_BLOCK_SIZE; // ceiling division so padding is added to cases where length is not divisible by 4
-    size_t encoded_length = blocks * CODEWORD_SIZE;
-    char* encoded_string = malloc(encoded_length + 1);
     
     //encoded_string[0] = '\0'; // Initialize as empty string
 
@@ -134,6 +107,19 @@ char* hamming_encode_full(char* binary_string)
 encoded_string[encoded_length] = '\0'; // Null-terminate the final encoded string
 return encoded_string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // function to decode individual hamming (7,4) binary strings
 char* hamming_decode(char* codeword)
