@@ -12,6 +12,12 @@ int send_to_file(int pi)
     uint8_t packet[50];
     size_t data_size = sizeof(data);
     int packet_size = build_packet(device_addr, receiver_addr, data, data_size, packet);
-
+    
+    if (send_bytes(packet, packet_size, GPIO_SEND, pi) != 0)
+    {
+        fprintf(stderr, "Failed to send packet\n");
+        return 1;
+    }
+    
     return 0;
 }
