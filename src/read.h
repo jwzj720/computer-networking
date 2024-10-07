@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "build_packet.h"
-#include "objects.h"
 
 #define BIT_COUNT 8
 #define MAX_BYTES 50

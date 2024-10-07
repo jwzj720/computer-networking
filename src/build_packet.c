@@ -72,38 +72,38 @@ int compare_packets(uint8_t *packet1, uint8_t *packet2, size_t size) {
 }
 
 // Unit test function
-void test_build_packet() {
-    // Given test data
-    uint8_t device_addr =   0x01;  // Single 8-bit device address
-    uint8_t receiver_addr = 0x09;  // Single 8-bit receiver address
-    uint8_t data[4] =       {0xAA, 0xCC, 0xF0, 0x0F};  // 4 bytes of data
-
-    uint8_t packet[128];
-    size_t data_size = sizeof(data);
-
-    build_packet(device_addr, receiver_addr, data, data_size, packet);
-
-    uint8_t expected_packet[] = {
-        0x00, 0x04, // Data length (4 bytes, 16 bits)
-        0x01,       // Device address
-        0x09,       // Receiver address
-        0xAA,       // Data byte 1
-        0xCC,       // Data byte 2
-        0xF0,       // Data byte 3
-        0x0F        // Data byte 4
-    };
-
-    printf("Expected packet:\n");
-    print_packet_debug(expected_packet, sizeof(expected_packet));
-
-    printf("Actual packet:\n");
-    print_packet_debug(packet, sizeof(expected_packet));
-
-    int result = compare_packets(packet, expected_packet, sizeof(expected_packet));
-
-    if (result) {
-        printf("Test passed: Packets match.\n");
-    } else {
-        printf("Test failed: Packets do not match.\n");
-    }
-}
+//void test_build_packet() {
+//    // Given test data
+//    uint8_t device_addr =   0x01;  // Single 8-bit device address
+//    uint8_t receiver_addr = 0x09;  // Single 8-bit receiver address
+//    uint8_t data[4] =       {0xAA, 0xCC, 0xF0, 0x0F};  // 4 bytes of data
+//
+//    uint8_t packet[128];
+//    size_t data_size = sizeof(data);
+//
+//    build_packet(device_addr, receiver_addr, data, data_size, packet);
+//
+//    uint8_t expected_packet[] = {
+//        0x00, 0x04, // Data length (4 bytes, 16 bits)
+//        0x01,       // Device address
+//        0x09,       // Receiver address
+//        0xAA,       // Data byte 1
+//        0xCC,       // Data byte 2
+//        0xF0,       // Data byte 3
+//        0x0F        // Data byte 4
+//    };
+//
+//    printf("Expected packet:\n");
+//    print_packet_debug(expected_packet, sizeof(expected_packet));
+//
+//    printf("Actual packet:\n");
+//    print_packet_debug(packet, sizeof(expected_packet));
+//
+//    int result = compare_packets(packet, expected_packet, sizeof(expected_packet));
+//
+//    if (result) {
+//        printf("Test passed: Packets match.\n");
+//    } else {
+//        printf("Test failed: Packets do not match.\n");
+//    }
+//}

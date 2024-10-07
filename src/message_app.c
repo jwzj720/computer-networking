@@ -70,6 +70,7 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
 int start_message()
 {
     printf("Message app started");
+    return 0;
 }
 
 uint8_t* send_message(size_t* data_size)

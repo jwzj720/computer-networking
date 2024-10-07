@@ -158,9 +158,9 @@ int main()
 
         if (app_data->selected_application == 0) // Chat application
             {
-                start_message(&app_data); //Run the message app
-                // printf("Text application\n");
-                // fflush(stdin);
+                //start_message(&app_data); //Run the message app
+                printf("Text application\n");
+                fflush(stdin);
                 // payload = send_message(&data_size);
             }
             else if (app_data->selected_application == 1) // Pong application

@@ -24,6 +24,11 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   int p1_ready,p2_ready = 0;
 
   app_data = parent_data;
+
+  app_data->sent_packet->sending_addy = 0x01;
+  char* receiver_name;
+  app_data->sent_packet->receiving_addy = select_address(&receiver_name);
+
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
   initscr();

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #define NUM_GPIO_PAIRS 4 //Number of device ports
 
