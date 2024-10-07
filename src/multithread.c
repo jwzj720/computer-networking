@@ -3,6 +3,7 @@
 #include "transmission.h"
 #include <pthread.h>
 #include "read.h"
+#include "build_packet.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -38,15 +39,16 @@ void* read_thread(void* pinit)
     while(1)
     {
         // read a message
-        if (read_to_file(rd)!=0)
-        {
-            printf("Message read error.\n");
-            return NULL;
-        }
-        //pthread_mutex_lock(&read_mutex);
+        read_bits(rd);
+        
+        // Data received, lock threading to hold reading until packet is interpreted.
+        // We don't want rd->data to be overwritten during this time.
+        pthread_mutex_lock(&read_mutex);
+        struct Packet* packet = generate_packet(rd->data);
+        print_packet_debug(packet->data,packet->dlength);
+
         //reset readrate and run variables each iteration.
         reset_reader(rd);
-	printf("new readrate: %"PRIu32"\n",rd->READRATE);
         //pthread_mutex_unlock(&read_mutex);
         
     }
@@ -55,7 +57,7 @@ void* read_thread(void* pinit)
     callback_cancel(id);
 
     // Free Data
-    free(rd->data);
+    free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
     free(rd);
 
     
@@ -65,12 +67,12 @@ void* read_thread(void* pinit)
 
 void* send_thread(void* pinit)
 {
-    while(1)
-    {
-        //pthread_mutex_lock(&send_mutex);
-        send_to_file(*(int*)pinit);
-        //pthread_mutex_unlock(&send_mutex);
-    }
+    //while(1)
+    //{
+    //    //pthread_mutex_lock(&send_mutex);
+    send_to_file(*(int*)pinit);
+    //    //pthread_mutex_unlock(&send_mutex);
+    //}
     return NULL;
 }
 

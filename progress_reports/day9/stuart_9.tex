@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 9}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Encapsulate header/footer creation into link layer - Walt
+    \item Encode packets using uint8t bytes - Walt
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. - Stuart
+    \item Change Hamming encoding to 8-5 and working with uint8t. - Dan
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Finish debugging error correction with init link layer implementation (DONE) - Dan
+    \item Write method signiture for hamming (7,4) error correction to be used in network layer (DONE) - Dan
+    \item Work on send portion of network layer (IN PROGRESS) - Walt
+    \item Work on receive portion of network layer (IN PROGRESS) - Stuart
+    \item Continue routing table application layer (IN PROGRESS) - Walt/Stuart
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item We are having to make large refactoring changes to our code now that we are on the network layer. Previously, we had worked entirely in
+    characters, but are realizing it will be much cleaner and more efficient to work entirely in 8-bit integers, where we use bit masking to represent bits.
+    \item We have a good understanding of how our code is working now, and once we get the bit masking to work we are hopeful that it will be
+    easy to write the packets into memory and handle subsequent actions appropriately. 
+    \item This is an unfortunate setback in actually getting our network to communicate, but we believe the logic is much cleaner and more efficient with memory,
+    so the updates to our bit reading process will be worth it in terms of making our final product more understandable. 
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}
