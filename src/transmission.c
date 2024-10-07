@@ -2,6 +2,7 @@
 
 #include "transmission.h"
 #include "build_packet.h"
+#include "encoding.h"
 
 int send_to_file(int pi)
 {
@@ -15,34 +16,5 @@ int send_to_file(int pi)
 
     int packet_size = build_packet(device_addr, receiver_addr, payload, data_size, packet);
 
-    return 0;
-}
-
-int read_to_file(struct ReadData* rd)
-{
-    // read bits from line and store as char*
-    char* result =(char*) read_bits(rd);
-
-    // '10' should be removed here along with the trailing '0'
-    printf("Binary First Received: %s\n", result);
-
-    // remove '1111111' from the tail
-    char* cleaned = unpack(result);
-    //free(result);
-
-    // do error detection/correction and remove redundant data created in hamming encoding
-    char* hamming_decode = hamming_decode_full(cleaned);
-    free(cleaned);
-
-    // this should print the same result as the text_to_binary print on sending computer
-    printf("Hamming Decoded Binary: %s\n", hamming_decode);
-
-    // convert binary back to ASCII
-    char* final = binary_to_text(hamming_decode);
-    free(hamming_decode);
-
-    // print final message
-    printf( "Results: %s\n", final);
-    free(final);
     return 0;
 }
