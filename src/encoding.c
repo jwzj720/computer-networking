@@ -42,6 +42,8 @@ bytes: uint8_t*
 len: size_t length of byte array
 text_out: pointer for the byte array
 */
+
+/*
 size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
     *text_out = malloc(len+1);
 
@@ -52,7 +54,7 @@ size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
     (*text_out)[len] = '\0';
     return len;
 }
-
+*/
 // -------------- HAMMING 8,4 ENCODING AND DECODING --------------
 
 // based on (7,4) algorithm outlined here: https://www.geeksforgeeks.org/hamming-code-in-computer-network/ 
@@ -65,6 +67,7 @@ size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
 // INPUTS:
     // nibble: a half byte of data to be returned as two bytes representing a nibble of og data each
 
+/*
 uint8_t hamload(uint8_t payload)
 { 
     uint8_t encoded = 0;
@@ -98,8 +101,11 @@ uint8_t hamload(uint8_t payload)
 
     return codeword;
     }
+*/
+
 
 // function to encode entire binary string with hamming (7,4)
+/*
 char* hamming_encode_full(char* binary_string)
 {
     size_t length = strlen(binary_string);
@@ -257,3 +263,4 @@ char* unpack(char* unpack_me)
 
     return no_ones;
 }
+*/
