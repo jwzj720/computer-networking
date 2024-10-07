@@ -4,29 +4,44 @@
 
 // -------------- ASCII TEXT ENCODING AND DECODING --------------
 
-// function to turn text into ASCII byte array (much more efficient than bitstrings) = 1 byte/char
-// INPUTS:
-    // text: char* of ASCII text to be encoded
-    // bytes_out: pointer for the byte array (ensure preceded by &!)
+/*
+Application to take in text and return it as a uint8_t array of hex values
+*/
+uint8_t text_to_bytes(){
+    // collect user input
+    char input[MAX_INPUT_LENGTH + 1];
+    printf("Please enter a message: ");
+    fgets(input,sizeof(input),stdin);
 
-size_t text_to_bytes(const char* text, uint8_t** bytes_out){
-    size_t len = strlen(text); // get length of input string
-    *bytes_out = malloc(len); // allocate memory for byte array (deref)
-    
-    // fill the allocated array with ASCII values
-    for (size_t i = 0; i < len; i++){
-        (*bytes_out)[i] = (uint8_t)text[i];
+    size_t len = strlen(input); // get length of input
+    if (input[len-1] == '\n') input[len-1] = '\0';  // Remove newline character
+    len = strlen(input);
+
+    // Allocate memory for the byte list (uint8_t array)
+    uint8_t* hexList = malloc(len * sizeof(uint8_t));
+
+    // convert each char to byte and add to the list
+    for (size_t i = 0; i < len; i++) {
+        hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
     }
 
-    return len; // len of byte array
+    printf("Hex values: ");
+    for (size_t i = 0; i < len; i++) {
+        printf("%02X ", hexList[i]); // Print each byte in hex format
+    }
+    printf("\n");
+
+    return *hexList; // return the byte array
 }
 
-// function to turn ASCII byte array back to text
-// INPUTS:
-    // bytes: uint8_t* 
-    // len: size_t length of byte array
-    // text_out: pointer for the byte array
+/*
+Application to turn hex vals back to ASCII text
 
+INPUTS:
+bytes: uint8_t* 
+len: size_t length of byte array
+text_out: pointer for the byte array
+*/
 size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
     *text_out = malloc(len+1);
 
@@ -49,7 +64,8 @@ size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
 
 // INPUTS:
     // nibble: a half byte of data to be returned as two bytes representing a nibble of og data each
-uint8_t hamming_encode(uint8_t nibble)
+
+uint8_t hamload(uint8_t payload)
 { 
     uint8_t encoded = 0;
     if (strlen(data_block) != DATA_BLOCK_SIZE) {

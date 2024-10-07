@@ -2,47 +2,19 @@
 
 #include "transmission.h"
 #include "build_packet.h"
+
 int send_to_file(int pi)
 {
-    // collect user input
-    //char input[MAX_INPUT_LENGTH + 1];
-    //printf("Enter text to send: ");
-    //fgets(input,sizeof(input),stdin);
-
-    // remove newline and insert null
-    //size_t input_len = strlen(input);
-    //if (input[input_len - 1]=='\n'){
-    //    input[input_len - 1] = '\0';
-    //}
-
-
-    // encode ASCII to binary, add parity bits according to hamming (7,4), add leading and trailing bits
-    //char* binary = text_to_binary(input);
-    //free(input);
     uint8_t device_addr =   0x01;  // Single 8-bit device address
     uint8_t receiver_addr = 0x09;  // Single 8-bit receiver address
-    uint8_t data[4] =       {0xAA, 0xCC, 0xF0, 0x0F};  // 4 bytes of data
 
+    uint8_t payload = text_to_bytes();
+    // uint8_t hamload = 
     uint8_t packet[50];
-    size_t data_size = sizeof(data);
-    int packet_size = build_packet(device_addr, receiver_addr, data, data_size, packet);
-    printf("Packet size: %d\n", packet_size);
-    print_packet_binary(packet);
-    //printf("text_to_binary result (COMPARE THIS) %s\n", binary);
+    size_t data_size = sizeof(payload);
 
-    //char* hamming_binary = hamming_encode_full(binary);
-    
-    //free(binary);
-    //char* packed = pack(hamming_binary);
-    //free(hamming_binary);
-    
+    int packet_size = build_packet(device_addr, receiver_addr, payload, data_size, packet);
 
-   // send data over the line (and don't worry if one bit is flipped in transmission!)
-    //if (send_bytes(packet, packet_size, GPIO_SEND, pi)!=0)
-    //{
-	//printf("Bit send error.\n");
-        //return 1;
-    //}
     return 0;
 }
 
