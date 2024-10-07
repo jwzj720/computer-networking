@@ -102,7 +102,7 @@ uint8_t* read_bits(struct ReadData* rd)
     }
     time_sleep(.5);
     //Parse out stop sequence
-    printf("Data read");
+    
     return rd->data;
 }
 
