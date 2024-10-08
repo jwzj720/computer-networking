@@ -31,7 +31,11 @@ void tail(int out_pin, int pi, int half_bit_time_us)
     // 0
     gpio_write(pi, out_pin, 0);  // Set pin LOW
     usleep(half_bit_time_us);   // Sleep for half bit time
+<<<<<<< HEAD
     gpio_write(pi, out_pin, 1); 
+=======
+    gpio_write(pi, out_pin,1);
+>>>>>>> 31a961bb87be52e22ce9f1438c7173c42861c629
 
 }
 int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
