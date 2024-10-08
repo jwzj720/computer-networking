@@ -118,7 +118,7 @@ int main()
     struct AppData app_data;
 
     // App Selection
-    app_data.selected_application = select_application(&send);
+    app_data.selected_application = select_application();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
