@@ -20,7 +20,7 @@ int pinit; // Variable for GPIO status.
 
 // Right now lookup acts like a linked list, goes through every value
 // Could be implemented to act like hash table with faster lookup
-struct User *lookup(int s)
+struct User *lookup(uint8_t s)
 {
     struct User *np;
     for (np = addressBook[0]; np != NULL; np = np->next)

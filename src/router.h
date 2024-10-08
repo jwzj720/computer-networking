@@ -14,7 +14,7 @@
 
 struct User { /* address book: */
     struct User *next; /* next entry in chain */
-    int ID; /* Id described in message */
+    uint8_t ID; /* Id described in message */
     int GPIO_OUT; /* Port to write out packets to */
     int GPIO_IN; /* Port Receiving from */
 };
