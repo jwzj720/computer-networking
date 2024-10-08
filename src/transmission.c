@@ -2,6 +2,7 @@
 
 #include "transmission.h"
 #include "build_packet.h"
+#include "encoding.h"
 
 int send_to_file(int pi)
 {
@@ -14,6 +15,7 @@ int send_to_file(int pi)
     //
     printf("Size of packet %ld\n", data_size);
     uint8_t packet[50];
+    size_t data_size = sizeof(payload);
 
     int packet_size = build_packet(device_addr, receiver_addr, payload, data_size, packet);
     printf("packet size: %d\n", packet_size);

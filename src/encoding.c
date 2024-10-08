@@ -38,8 +38,10 @@ uint8_t* text_to_bytes(size_t* len){
 /*
 Application to turn hex vals back to ASCII text
 */
-char* bytes_to_text(uint8_t* bytes, size_t len){
-    char* text = (char*)malloc(len+1);
+
+/*
+size_t bytes_to_text(const uint8_t* bytes, size_t len, char** text_out){
+    *text_out = malloc(len+1);
 
     for (size_t i = 0; i < len; i++) {
         text[i] = (char)bytes[i];  // convert each byte to a char
@@ -49,7 +51,7 @@ char* bytes_to_text(uint8_t* bytes, size_t len){
 
     return text;
 }
-
+*/
 // -------------- HAMMING 8,4 ENCODING AND DECODING --------------
 
 // based on (7,4) algorithm outlined here: https://www.geeksforgeeks.org/hamming-code-in-computer-network/ 
@@ -62,25 +64,49 @@ char* bytes_to_text(uint8_t* bytes, size_t len){
 // INPUTS:
     // nibble: a half byte of data to be returned as two bytes representing a nibble of og data each
 
-// uint8_t hamload(uint8_t payload)
-// {
-//     // setup
-//     size_t len = strlen(payload);
-//     size_t blocks = (len + DATA_BLOCK_SIZE - 1) / DATA_BLOCK_SIZE; // ceiling division so padding is added to cases where length is not divisible by 4
-//     size_t encoded_len = blocks * CODEWORD_SIZE;
-//     uint8_t encoded = malloc(encoded_len + 1);
+uint8_t hamload(uint8_t payload)
+{ 
+    uint8_t encoded = 0;
+    if (strlen(data_block) != DATA_BLOCK_SIZE) {
+        fprintf(stderr, "Data block must be exactly 4 bits.\n");
+        return NULL;
+    }
+    char* codeword = malloc(CODEWORD_SIZE + 1); // 8-bit codeword + null terminator
 
+    // Assign position bits
+    // Position: 1 2 3 4 5 6 7
+    // Bits:     P1 P2 D1 P3 D2 D3 D4
+    codeword[2] = data_block[0];
+    codeword[4] = data_block[1];
+    codeword[5] = data_block[2];
+    codeword[6] = data_block[3];
 
-//     // iterate through payload, select item, divide it, encode it
+    // Calculate parity bits
+    // P1 covers bits 1,3,5,7 (P1, D1, D2, D4)
+    int P1 = (data_block[0] - '0') ^ (data_block[1] - '0') ^ (data_block[3] - '0');
+    // P2 covers bits 2,3,6,7 (P2, D1, D3, D4)
+    int P2 = (data_block[0] - '0') ^ (data_block[2] - '0') ^ (data_block[3] - '0');
+    // P3 covers bits 4,5,6,7 (P3, D2, D3, D4)
+    int P3 = (data_block[1] - '0') ^ (data_block[2] - '0') ^ (data_block[3] - '0');
 
+    codeword[0] = P1 + '0'; // P1
+    codeword[1] = P2 + '0'; // P2
+    codeword[3] = P3 + '0'; // P3
 
-// }
+    codeword[7] = '\0'; // Null terminator for string
 
-// // function to encode entire binary string with hamming (7,4)
-// uint8_t hamming_encode(uint8_t pay_nibble)
-// {
+    return codeword;
+    }
+
+// function to encode entire binary string with hamming (7,4)
+char* hamming_encode_full(char* binary_string)
+{
+    size_t length = strlen(binary_string);
+    size_t blocks = (length + DATA_BLOCK_SIZE - 1) / DATA_BLOCK_SIZE; // ceiling division so padding is added to cases where length is not divisible by 4
+    size_t encoded_length = blocks * CODEWORD_SIZE;
+    char* encoded_string = malloc(encoded_length + 1);
     
-//     //encoded_string[0] = '\0'; // Initialize as empty string
+    //encoded_string[0] = '\0'; // Initialize as empty string
 
 //     for (size_t i = 0; i < blocks; i++) {
 //         char data_block[DATA_BLOCK_SIZE + 1] = {'0', '0', '0', '0', '\0'}; // Initialize with '0's
@@ -241,5 +267,5 @@ char* bytes_to_text(uint8_t* bytes, size_t len){
 
 //     printf("ones removed: %s\n", no_ones);
 
-//     return no_ones;
-// }
+    return no_ones;
+}

@@ -1,0 +1,120 @@
+\documentclass[10pt, letterpaper, twocolumn]{article}
+\usepackage[margin=1in]{geometry}
+
+% Use CC style guide fonts rather than default fonts
+\usepackage{fontspec}
+\setmainfont[Ligatures=TeX]{Crimson}
+\setsansfont[Ligatures=TeX]{Montserrat}
+
+\begin{document}
+
+\twocolumn[ \centerline{\Huge 
+%%%% Title
+Final Paper Template 
+}
+\vspace{1cm}
+\centerline{
+    
+%%%% Team of 3 authors block
+\begin{tabular}{ccc}
+Alex the Bear     & Laurie Sloth        & Danielle Ellsworth            \\
+alex@dellswor.net & laurie@dellswor.net & dellsworth@coloradocollege.edu\\
+\end{tabular}
+
+%%%% Team of 4 authors block
+%\begin{tabular}{cc}
+%Alex the Bear                  & Laurie Sloth        \\
+%alex@dellswor.net              & laurie@dellswor.net \\
+%\\
+%Danielle Ellsworth             & Leapord             \\
+%dellsworth@coloradocollege.edu & \\
+%\end{tabular}
+
+\vspace{1cm}
+} ]
+
+%% General Notes:
+%%
+%% Please avoid including a link to your git repo in thepaper. With your 
+%% group's permission, I would like to share these papers with future 
+%% deliveries of this class.
+%%
+%% The paper length (less citations and appendicies) is capped at not more
+%% than 10 pages. A typical conference paper length is 6 to 8 pages. There's
+%% not space to say everything, so you'll need to be a little choosy about
+%% what goes in the paper and what doesn't. STEM papers tend to have a much 
+%% more staccato writing style than humanities works, in part, due to the 
+%% tension between the amount of content to present and the short page length
+%% to present in.
+
+\begin{abstract}
+%% In a short paragraph or two, how would you summarize what a reader will
+%% learn from reading your paper.
+\end{abstract}
+
+\section{Introduction}
+%% Ground the reader in what this paper is about. They come from your
+%% pre-CP341 understanding of computer networks... They won't know that 
+%% signalling is a problem, or addressing, or the kind of data network
+%% applications send. The details will be in the later sections, but we need
+%% something to invite the reader to start thinking about these problems.
+
+
+\section{Approach}
+%% Like your progress through the project for this class, real research is a
+%% terrible twisted mess of false starts and deadends... Any paper/book that
+%% lays out a structured path through the research is a lie invented only after
+%% the research is done. It's a narrative device that helps the reader connect
+%% and order the ideas in the rest of the paper/book.
+
+%% This approach section in this paper is intended to serve this narrative
+%% purpose. You'll probably want to introduce a layered networking model and 
+%% the role of each layer. You'll probably also want to outline the really 
+%% high level details around how your layers interface with one another.
+%% You'll likely want to introduce the hardware and project goals.
+
+
+\section{Link Layer}
+%% How does your link layer work? You shouldn't show code. You should talk
+%% about your algorthims and how you found/solved certain problems. You 
+%% probably need to talk about what the waves your writing/reading look like
+%% and how that maps to data. You should be able to say things about what the 
+%% limitations of your link layer are. This section needs to include bps 
+%% you've measured and what kinds of error conditions are detected/handled.
+
+
+\section{Network Layer}
+%% How does your network layer work? You shouldn't show code. You should talk
+%% about your algorthims and how you found/solved certain problems. You should 
+%% be able to say things about what the limitations of your network layer are.
+%% This section needs to talk about supported topologies, the structure of 
+%% addresses, how the forwarding tables are maintained, how topology changes 
+%% (e.g. a link coming up/going down) are handled). How much overhead does
+%% your network layer add?
+
+
+\section{Applications}
+%% Talk about your applications in this section (and transport layer if you
+%% implemented one). 
+
+\subsection{Application 1}
+%% What does your application do? What messages are needed? What is their
+%% structure?
+
+\subsection{Application 2}
+%% What does your application do? What messages are needed? What is their
+%% structure?
+
+
+\section{Future Work}
+%% If you had more time, what would you try to do/improve/understand next?
+
+
+\section{Conclusion}
+%% 1 or 2 paragraphs to summarize what was presented/learned.
+
+\bibliographystyle{acm}
+\bibliography{refs.bib}
+
+\end{document}
+
