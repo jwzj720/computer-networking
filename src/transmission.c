@@ -18,7 +18,7 @@ int send_to_file(int pi)
     printf("Size of encoded packet %ld\n", encoded_length);
 
     uint8_t packet[50];
-    size_t data_size = sizeof(payload);
+    //size_t data_size = sizeof(payload);
     int packet_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
 
     if (send_bytes(packet, packet_size, GPIO_SEND, pi) != 0)
