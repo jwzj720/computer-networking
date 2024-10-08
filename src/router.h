@@ -12,6 +12,14 @@
 #define GPIO_SEND_2 25
 #define GPIO_RECEIVE_2 24
 
+struct User { /* address book: */
+    struct User *next; /* next entry in chain */
+    int ID; /* Id described in message */
+    int GPIO_OUT; /* Port to write out packets to */
+    int GPIO_IN; /* Port Receiving from */
+};
+
+
 int router(Packet* packet, uint8_t device_addr);
 
 #endif /*ROUTER_H*/

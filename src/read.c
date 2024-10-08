@@ -38,9 +38,10 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
     return;
 }
 
-struct ReadData* create_reader()
+struct ReadData* create_reader(int this_id)
 {
     struct ReadData *rd = malloc(sizeof(struct ReadData));
+    rd->id = this_id;
     rd->READRATE = 0;
     rd->ptime = 0;
     rd->tick1 = 0;

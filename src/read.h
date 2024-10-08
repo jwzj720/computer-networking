@@ -15,6 +15,7 @@
  * in order to decode bits.
  */
 struct ReadData{
+    int id; /* the ID of the user from which data is being read */
     uint32_t READRATE;
     uint32_t ptime;
     uint32_t tick1;
@@ -35,7 +36,7 @@ struct Packet{
     uint8_t* data;
 };
 
-struct ReadData* create_reader();
+struct ReadData* create_reader(int this_id);
 void reset_reader(struct ReadData* rd);
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
 uint8_t* read_bits(struct ReadData* rd); /* An example function declaration */
