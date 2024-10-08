@@ -32,7 +32,7 @@ void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user)
 	    
             if ((rd->data[element] == 0xFF) || (rd->counter == MAX_BYTES*BIT_COUNT))
             {
-		        rd->run=0;
+                rd->run=0;
             }
         }
     }
@@ -100,4 +100,3 @@ struct Packet* generate_packet(uint8_t* data)
     //Packet has been created, now return
     return newpack;
 }
-

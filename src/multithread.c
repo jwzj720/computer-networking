@@ -47,8 +47,14 @@ void* read_thread(void* pinit)
         struct Packet* packet = generate_packet(rd->data);
         print_packet_debug(packet->data,packet->dlength);
 
+<<<<<<< HEAD
 	    free(packet->data);
 	    free(packet);
+=======
+        free(packet->data);
+        free(packet);
+        
+>>>>>>> byte_based
         //reset readrate and run variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
@@ -108,6 +114,7 @@ int main()
         perror("Could not create reading thread");
         return 1;
     }
+    time_sleep(.5);
 
     if(pthread_create(&write_thread, NULL, send_thread, &pinit) != 0) {
         perror("Could not create writing thread");
