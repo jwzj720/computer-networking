@@ -70,8 +70,8 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
 uint8_t* send_message(size_t* data_size)
 {
     // these just allocate right?
-    uint8_t device_addr;
-    uint8_t receiver_addr;
+    uint8_t device_addr = 0x01;
+    uint8_t receiver_addr = 0x00;
 
     size_t payload_length;
     uint8_t* payload = text_to_bytes(&payload_length);

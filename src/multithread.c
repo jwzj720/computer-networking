@@ -88,6 +88,7 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
         if (app_data->selected_application == 0) // Chat application
         {
             printf("Text application\n");
+	    fflush(stdin);
             payload = send_message(&data_size);
         }
         else if (app_data->selected_application == 1) // Pong application
@@ -97,7 +98,6 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
         else {
             return NULL; // Invalid application
         }
-
         int eval = send_bytes(payload, data_size, GPIO_SEND, app_data->pinit);
         if (eval != 0)
         {
