@@ -1,20 +1,16 @@
-// collection of functions to encode and decode (text to binary) and (hamming (7,4)) and to do 1 bit error correction
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
 
-#include "encoding.h"
+#define MAX_INPUT_LENGTH 280
+#define DATA_BLOCK_SIZE 4
+#define CODEWORD_SIZE 8
 
 // -------------- ASCII TEXT ENCODING AND DECODING --------------
 
-/* Converts a string of ASCII text to an array of hex values
-
-This function takes input from the user, converts each character into its corresponding
-ASCII value, and stores these values as bytes (uint8_t) in a dynamically allocated array
-
-INPUT:
-len: Pointer to store the length of the byte array
-
-OUTPUT:
-uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
-Each byte represents one character from the input string in its ASCII hex value
+/* Application to take in text and return it as a uint8_t array of hex values
 */
 uint8_t* text_to_bytes(size_t* len){
     // collect user input
@@ -44,17 +40,7 @@ uint8_t* text_to_bytes(size_t* len){
     return hexList; // return the byte array
 }
 
-/* Converts an array of hex values back to a string of ASCII text
-
-This function takes an array of bytes (uint8_t array), interprets each byte as an ASCII
-character, and reconstructs the original string of text from the array
-
-INPUTS:
-const uint8_t bytes: A pointer to the byte array containing the ASCII values
-size_t len: Length of the byte array
-
-OUTPUT:
-char* text_out: string containing the reconstructed ASCII text
+/* Application to turn hex vals back to ASCII text
 */
 char* bytes_to_text(const uint8_t* bytes, size_t len){
     char* text_out = malloc(len+1);
@@ -210,4 +196,43 @@ uint8_t* ham_decode(uint8_t* encoded_array, size_t encoded_len, size_t* decoded_
         decoded_array[i] = (high_nibble << 4) | low_nibble;
     }
 return decoded_array;
+}
+
+int main(){
+    
+    // gen bytes
+    size_t data_size;
+    uint8_t* payload = text_to_bytes(&data_size);
+
+    // encode bytes
+    size_t encoded_len;
+    uint8_t* encoded_array = ham_encode(payload, data_size, &encoded_len);
+
+    // // print the encoded byte array
+    // printf("Encoded Hamming (8,4) values: \n");
+    // for (size_t i = 0; i < encoded_len; i++) {
+    //     printf("%02X ", encoded_array[i]);
+    // }
+    // printf("\n");
+
+    // decode (WHAT DO WE DO WITH ENCODED LEN???)
+    size_t decoded_len;
+    uint8_t* decoded_array = ham_decode(encoded_array, encoded_len, &decoded_len);
+
+    // print the decoded byte array
+    for (size_t i = 0; i < decoded_len; i++) {
+        printf("%02X ", decoded_array[i]);
+    }
+    printf("<- Decoded Hamming (8,4) values \n");
+
+    // hex to ascii
+    char* end_text = bytes_to_text(decoded_array, decoded_len);
+    printf("Received message: %s\n", end_text);
+
+
+    free(payload);
+    free(encoded_array);
+    free(decoded_array);
+    free(end_text);
+    return 0;
 }

@@ -12,10 +12,8 @@
 #define CODEWORD_SIZE 8
 
 uint8_t* text_to_bytes(size_t* length);
-char* bytes_to_text(uint8_t* bytes, size_t len);
-char* pack(char* ASCII_binary);
-char* unpack(char* hamming_binary);
-char* hamming_encode_full(char* packed_string);
-char* hamming_decode_full(char* packed_string);
+char* bytes_to_text(const uint8_t* bytes, size_t len);
+uint8_t* ham_encode(uint8_t* payload, size_t len, size_t* encoded_len);
+uint8_t* ham_decode(uint8_t* encoded_array, size_t encoded_len, size_t* decoded_len);
 
 #endif 
