@@ -7,7 +7,7 @@
 #include "send.h"
 #include "selection.h"
 #include "gui.h"
-#include "FileTransferApp.h"
+#include "file_app.h"
 #include <pthread.h>
 #include <ncurses.h>
 
@@ -80,7 +80,7 @@ void* read_thread(void* arg)
         else if (app_data->selected_application == 1) // File transfer application
         {
             // Pass the packet data to FileTransferApp_receivePacket
-            FileTransferApp_receivePacket(&ft_app, packet->data, packet->dlength);
+            FileTransferApp_receiveFIle(&ft_app, packet->data, packet->dlength);
         }
         else
         {

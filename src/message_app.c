@@ -14,7 +14,7 @@ OUTPUT:
 uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
 Each byte represents one character from the input string in its ASCII hex value
 */
-uint8_t* text_to_bytes(size_t* len, char rec_name){
+uint8_t* text_to_bytes(size_t* len, char* rec_name){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
