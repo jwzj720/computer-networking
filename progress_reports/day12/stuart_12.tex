@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 12}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Allow program to repeatedly send messages - Dan
+    \item Create dynamic network system to allow users to log on/off freely - Walt
+    \item Generalize packet creation to packet struct - Walt
+    \item Create packet data interpretation system - Stuart
+    \item Create pong game - Stuart
+    \item Build on router capabilities (error packet, handle no stop seq.) - group
+    
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Change Hamming encoding to 8,4 and to be byte-based (DONE) - Dan
+    \item Create routing program compatible with new packet structure (DONE) - Stuart
+    \item Build routing logic into network layer (DONE) - Walt/Stuart
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. (DONE) - Stuart
+    \item Decode received hex values to ASCII and return them to user (DONE) - Dan
+    \item Clean up the functionality of individual classes and increase abstraction (DONE) - Walt
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item Today we got our router working with multiple users being able to select the destination for where they are sending packets.
+    We haven't handled errors with sending packets to nonexistent places yet, but some of that polishing will come as we continue to refine
+    what we want our router to do.
+    \item We feel good about our fundamental ideas of how the network will work. However, we have been spending a good bit of time going back and
+    rewriting old code to make it more readable with better abstraction. This is something I think we should continue doing as it allows us
+    to have fast progress and with solid fundamentals, we are able to comfortably focus on future tasks.
+    \item In general, we have been operating under a perfect set of circumstances for our code, and have not implemented any error checking or logic
+    to keep the program running in the case that bad packets are received, stop sequences are omitted, or a port isn't zeroed out. This is something that
+    surely every group has run into in some capacity, so we are going to start asking around to see if other groups had any clean solutions to these problems.
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}
