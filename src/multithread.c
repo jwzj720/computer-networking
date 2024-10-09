@@ -6,10 +6,10 @@
 #include "read.h"
 #include "send.h"
 #include "selection.h"
-#include "gui.h"
+//#include "gui.h"
 #include "file_app.h"
 #include <pthread.h>
-#include <ncurses.h>
+//#include <ncurses.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -195,7 +195,7 @@ int main()
     app_data.receiver_addr = select_address(NULL); // Implement this function or set a fixed address
 
     // App Selection
-    app_data.selected_application = app_select() - 1; // Subtract 1 for zero-based index
+    app_data.selected_application = select_application(); // Subtract 1 for zero-based index
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data) != 0) {
