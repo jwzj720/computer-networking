@@ -94,7 +94,6 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     while(1)
     {
         // Lock the send data while being sent...
-	printf("Locking send mutex...");
         pthread_mutex_lock(&send_mutex);
         printf("write entered, sending message...\n");
 
@@ -184,12 +183,16 @@ int start_pong(struct AppData* parent_data) {
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data(app_data);
     pthread_mutex_unlock(&read_mutex);
-    printf("Message Read\n");
+    printf("P2_ready: %"PRIu8"\n",p2_ready);
     //refresh();
-    usleep(5000000);
   }
   // Lock thread so nothing sends until unlocked.
   pthread_mutex_lock(&send_mutex);
+  while(1)
+  {
+  	printf("GAME READY!!!\n");
+  }
+  //usleep(5000000);
   // Main Game loop. Runs until end is declared.
   for (nodelay(stdscr,1); !end; usleep(500000)) {
 
@@ -253,6 +256,7 @@ int start_pong(struct AppData* parent_data) {
     the sending is done
     */
     pthread_mutex_unlock(&send_mutex);
+    usleep(500);
     pthread_mutex_lock(&send_mutex);
 
     // see if opponent has sent any new moves.
