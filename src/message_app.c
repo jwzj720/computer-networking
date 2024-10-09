@@ -66,7 +66,7 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-uint8_t* send_message(int pi)
+uint8_t* send_message()
 {
     // these just allocate right?
     uint8_t device_addr =   0x01;  // Single 8-bit device address
@@ -92,7 +92,7 @@ uint8_t* send_message(int pi)
 }
 
 void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
-    uint8_t* hamload = ham_decode(packet, packet_len, &decoded_len);
-    char* message = bytes_to_text(hamload, &decoded_len);
+    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
+    char* message = bytes_to_text(hamload, decoded_len);
     printf("Message received: %s\n", message);
 }

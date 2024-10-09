@@ -76,7 +76,7 @@ void* send_thread(void* pinit) // TODO: include app choice
         if (selected_application == 0)
         {
         size_t data_size;
-        uint8_t* payload = send_message(&data_size);
+        uint8_t* payload = send_message();
         }
         else{
             return NULL;
@@ -86,8 +86,8 @@ void* send_thread(void* pinit) // TODO: include app choice
         // send bytes
         if (send_bytes(payload, data_size, GPIO_SEND, pinit) != 0)
         {
-            printf(stderr, "Failed to send messsage\n");
-            return 1;
+            printf("Failed to send messsage\n");
+            return NULL;
         }
 
         pthread_mutex_unlock(&send_mutex);
@@ -102,7 +102,7 @@ int main()
 
     if (selected_application == 0) // CHAT
     {
-        int selected_recip = select_address();
+        int selected_recip = select_address(); // TODO: pass on to send stuff
     }
     else if (selected_application == 1) // PONG
     {
