@@ -1,6 +1,5 @@
 #include "build_packet.h"
 
-
 int build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
     
     size_t offset = 0;
