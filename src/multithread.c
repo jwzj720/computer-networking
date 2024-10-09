@@ -1,18 +1,32 @@
-// main.c
-#include "encoding.h"
 #include "message_app.h"
+#include "build_packet.h"
 #include "hamming.h"
-
-#include "transmission.h"
 #include <pthread.h>
 #include "read.h"
-#include "build_packet.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
 
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+int select_application(APPLICATION_LIST){
+
+    // iterate through apps, print options
+
+    // get user input on which application they would like
+
+    // return desired application
+}
+
+int select_address(ADDRESS_BOOK){
+
+    // iterate through dictionary, print options
+
+    // get user input on who to send to
+
+    // return user desired receivers address
+}
 
 void* read_thread(void* pinit)
 {
@@ -34,8 +48,6 @@ void* read_thread(void* pinit)
         
         return NULL;
     }
-
-    
 
     // THIS is the per message read loop
     while(1)
@@ -77,8 +89,8 @@ void* send_thread(void* pinit)
     {
         pthread_mutex_lock(&send_mutex);
 
-        // if message app selected
-        uint8_t payload = send_message(*(int*)pinit);
+        //TODO: if message app selected
+        int payload = send_message(*(int*)pinit)
 
         pthread_mutex_unlock(&send_mutex);
     }
@@ -87,9 +99,13 @@ void* send_thread(void* pinit)
 
 int main()
 {
+    // print init stuff
 
-    // TODO: print info about the program upon initialization, and offer a key to select application and end program
-    // printf()
+    // Bitties OS
+
+    // Explanation
+
+    // App Selection
 
     int pinit = pigpio_start(NULL, NULL);
 

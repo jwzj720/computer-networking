@@ -66,6 +66,8 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
+
+
 int send_message(int pi)
 {
     // these just allocate right?
@@ -91,6 +93,6 @@ int send_message(int pi)
         return 1;
     }
 
-    printf("Message sent successfully")
+    printf("Message sent successfully");
     return 0;
 }
