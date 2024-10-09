@@ -75,7 +75,7 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     // Allocate memory for the packet object... Still need to allcate the packet data memory.
     app_data->sent_packet = malloc(sizeof(struct Packet));
     struct Packet* packet_data = app_data->sent_packet;
-    packet->data = (uint8_t*)calloc(sizeof(uint8_t)*50);
+    packet_data->data = (uint8_t*)calloc(50,sizeof(uint8_t));
 
     // Allocate payload memory
     uint8_t* payload = (uint8_t*)malloc(50 * sizeof(uint8_t));
