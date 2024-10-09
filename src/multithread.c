@@ -12,6 +12,7 @@ pthread_t write_thread;
 
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_cond_t read_cond = PTHREAD_COND_INITIALIZER;
 
 
 void* read_thread(void* pinit)
@@ -93,6 +94,7 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     while(1)
     {
         // Lock the send data while being sent...
+	printf("Locking send mutex...");
         pthread_mutex_lock(&send_mutex);
         printf("write entered, sending message...\n");
 
@@ -114,22 +116,21 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
 		printf("%02X ",payload[i]);
 	}
 	printf("\n");
-        // free packet data memory
-        free(packet_data->data);
         packet_data->dlength=0;
         // unlock so it can be repopulated.
         pthread_mutex_unlock(&send_mutex);
+	usleep(500);
     }
     return NULL;
 }
 
-int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_mutex_t read_mutex) {
+int start_pong(struct AppData* parent_data) {
   uint8_t p2_ready = 0x00;
 
   struct AppData* app_data = parent_data;
 
   app_data->sent_packet->sending_addy = 0x01;
-  char* receiver_name;
+  //char* receiver_name;
   //app_data->sent_packet->receiving_addy = select_address(&receiver_name);
   app_data->sent_packet->receiving_addy = 0x02;
 
@@ -175,6 +176,7 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   while(!p2_ready)
   {
     pthread_mutex_unlock(&send_mutex);
+    usleep(500);
     pthread_mutex_lock(&send_mutex);
     printf("Sent Message\n");
     send_update(app_data, (uint8_t)0x02); // queue another message...
