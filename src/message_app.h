@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include "hamming.h"
 
 #define MAX_INPUT_LENGTH 280
 #define GPIO_SEND 27 //TODO: change this to be dynamically updated
