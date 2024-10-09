@@ -1,4 +1,3 @@
-// collection of functions to send over and read from the line
 
 #include "transmission.h"
 #include "build_packet.h"
