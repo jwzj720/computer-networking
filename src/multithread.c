@@ -14,7 +14,7 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 void* read_thread(void* pinit)
 {
     // Create Data reading object, which will store a message's data.
-    struct ReadData *rd = create_reader();
+    struct ReadData *rd = create_reader(1);
     
     // Check data was allocated
     if (rd->data == NULL)
@@ -84,7 +84,7 @@ void* send_thread(void* pinit) // TODO: include app choice
         
 
         // send bytes
-        if (send_bytes(payload, data_size, GPIO_SEND, pinit) != 0)
+        if ((send_bytes(payload, data_size, GPIO_SEND, pinit)) != 0)
         {
             printf("Failed to send messsage\n");
             return NULL;
@@ -98,11 +98,13 @@ void* send_thread(void* pinit) // TODO: include app choice
 int main()
 {
     // App Selection
-    int selected_application = select_application();
+
+    uint8_t send;
+    int selected_application = select_application(&send);
 
     if (selected_application == 0) // CHAT
     {
-        int selected_recip = select_address(); // TODO: pass on to send stuff
+        int selected_recip = select_address(&send); // TODO: pass on to send stuff
     }
     else if (selected_application == 1) // PONG
     {
