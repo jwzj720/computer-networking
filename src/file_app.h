@@ -1,4 +1,4 @@
-// file_app.h
+// FileTransferApp.h
 
 #ifndef FILE_APP_H
 #define FILE_APP_H
@@ -8,14 +8,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "message_app.h"    // Include your existing headers
 #include "hamming.h"
 #include "build_packet.h"
-#include "selection.h"
 #include "send.h"
 #include "read.h"
 
-#define MAX_PAYLOAD_SIZE 40  // Adjust based on your maximum packet size constraints
+#define MAX_PAYLOAD_SIZE 40  
 
 typedef struct {
     int pinit;
@@ -32,6 +30,6 @@ typedef struct {
 
 void FileTransferApp_init(FileTransferApp* app, FileTransferConfig config);
 void FileTransferApp_sendFile(FileTransferApp* app);
-void FileTransferApp_receiveFile(FileTransferApp* app);
+void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, size_t packet_len);
 
 #endif // FILE_TRANSFER_APP_H
