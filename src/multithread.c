@@ -4,9 +4,9 @@
 #include "read.h"
 #include "send.h"
 #include "selection.h"
+#include "gui.h"
 #include <pthread.h>
 #include <ncurses.h>
-#include "gui.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -20,12 +20,6 @@ struct AppData {
     int selected_application; // 
     int selected_recipient;  // not sure if we need this?
 };
-
-typedef struct{
-  short int x, y;
-  bool selected; // If true, it is currently selected.
-} object;
-
 
 void* read_thread(void* pinit)
 {
@@ -148,7 +142,7 @@ int main()
     }
 
     // App Selection
-    app_data.selected_application = app_screen()-1; // Subtract 1 for offbyone error
+    app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {

@@ -2,20 +2,22 @@
 
 int init_screen()
 {
+    object scr;
     initscr();
     noecho();          
     curs_set(FALSE);
+    getmaxyx(stdscr,scr.y,scr.x);
 
     // Position for the dots
-    int dot_row = 10;
-    int dot_col = 0;
+    int dot_col = (scr.x-strlen("Loading ..."))/2;
+    int dot_row = scr.y/2;
     const char *dots[] = {"Loading .  ", "Loading .. ", "Loading ..."};
     int current_dot = 0;
 
     // Loop to animate dots. Loading loop breaks when connect is found.
     // TODO: Break infinite loop
     int i=0;
-    while(i<50)
+    while(i<5)
     {
         clear();
         current_dot = (current_dot + 1) % 3; // Cycle through the dots
@@ -25,12 +27,12 @@ int init_screen()
                        "\t           O      O       O          O          O          O       OOOOOO      OOOOO  \n"
                        "\t           O       O      O          O          O          O       O                O \n"
                        "\t           O      O       O          O          O          O       O                O \n"
-                       "\t           OOOOOOO     OOOOOOO       O          O       OOOOOOO    OOOOOOO    OOOOOO  \n"
-                       "\t \t\t\tWaiting to connect to network\n");
+                       "\t           OOOOOOO     OOOOOOO       O          O       OOOOOOO    OOOOOOO    OOOOOO  \n\n\n"
+                       "\t	     Waiting to connect to network\n");
         mvprintw(dot_row, dot_col, "%s", dots[current_dot]);
         refresh(); //May not need to refresh the screen here...
         usleep(500000); // Sleep for 500 milliseconds
-
+	i++;
         
     }
 
@@ -65,10 +67,10 @@ int app_select()
         {
             attron((hover==i)?A_STANDOUT:A_NORMAL);
             mvprintw(y_start+i,x_start,"%s",apps[i-1]);
-            attroff((hover==1)?A_STANDOUT:A_NORMAL);
+            attroff((hover==i)?A_STANDOUT:A_NORMAL);
         }
         refresh();
-        usleep(500000);
+        //usleep(500000);
 
         switch (getch()) {
             case KEY_DOWN: 
@@ -77,7 +79,16 @@ int app_select()
             case KEY_UP:
                 hover = (--hover % APP_COUNT) ? hover : APP_COUNT;
                 break;
-            case KEY_ENTER: selection = hover; break; 
+            case '\n': 
+		clear();
+		printw("Enter key pressed! Selection: %d",hover);
+		refresh();
+		usleep(1000000);
+		selection = hover;
+	       	endwin();
+		break; 
+		
+
         }
         
     }    

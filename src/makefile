@@ -4,9 +4,9 @@ CC = gcc
 CFLAGS = -Wall -pthread
 
 # Libraries
-LIBS = -lpigpiod_if2 -lrt
+LIBS = -lpigpiod_if2 -lrt -lncurses
 
-MULTI_THREAD_SRCS = multithread.c message_app.c hamming.c selection.c read.c send.c build_packet.c
+MULTI_THREAD_SRCS = multithread.c message_app.c hamming.c selection.c read.c send.c build_packet.c gui.c
 
 ROUTER_SRCS = router.c message_app.c hamming.c selection.c read.c send.c build_packet.c 
 
