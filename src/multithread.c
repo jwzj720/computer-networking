@@ -2,6 +2,7 @@
 #include "build_packet.h"
 #include "hamming.h"
 #include "read.h"
+#include "send.h"
 #include "selection.h"
 #include <pthread.h>
 
@@ -71,14 +72,14 @@ void* send_thread(void* pinit) // TODO: include app choice
         pthread_mutex_lock(&send_mutex);
 
         int selected_application = 0; // TODO: don't hardcode this
+        size_t data_size;
 
         // IF chat
         if (selected_application == 0)
         {
-        size_t data_size;
-        uint8_t* payload = send_message();
+        uint8_t* payload = send_message(&data_size);
         int eval = send_bytes(payload, data_size, GPIO_SEND, pinit);
-                // send bytes
+
         if (eval != 0)
         {
             printf("Failed to send messsage\n");
@@ -98,11 +99,11 @@ int main()
 {
     // App Selection
 
-    uint8_t send;
-    int selected_application = select_application(&send);
-
     // WALT TODO: refactor so that selected application and selected recipient are passed to send_thread
-    
+
+    // uint8_t send;
+    // int selected_application = select_application(&send);
+
     // if (selected_application == 0) // CHAT
     // {
     //     int selected_recip = select_address(&send); // TODO: pass on to send stuff
