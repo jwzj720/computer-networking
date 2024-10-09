@@ -1,5 +1,8 @@
 // main.c
 #include "encoding.h"
+#include "message_app.h"
+#include "hamming.h"
+
 #include "transmission.h"
 #include <pthread.h>
 #include "read.h"
@@ -13,7 +16,6 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* read_thread(void* pinit)
 {
-
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader();
     
@@ -45,16 +47,14 @@ void* read_thread(void* pinit)
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
         struct Packet* packet = generate_packet(rd->data);
+        size_t decoded_len;
+        uint8_t* decoded_packet = ham_decode(packet->data, packet->dlength, &decoded_len);
         print_packet_debug(packet->data,packet->dlength);
+        char* message = bytes_to_text(decoded_packet, decoded_len);
+        printf("Message received: %s\n", message);
 
-<<<<<<< HEAD
 	    free(packet->data);
 	    free(packet);
-=======
-        free(packet->data);
-        free(packet);
-        
->>>>>>> byte_based
         //reset readrate and run variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
@@ -68,24 +68,28 @@ void* read_thread(void* pinit)
     free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
     free(rd);
 
-    
-
     return NULL;
 }
 
 void* send_thread(void* pinit)
 {
-    //while(1)
-    //{
-    //    //pthread_mutex_lock(&send_mutex);
-    send_to_file(*(int*)pinit);
-    //    //pthread_mutex_unlock(&send_mutex);
-    //}
+    while(1)
+    {
+        pthread_mutex_lock(&send_mutex);
+
+        // if message app selected
+        uint8_t payload = send_message(*(int*)pinit);
+
+        pthread_mutex_unlock(&send_mutex);
+    }
     return NULL;
 }
 
 int main()
 {
+
+    // TODO: print info about the program upon initialization, and offer a key to select application and end program
+    // printf()
 
     int pinit = pigpio_start(NULL, NULL);
 
