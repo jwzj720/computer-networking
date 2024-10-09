@@ -187,14 +187,14 @@ int start_pong(struct AppData* parent_data) {
     //refresh();
   }
   // Lock thread so nothing sends until unlocked.
-  while(1)
-  {
-  	printf("GAME READY!!!\n");
-	fflush(stdout);
-  }
+  //while(1)
+  //{
+  //	printf("GAME READY!!!\n");
+  //      fflush(stdout);
+  //}
   //usleep(5000000);
   // Main Game loop. Runs until end is declared.
-  for (nodelay(stdscr,1); !end; usleep(500000)) {
+  for (nodelay(stdscr,1); !end; usleep(50000)) {
 
     //Checks the ball location
 
@@ -303,7 +303,7 @@ int main()
 
     // Initialize router connection
     // Pass in pthread address so that 
-    init_screen();
+    // init_screen();
 
     // Initialize app data object
     struct AppData app_data;
@@ -343,7 +343,8 @@ int main()
     // Main Running loop
     while (1)
     {
-        app_data.selected_application = app_select()-1;
+        app_data.selected_application = 1;
+        //app_data.selected_application = app_select()-1;
         if (app_data.selected_application == 0) // Chat application
             {
                 //start_message(&app_data); //Run the message app
