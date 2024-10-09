@@ -56,8 +56,9 @@ void* read_thread(void* arg) {
         read_bits(rd);
 
         /* Generate the packet */
-        struct Packet* packet = generate_packet(rd->data);
 
+        struct Packet* packet = generate_packet(rd->data);
+        print_packet_debug(packet->data,packet->dlength);
         /* Process the packet based on receiving address */
         if (packet->receiving_addy == ROUTER_ADDRESS) {
             process_control_packet(packet, gpio_in);
