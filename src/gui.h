@@ -1,3 +1,6 @@
+#ifndef GUI_H
+#define GUI_H
+
 #include <ncurses.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,3 +12,5 @@
 
 int init_screen();
 int app_select();
+
+#endif

@@ -15,13 +15,34 @@
 #include <unistd.h>
 #include <ncurses.h>
 #include <pthread.h>
-#include "objects.h"
-#include "read.h"
+#include "pong_game.h"
+#include "selection.h"
 
 struct AppData* app_data;
 
+/*
+* send_update just updates the data of the sendable packet. This a
+*/
+void send_update(uint8_t data)
+{
+  struct Packet* packet = app_data->sent_packet;
+  packet->dlength = (size_t)1;
+  packet->data = (uint8_t* )malloc(sizeof(uint8_t)); //This multiplies by uint16_t, potential undefined behavior?
+  //Put the remaining data into the newpack->data spot.
+  packet->data[0] = data;
+}
+
+uint8_t check_data(){
+  struct Packet* packet = app_data->received_packet;
+  if(packet->data!=NULL && packet->dlength==1)
+  {
+    return packet->data[0];
+  }
+    return 0;
+}
+
 int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_mutex_t read_mutex) {
-  int p1_ready,p2_ready = 0;
+  int p2_ready = 0;
 
   app_data = parent_data;
 
@@ -62,15 +83,14 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
 
   
   getch();
-  p1_ready = 1;
   // send mutex is default set to unlock on start, so it wont write until this runs.
-  send_update(0x02);
+  send_update((uint8_t)0x02);
 
   while(!p2_ready)
   {
     pthread_mutex_unlock(&send_mutex);
     pthread_mutex_lock(&send_mutex);
-    send_update(0x02); // queue another message...
+    send_update((uint8_t)0x02); // queue another message...
 
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data();
@@ -119,19 +139,19 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
      */
     switch (getch()) {
       case KEY_DOWN:
-        send_update(0x01);
+        send_update((uint8_t)0x01);
         b1.y++;
         
         break;
       case KEY_UP: 
-        send_update(0x02);  
+        send_update((uint8_t)0x02);  
         b1.y--;
         
         break;
       case 0x1B:
-        send_update(0x03);  
+        send_update((uint8_t)0x03);  
         endwin();
-        end++;
+        end=true;
         // send end message...
         break; // This is the escape button
     }
@@ -163,7 +183,7 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
         break;
       case 0x03:  
         endwin();
-        end++;
+        end=true;
         break; // This is the escape button
     }
     // Erases and then redraws the screen.
@@ -182,27 +202,3 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   return 0;
 }
 
-/*
-* send_update just updates the data of the sendable packet. This a
-*/
-void send_update(uint8_t data)
-{
-  struct Packet* packet = app_data->sent_packet
-  packet->dlength = (size_t)1;
-  packet->data = (uint8_t* )malloc(sizeof(uint8_t)); //This multiplies by uint16_t, potential undefined behavior?
-  //Put the remaining data into the newpack->data spot.
-  packet->data[0] = data;
-  return packet;
-}
-
-uint8_t check_data(){
-  struct Packet* packet = app_data->received_packet;
-  if(packet->data!=NULL && packet->dlength==1)
-  {
-    return data[0];
-  }
-  else
-  {
-    return 0;
-  }
-}

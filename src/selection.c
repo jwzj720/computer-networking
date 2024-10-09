@@ -4,7 +4,7 @@
 
 const char* Application_List[NUM_APPS] = {"Chat", "Pong"};
 const char* Address_Book[NUM_ADDRESSES] = {"0x01", "0x02", "0x03"};
-const char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart"};
+char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart"};
 
 // int select_application(){
 //     char* selected_app_c=malloc(sizeof(char*));

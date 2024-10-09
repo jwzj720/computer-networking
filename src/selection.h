@@ -13,7 +13,7 @@
 #define GPIO_SEND 27
 #define GPIO_RECEIVE 26
 
-int select_application();
+//int select_application();
 int select_address();
 
 #endif

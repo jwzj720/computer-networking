@@ -2,6 +2,12 @@
 //struct User* addressBook[BOOKSIZE]; /* pointer table */
 struct User* addressBook = NULL;
 
+struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
+	{26,27},
+	{24,25},
+	{22,23},
+	{20,21}
+};
 //pthread_t tid[BOOKSIZE];
 //pthread_t write_thread;
 

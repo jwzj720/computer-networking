@@ -1,7 +1,9 @@
+#ifndef OBJECTS_H
+#define OBJECTS_H
+
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdbool.h>
-
 #define NUM_GPIO_PAIRS 4 //Number of device ports
 
 /*
@@ -42,18 +44,6 @@ struct GPIO_Pair {
     int gpio_out;
 };
 
-struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27}, /* p1r, p1t */
-    {24, 25}, /* p2r, p2t */
-    {22, 23}, /* p3r, p3t */
-    {20, 21}  /* p4r, p4t */
-};
-
-typedef struct{
-  short int x, y;
-  bool selected; // If true, it is currently selected.
-} object;
-
 struct AppData {
     int pinit;
     int selected_application; // 
@@ -61,3 +51,11 @@ struct AppData {
     struct Packet* sent_packet;
     struct Packet* received_packet;
 };
+
+typedef struct{
+  short int x, y, c;
+
+  bool movver, movhor; 
+} object;
+
+#endif

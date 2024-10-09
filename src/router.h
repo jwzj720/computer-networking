@@ -9,7 +9,6 @@
 #include "hamming.h"
 #include "read.h"
 #include "build_packet.h"
-#include "objects.h"
 
 
 #define ROUTER_ADDRESS 0x00
@@ -21,4 +20,4 @@ void process_application_packet(struct Packet* packet);
 int relay(struct Packet* pack);
 
 
-#endif /*ROUTER_H*/
+#endif

@@ -1,11 +1,10 @@
 #include "message_app.h"
-#include "build_packet.h"
 #include "hamming.h"
 #include "read.h"
 #include "send.h"
 #include "selection.h"
 #include "gui.h"
-#include "pong_game.c"
+#include "pong_game.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -52,7 +51,6 @@ void* read_thread(void* pinit)
         free(packet->data);
 	    free(packet);
         packet = data_to_packet(rd->data);
-        size_t decoded_len;
 
         //reset readrate and run variables each iteration.
         reset_reader(rd);
@@ -156,26 +154,26 @@ int main()
     {
         app_data.selected_application = app_select()-1;
 
-        if (app_data->selected_application == 0) // Chat application
+        if (app_data.selected_application == 0) // Chat application
             {
                 //start_message(&app_data); //Run the message app
                 printf("Text application\n");
                 fflush(stdin);
                 // payload = send_message(&data_size);
             }
-            else if (app_data->selected_application == 1) // Pong application
+            else if (app_data.selected_application == 1) // Pong application
             {
                 start_pong(&app_data, send_mutex, read_mutex);
             }
             else {
-                return NULL; // Invalid application
+                return 0; // Invalid application
             }
         // When app is exited and returns, go back to the app select screen.
 
     }
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
-    pthread_join(read_thread, NULL);
+    pthread_join(reading_thread, NULL);
 
     pigpio_stop(app_data.pinit);
 
