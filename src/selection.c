@@ -4,7 +4,8 @@
 
 const char* Application_List[NUM_APPS] = {"Chat", "Pong"};
 const char* Address_Book[NUM_ADDRESSES] = {"0x01", "0x02", "0x03"};
-const char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart"};
+char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart"};
+
 
 int select_application() {
     // Use a fixed-size buffer for input
@@ -30,7 +31,7 @@ int select_application() {
     return selected_app;
 }
 
-int select_address(char** rec_name) {
+int select_address(char* rec_name) {
     // Use a fixed-size buffer for input
     char selected_address_c[4]; // Enough to hold single-digit numbers plus null terminator
     printf("Select a recipient: \n");
@@ -51,7 +52,7 @@ int select_address(char** rec_name) {
     }
 
     
-    *rec_name = Address_Tenents[selected_address];
+    rec_name = Address_Tenents[selected_address];
     
     return (uint8_t)selected_address;
 }
