@@ -1,7 +1,6 @@
 #ifndef BUILD_PACKET_H
 #define BUILD_PACKET_H
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
