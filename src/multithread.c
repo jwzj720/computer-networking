@@ -77,16 +77,15 @@ void* send_thread(void* pinit) // TODO: include app choice
         {
         size_t data_size;
         uint8_t* payload = send_message();
-        }
-        else{
-            return NULL;
-        }
-        
-
-        // send bytes
-        if ((send_bytes(payload, data_size, GPIO_SEND, pinit)) != 0)
+        int eval = send_bytes(payload, data_size, GPIO_SEND, pinit);
+                // send bytes
+        if (eval != 0)
         {
             printf("Failed to send messsage\n");
+            return NULL;
+        }
+        }
+        else{
             return NULL;
         }
 
@@ -102,19 +101,21 @@ int main()
     uint8_t send;
     int selected_application = select_application(&send);
 
-    if (selected_application == 0) // CHAT
-    {
-        int selected_recip = select_address(&send); // TODO: pass on to send stuff
-    }
-    else if (selected_application == 1) // PONG
-    {
-        printf("PONG is not yet available");
-        return 1;
-    }
-    else {
-        printf("Invalid selection. Try again");
-        return 1;
-    }
+    // WALT TODO: refactor so that selected application and selected recipient are passed to send_thread
+    
+    // if (selected_application == 0) // CHAT
+    // {
+    //     int selected_recip = select_address(&send); // TODO: pass on to send stuff
+    // }
+    // else if (selected_application == 1) // PONG
+    // {
+    //     printf("PONG is not yet available");
+    //     return 1;
+    // }
+    // else {
+    //     printf("Invalid selection. Try again");
+    //     return 1;
+    // }
 
     // inits
     int pinit = pigpio_start(NULL, NULL);

@@ -81,12 +81,10 @@ uint8_t* send_message()
     printf("Size of encoded packet %ld\n", encoded_length);
 
     uint8_t packet[50];
-    size_t data_size = sizeof(hamload);
-    data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
+    int data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
 
     // TODO: update GPIO to be dynamically updated based on who the sender is
     
-
     printf("Message sent successfully");
     return packet;
 }
