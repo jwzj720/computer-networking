@@ -50,7 +50,7 @@ void* read_thread(void* pinit)
         
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
-        pthread_mutex_lock(&read_mutex);
+        //pthread_mutex_lock(&read_mutex);
         printf("read entered, getting message...\n");
         data_to_packet(packet, rd->data);
         printf("Read Packet; ");
@@ -62,7 +62,7 @@ void* read_thread(void* pinit)
 	
 	//reset readrate and run variables each iteration.
         reset_reader(rd);
-        pthread_mutex_unlock(&read_mutex);
+        //pthread_mutex_unlock(&read_mutex);
     }
 
     //When done with the reading thread
@@ -172,20 +172,23 @@ int start_pong(struct AppData* parent_data) {
   send_update(app_data,(uint8_t)0x02);
   pthread_mutex_unlock(&read_mutex);
 
+  pthread_mutex_unlock(&send_mutex);
+  usleep(500);
+  pthread_mutex_lock(&send_mutex);
   while(!p2_ready)
   {
-    pthread_mutex_unlock(&send_mutex);
-    usleep(500);
-    pthread_mutex_lock(&send_mutex);
-    printf("Sent Message\n");
-    send_update(app_data, (uint8_t)0x02); // queue another message...
 
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data(app_data);
     pthread_mutex_unlock(&read_mutex);
-    printf("P2_ready: %"PRIu8"\n",p2_ready);
-    //refresh();
+    printf("waiting...");
+    usleep(500000);
   }
+  printf("P2_ready: %"PRIu8"\n",p2_ready);
+  // Send another message in case they were the first one to connect.
+  pthread_mutex_unlock(&send_mutex);
+  usleep(500);
+  pthread_mutex_lock(&send_mutex);
   // Lock thread so nothing sends until unlocked.
   //while(1)
   //{
@@ -260,17 +263,17 @@ int start_pong(struct AppData* parent_data) {
     pthread_mutex_lock(&send_mutex);
 
     // see if opponent has sent any new moves.
-    pthread_mutex_lock(&read_mutex);
+    //pthread_mutex_lock(&read_mutex);
     uint8_t input = check_data(app_data);
-    pthread_mutex_unlock(&read_mutex);
+    //pthread_mutex_unlock(&read_mutex);
 
     // Update variables according to input
     switch (input) {
-      // case 0:
-      //   endwin();
-      //   printf("An error occurred");
-      //   end++;
-      //   break;
+      case 0:
+        endwin();
+        printf("An error occurred");
+        end++;
+        break;
       case 0x01:
         b2.y++;
         break;
@@ -304,7 +307,7 @@ int main()
     // Initialize router connection
     // Pass in pthread address so that 
     // init_screen();
-
+    //
     // Initialize app data object
     struct AppData app_data;
 
@@ -327,7 +330,7 @@ int main()
 
     // Start send thread locked...
     pthread_mutex_lock(&send_mutex);
-    pthread_mutex_lock(&read_mutex);
+    //pthread_mutex_lock(&read_mutex);
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data) != 0) {
