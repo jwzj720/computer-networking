@@ -80,7 +80,7 @@ void* read_thread(void* arg)
         else if (app_data->selected_application == 1) // File transfer application
         {
             // Pass the packet data to FileTransferApp_receivePacket
-            FileTransferApp_receiveFIle(&ft_app, packet->data, packet->dlength);
+            FileTransferApp_receivePacket(&ft_app, packet->data, packet->dlength);
         }
         else
         {
