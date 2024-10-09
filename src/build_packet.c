@@ -23,7 +23,6 @@
 size_t build_packet(struct Packet* send_pack, uint8_t *packet) {
     
     size_t offset = 0;
-    memset(packet, 0, 50);  // 128 bytes is the maximum packet size
 
     uint16_t data_length = send_pack->dlength;
     packet[offset++] = (data_length >> 8) & 0xFF; // Higher byte

@@ -24,8 +24,7 @@ void* read_thread(void* pinit)
     struct ReadData *rd = create_reader(1);
 
     struct Packet* packet = app_data->received_packet;
-    packet->data = malloc(sizeof(uint8_t)*50);
-    packet->data[0]=0x00;
+    packet->data = calloc(50,sizeof(uint8_t));
     
     // Check data was allocated
     if (rd->data == NULL)
@@ -84,10 +83,15 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     // Allocate memory for the packet object... Still need to allcate the packet data memory.
     app_data->sent_packet = malloc(sizeof(struct Packet));
     struct Packet* packet_data = app_data->sent_packet;
+    packet_data->sending_addy = 0x01;
+    //char* receiver_name;
+    //app_data->sent_packet->receiving_addy = select_address(&receiver_name);
+    packet_data->receiving_addy = 0x02;
     packet_data->data = (uint8_t*)calloc(50,sizeof(uint8_t));
+    packet_data->dlength=0;
 
     // Allocate payload memory
-    uint8_t* payload = (uint8_t*)malloc(50 * sizeof(uint8_t));
+    uint8_t* payload = (uint8_t*)calloc(50, sizeof(uint8_t));
 
     // Wont start sending until thread first locked.
 
@@ -128,10 +132,6 @@ int start_pong(struct AppData* parent_data) {
 
   struct AppData* app_data = parent_data;
 
-  app_data->sent_packet->sending_addy = 0x01;
-  //char* receiver_name;
-  //app_data->sent_packet->receiving_addy = select_address(&receiver_name);
-  app_data->sent_packet->receiving_addy = 0x02;
 
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
@@ -187,10 +187,10 @@ int start_pong(struct AppData* parent_data) {
     //refresh();
   }
   // Lock thread so nothing sends until unlocked.
-  pthread_mutex_lock(&send_mutex);
   while(1)
   {
   	printf("GAME READY!!!\n");
+	fflush(stdout);
   }
   //usleep(5000000);
   // Main Game loop. Runs until end is declared.
