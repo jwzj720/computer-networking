@@ -15,7 +15,7 @@
 
 #define DEVICE_TIMEOUT 90        // Timeout in seconds
 #define MAINTENANCE_INTERVAL 30  // Check every 30 seconds
-#define MY_ID 1                  // ID for this device
+#define MY_ID 2                  // ID for this device
 #define CONTROL_ADDRESS 0x00     // Reserved address for control packets
 #define MAX_HOPS 16              // Maximum number of hops allowed
 #define NUM_GPIO_PAIRS 4         // Define the number of GPIO pairs
@@ -49,7 +49,7 @@ struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
     {20, 21, 0xFF}
 };
 
-int gpio_pins[NUM_GPIO_PINS] = {26, 24, 22, 20};  
+int gpio_pins[NUM_GPIO_PAIRS] = {26, 24, 22, 20};  
 
 // Global Variables
 RoutingEntry* routingTable = NULL;
@@ -75,7 +75,7 @@ void remove_device_mapping(uint8_t device_id);
 
 
 void zero_all_lights(int pi) {
-    for (int i = 0; i < NUM_GPIO_PINS; i++) {
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
         gpio_write(pi, gpio_pins[i], 0);  // Set each pin LOW (turn off)
     }
     printf("All lights have been set to 0.\n");
@@ -269,7 +269,7 @@ void* read_thread(void* arg) {
                 process_application_packet(packet);
             }
         } else {
-            print("Relaying packet\n");
+            printf("Relaying packet\n");
             relay(packet);
         }
 
@@ -417,12 +417,12 @@ void* send_thread(void* arg) {
             fprintf(stderr, "Failed to send message\n");
             continue;
         }
-
+        free(encoded_payload);
         printf("Message sent successfully to ID %" PRIu8 "\n", recipient_id);
     }
 
-    free(encoded_payload);
-    free(temp_pack);
+    //free(encoded_payload);
+    //free(temp_pack);
     return NULL;
 }
 
