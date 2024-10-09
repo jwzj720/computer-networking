@@ -150,6 +150,7 @@ void* send_thread(void* arg)
         {
             printf("File transfer application\n");
             FileTransferApp_sendFile(&ft_app);
+	    //usleep(5000000);
         }
         else {
             printf("Invalid application selected.\n");
@@ -168,7 +169,7 @@ int main()
     struct AppData app_data;
 
     // Initialize GUI or any other setup if needed
-    init_screen();
+    //init_screen();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
@@ -190,7 +191,7 @@ int main()
     }
 
     // Addresses (set your own device and receiver addresses)
-    app_data.device_addr = 0x01;
+    app_data.device_addr = 0x02;
     app_data.receiver_addr = select_address(NULL); // Implement this function or set a fixed address
 
     // App Selection

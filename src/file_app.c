@@ -107,6 +107,8 @@ void FileTransferApp_sendFile(FileTransferApp* app) {
 
         free(packet_payload);
         free(hamload);
+//	free(packet);
+	usleep(1000000);
     }
 
     free(file_data);
