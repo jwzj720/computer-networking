@@ -2,7 +2,6 @@
 #include "encoding.h"
 #include "message_app.h"
 #include "hamming.h"
-
 #include "transmission.h"
 #include <pthread.h>
 #include "read.h"
@@ -78,7 +77,15 @@ void* send_thread(void* pinit)
         pthread_mutex_lock(&send_mutex);
 
         // if message app selected
-        uint8_t payload = send_message(*(int*)pinit);
+        size_t data_size;
+        
+        uint8_t* payload = send_message(&data_size);
+        
+        if (send_bytes(payload, data_size, GPIO_SEND, pinit) != 0)
+        {
+            printf(stderr, "Failed to send messsage\n");
+            return 1;
+        }
 
         pthread_mutex_unlock(&send_mutex);
     }
@@ -90,6 +97,7 @@ int main()
 
     // TODO: print info about the program upon initialization, and offer a key to select application and end program
     // printf()
+
 
     int pinit = pigpio_start(NULL, NULL);
 

@@ -66,7 +66,7 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-int send_message(int pi)
+int send_message(size_t* data_size)
 {
     // these just allocate right?
     uint8_t device_addr =   0x01;  // Single 8-bit device address
@@ -82,15 +82,11 @@ int send_message(int pi)
 
     uint8_t packet[50];
     //size_t data_size = sizeof(payload);
-    int packet_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
+    data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
 
     // TODO: update GPIO to be dynamically updated based on who the sender is
-    if (send_bytes(packet, packet_size, GPIO_SEND, pi) != 0)
-    {
-        printf(stderr, "Failed to send messsage\n");
-        return 1;
-    }
+    
 
     printf("Message sent successfully")
-    return 0;
+    return packet;
 }

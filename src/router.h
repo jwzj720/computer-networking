@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "send.h"
-#include "encoding.h"
+#include "hamming.h"
 #include "read.h"
 #include "build_packet.h"
 #include "router.h"
