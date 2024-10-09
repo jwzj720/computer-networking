@@ -59,10 +59,10 @@ void* read_thread(void* app_dati)
     struct ReadData *rd = create_reader(1);
     struct AppData *app_data = (struct AppData*) app_dati;
 
-    app_data.send_rate = atoi(argv[1]);      // Send rate passed from command line
-    app_data.message_size = atoi(argv[2]);   // Message size passed from command line
-    app_data.pinit = atoi(argv[3]);          // Pigpio initialization value from command line
-    
+//    app_data.send_rate = atoi(argv[1]);      // Send rate passed from command line
+//    app_data.message_size = atoi(argv[2]);   // Message size passed from command line
+//    app_data.pinit = atoi(argv[3]);          // Pigpio initialization value from command line
+//    
     // Check data was allocated
     if (rd->data == NULL)
     {
@@ -70,11 +70,11 @@ void* read_thread(void* app_dati)
         return NULL;
     }
     // Register the callback with user data
-    int id = callback_ex(*(int*)app_data->pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+    int id = callback_ex(app_data->pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
     if (id < 0)
     {
         fprintf(stderr, "Failed to set callback\n");
-        pigpio_stop(*(int*)pinit);
+        pigpio_stop(app_data->pinit);
         
         return NULL;
     }
