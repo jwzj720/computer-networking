@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 11}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Change Hamming encoding to 8,4 and to be byte-based (IN PROGRESS) - Dan
+    \item Build routing logic into network layer (IN PROGRESS) - Walt
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. (IN PROGRESS) - Stuart
+    \item Decode received hex values to ASCII and return them to user (IN PROGRESS) - Dan
+    \item Clean up the functionality of individual classes and increase abstraction (IN PROGRESS) - Walt
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Transition from reading bits as characters to bitmasking using uint8t bytes. (IN PROGRESS) - Stuart
+    \item Change Hamming encoding to 8,4 and to be byte-based (IN PROGRESS)- Dan
+    \item Read/write packets across the network layer (DONE) - Stuart/Walt
+    \item ASCII input to byte array of hex vals (DONE) - Dan
+    \item Build routing logic into network layer (IN PROGRESS) - Walt
+    \item Change from fixed stop sequence to timemout (ON HOLD) - Walt/Stuart
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item Hoorah! We successfully sent packets over the line (sort of). We still have some debugging left but the proof of concept seems to be discovered.
+    The biggest obstacle has been correctly packing the packet. We learned that 'sizeof' is problematic when handed pointers as it will return the size
+    of the pointer, not the object it is pointing to. By the end of class tomorrow it is reasonable to assume we will have consecutive packet sending and receiving
+    functioning. 
+    \item Dan has been working on converting our previous hamming encoding protocol to 8,4 to work better with bytes and increase robustness. Tomorrow he should
+    be ready to merge it into our working codebase. 
+    \item  The problem Walt and Stuart were stuck up against all weekend took 10 minutes to solve with fresh eyes today. We were not leaving the pi in the right
+    state. Thus, the timeout implementation has been put on hold until we see necessarry reason for it.
+    \item Tomorrow Walt will dive into getting static routing implemented. It should not be too hard if our debugging goes smoothly. This will mark near completion
+    of our network layer.
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}
