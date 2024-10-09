@@ -1,32 +1,15 @@
 #include "message_app.h"
 #include "build_packet.h"
 #include "hamming.h"
-#include <pthread.h>
 #include "read.h"
+#include "selection.h"
+#include <pthread.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
 
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-int select_application(APPLICATION_LIST){
-
-    // iterate through apps, print options
-
-    // get user input on which application they would like
-
-    // return desired application
-}
-
-int select_address(ADDRESS_BOOK){
-
-    // iterate through dictionary, print options
-
-    // get user input on who to send to
-
-    // return user desired receivers address
-}
 
 void* read_thread(void* pinit)
 {
@@ -60,17 +43,15 @@ void* read_thread(void* pinit)
         pthread_mutex_lock(&read_mutex);
         struct Packet* packet = generate_packet(rd->data);
         size_t decoded_len;
-        uint8_t* decoded_packet = ham_decode(packet->data, packet->dlength, &decoded_len);
-        print_packet_debug(packet->data,packet->dlength);
-        char* message = bytes_to_text(decoded_packet, decoded_len);
-        printf("Message received: %s\n", message);
+        
+        // TODO: if app[0]:
+        read_message(packet->data, packet->dlength, &decoded_len);
 
 	    free(packet->data);
 	    free(packet);
         //reset readrate and run variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
-        
     }
 
     //When done with the reading thread
@@ -83,17 +64,26 @@ void* read_thread(void* pinit)
     return NULL;
 }
 
-void* send_thread(void* pinit)
+void* send_thread(void* pinit) // TODO: include app choice
 {
     while(1)
     {
         pthread_mutex_lock(&send_mutex);
 
-        // if message app selected
+        int selected_application = 0; // TODO: don't hardcode this
+
+        // IF chat
+        if (selected_application == 0)
+        {
         size_t data_size;
-        
         uint8_t* payload = send_message(&data_size);
+        }
+        else{
+            return NULL;
+        }
         
+
+        // send bytes
         if (send_bytes(payload, data_size, GPIO_SEND, pinit) != 0)
         {
             printf(stderr, "Failed to send messsage\n");
@@ -107,15 +97,24 @@ void* send_thread(void* pinit)
 
 int main()
 {
-    // print init stuff
-
-    // Bitties OS
-
-    // Explanation
-
     // App Selection
+    int selected_application = select_application();
 
+    if (selected_application == 0) // CHAT
+    {
+        int selected_recip = select_address();
+    }
+    else if (selected_application == 1) // PONG
+    {
+        printf("PONG is not yet available");
+        return 1;
+    }
+    else {
+        printf("Invalid selection. Try again");
+        return 1;
+    }
 
+    // inits
     int pinit = pigpio_start(NULL, NULL);
 
     if (pinit < 0)

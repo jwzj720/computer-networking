@@ -66,8 +66,6 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-
-
 uint8_t send_message(size_t* data_size)
 {
     // these just allocate right?
@@ -91,4 +89,11 @@ uint8_t send_message(size_t* data_size)
 
     printf("Message sent successfully");
     return packet;
+}
+
+void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
+    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
+    char* message = bytes_to_text(hamload, decoded_len);
+    printf("Message received: %s\n", message);
+    return NULL;
 }
