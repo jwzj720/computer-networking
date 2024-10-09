@@ -45,8 +45,8 @@ void* read_thread(void* pinit)
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
         struct Packet* packet = generate_packet(rd->data);
-        size_t* decoded_len;
-        uint8_t* decoded_packet = ham_decode(packet, packet->dlength, &decoded_len);
+        size_t decoded_len;
+        uint8_t* decoded_packet = ham_decode(packet->data, packet->dlength, &decoded_len);
         print_packet_debug(packet->data,packet->dlength);
         char* message = bytes_to_text(decoded_packet, decoded_len);
         printf("Message received: %s\n", message);
