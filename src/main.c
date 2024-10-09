@@ -17,7 +17,7 @@
 #define MAINTENANCE_INTERVAL 30  // Check every 30 seconds
 #define MY_ID 1                  // ID for this device
 #define CONTROL_ADDRESS 0x00     // Reserved address for control packets
-#define MAX_HOPS 16              // Maximum number of hops allowed
+#define MAX_HOPS 5              // Maximum number of hops allowed
 #define NUM_GPIO_PAIRS 4         // Define the number of GPIO pairs
 
 // Routing Table Entry
@@ -43,10 +43,10 @@ struct ReadThreadData {
 
 // GPIO Pairs
 struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27, 0xF0},
-    {24, 25, 0xF0},
-    {22, 23, 0xF0},
-    {20, 21, 0xF0}
+    {26, 27, 0xFF},
+    {24, 25, 0xFF},
+    {22, 23, 0xFF},
+    {20, 21, 0xFF}
 };
 
 // Global Variables
@@ -357,6 +357,8 @@ void* send_thread(void* arg) {
         if (app_data->selected_application == 0) {
             // Call send_message which now handles recipient selection
             encoded_payload = send_message(&data_size, &recipient_id);
+	    print_packet_binary(encoded_payload);
+	    printf("packed data, sending to %"PRIu8":",recipient_id);
         } else if (app_data->selected_application == 1) {
             // Pong application logic...
             continue; // For now, skip until logic for pong is implemented.
@@ -381,9 +383,10 @@ void* send_thread(void* arg) {
             free(encoded_payload);
             continue;
         }
-
+	print_routing_table();
         // Determine the GPIO output port based on the next hop
         int gpio_out = get_gpio_out_for_next_hop(entry->next_hop);
+	printf("next hop gpio: %d\n", gpio_out);
         if (gpio_out == -1) {
             fprintf(stderr, "No GPIO output port found for next hop %" PRIu8 "\n", entry->next_hop);
             free(encoded_payload);
@@ -392,8 +395,9 @@ void* send_thread(void* arg) {
 
         // Build the packet
         uint8_t temp_pack[512];
+	printf("recipient id: %"PRIu8": \n",recipient_id);
         int packet_size = build_packet(MY_ID, recipient_id, encoded_payload, data_size, temp_pack);
-        free(encoded_payload); // Free encoded payload
+        //free(encoded_payload); // Free encoded payload
 
         if (packet_size < 0) {
             fprintf(stderr, "Failed to build packet.\n");
@@ -405,7 +409,8 @@ void* send_thread(void* arg) {
             fprintf(stderr, "Failed to send message\n");
             continue;
         }
-
+	free(encoded_payload);
+	//free(temp_pack);
         printf("Message sent successfully to ID %" PRIu8 "\n", recipient_id);
     }
 
@@ -468,7 +473,7 @@ int main() {
     pthread_mutex_lock(&routingTable_lock);
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
-
+    send_routing_update();
     // Start threads
     pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, maintenance_tid;
 

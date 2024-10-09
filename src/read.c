@@ -47,7 +47,7 @@ struct ReadData* create_reader(int this_id)
     rd->values = 0;
     rd->run = 1;
     rd->data = malloc(MAX_BYTES * sizeof(uint8_t));
-    
+    rd->id = this_id;   
     return rd;
 }
 

@@ -53,6 +53,7 @@ int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
 
             if (bit == 0) {
                 // 0: Low to High transition
+		//printf("0");
                 gpio_write(pi, out_pin, 0);  // Set pin LOW
                 usleep(half_bit_time_us);   // Sleep for half bit time
 
@@ -60,7 +61,8 @@ int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
                 usleep(half_bit_time_us);   // Sleep for the remaining half bit time
             } else {
                 // 1: High to Low transition
-                gpio_write(pi, out_pin, 1);  // Set pin HIGH
+                //printf("1");
+		gpio_write(pi, out_pin, 1);  // Set pin HIGH
                 usleep(half_bit_time_us);   // Sleep for half bit time
 
                 gpio_write(pi, out_pin, 0);  // Set pin LOW
