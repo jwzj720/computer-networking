@@ -78,7 +78,7 @@ void* send_thread(void* pinit) // TODO: include app choice
         if (selected_application == 0)
         {
         uint8_t* payload = send_message(&data_size);
-        int eval = send_bytes(payload, data_size, GPIO_SEND, pinit);
+        int eval = send_bytes(payload, data_size, GPIO_SEND, *(int*)pinit);
 
         if (eval != 0)
         {

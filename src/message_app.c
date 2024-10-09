@@ -86,7 +86,7 @@ uint8_t* send_message(size_t* data_size)
     // TODO: update GPIO to be dynamically updated based on who the sender is
     
     printf("Message sent successfully");
-    return packet;
+    return *packet;
 }
 
 void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
