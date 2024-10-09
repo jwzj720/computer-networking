@@ -3,8 +3,8 @@
 #include "selection.h"
 
 const char* Application_List[NUM_APPS] = {"Chat", "Pong"};
-const char* Address_Book[NUM_ADDRESSES] = {"0x01", "0x02", "0x03"};
-char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart"};
+const char* Address_Book[NUM_ADDRESSES] = {"0x01", "0x02", "0x03","0x04"};
+char* Address_Tenents[NUM_ADDRESSES] = {"Walt", "Dan", "Stuart","Danielle"};
 
 
 int select_application() {
