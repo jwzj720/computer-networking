@@ -34,7 +34,7 @@ void send_update(uint8_t data)
 
 uint8_t check_data(){
   struct Packet* packet = app_data->received_packet;
-  if(packet->data!=NULL && packet->dlength==1)
+  if(packet->data[0] != 0x00 && packet->dlength==1)
   {
     return packet->data[0];
   }
@@ -84,19 +84,25 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   
   getch();
   // send mutex is default set to unlock on start, so it wont write until this runs.
+  
   send_update((uint8_t)0x02);
-
-  clear();
 
   while(!p2_ready)
   {
     pthread_mutex_unlock(&send_mutex);
     pthread_mutex_lock(&send_mutex);
+    clear();
+    printw("Message SENT");
+    refresh();
+    usleep(5000000);
     send_update((uint8_t)0x02); // queue another message...
 
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data();
     pthread_mutex_unlock(&read_mutex);
+    printw("Message Read");
+    refresh();
+    usleep(5000000);
   }
   // Lock thread so nothing sends until unlocked.
   pthread_mutex_lock(&send_mutex);

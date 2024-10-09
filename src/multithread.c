@@ -17,11 +17,13 @@ void* read_thread(void* pinit)
 {
     // Allocate memory for the packet object... Still need to allcate the packet data memory.
     struct AppData *app_data = (struct AppData*) pinit;
-
+    app_data->received_packet = malloc(sizeof(struct Packet));
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader(1);
 
     struct Packet* packet = app_data->received_packet;
+    packet->data = malloc(sizeof(uint8_t)*50);
+    packet->data[0]=0x00;
     
     // Check data was allocated
     if (rd->data == NULL)
@@ -48,9 +50,7 @@ void* read_thread(void* pinit)
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
-        free(packet->data);
-	    free(packet);
-        packet = data_to_packet(rd->data);
+        data_to_packet(packet, rd->data);
 
         //reset readrate and run variables each iteration.
         reset_reader(rd);
@@ -63,6 +63,8 @@ void* read_thread(void* pinit)
     // Free Data
     free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
     free(rd);
+    free(packet->data);
+    free(packet);
 
     return NULL;
 }
@@ -132,9 +134,6 @@ int main()
         return 1;
     }
 
-    // App Selection
-    app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
-
     // Start send thread locked...
     pthread_mutex_lock(&send_mutex);
 
@@ -153,11 +152,11 @@ int main()
     while (1)
     {
         app_data.selected_application = app_select()-1;
-
         if (app_data.selected_application == 0) // Chat application
             {
                 //start_message(&app_data); //Run the message app
                 printf("Text application\n");
+		usleep(5000000);
                 fflush(stdin);
                 // payload = send_message(&data_size);
             }

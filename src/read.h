@@ -13,6 +13,6 @@ struct ReadData* create_reader(int this_id);
 void reset_reader(struct ReadData* rd);
 void get_bit(int pi, unsigned gpio, unsigned level, uint32_t tick, void* user);
 uint8_t* read_bits(struct ReadData* rd); /* An example function declaration */
-struct Packet* data_to_packet(uint8_t* data);
+void data_to_packet(struct Packet* newpack, uint8_t* data);
 
 #endif

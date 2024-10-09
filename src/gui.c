@@ -35,7 +35,7 @@ int init_screen()
 	i++;
         
     }
-
+    endwin();
     return 0;
 }
 

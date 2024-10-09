@@ -80,18 +80,17 @@ uint8_t* read_bits(struct ReadData* rd)
 * Take read data and convert it to packets
 * Right now this funciton re-allocates memory every packet receipt.
 */
-struct Packet* data_to_packet(uint8_t* data)
+void data_to_packet(struct Packet* newpack, uint8_t* data)
 {
-    struct Packet* newpack = malloc(sizeof(struct Packet));
     // TODO: Handle bad packet headers (Right now not having enough received data will cause
     // a seg fault due to ArrayOutOfBounds)
     uint16_t temp = ((uint16_t)data[0] << 8) | data[1];
     newpack->dlength = (size_t)temp;
     newpack->sending_addy = data[2];
     newpack->receiving_addy = data[3];
-    newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength); //This multiplies by uint16_t, potential undefined behavior?
+    //newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength); //This multiplies by uint16_t, potential undefined behavior?
     //Put the remaining data into the newpack->data spot.
     memcpy(newpack->data, &data[4],newpack->dlength);
     //Packet has been created, now return
-    return newpack;
+   // return newpack;
 }
