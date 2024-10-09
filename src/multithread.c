@@ -167,7 +167,7 @@ int start_pong(struct AppData* parent_data) {
   
   getch();
   // send mutex is default set to unlock on start, so it wont write until this runs.
-  endwin();
+  //endwin();
   printf("Sending first update\n");
   send_update(app_data,(uint8_t)0x02);
   pthread_mutex_unlock(&read_mutex);
@@ -197,12 +197,12 @@ int start_pong(struct AppData* parent_data) {
   //}
   //usleep(5000000);
   // Main Game loop. Runs until end is declared.
-  for (nodelay(stdscr,1); !end; usleep(50000)) {
+  for (nodelay(stdscr,1); !end; usleep(500000)) {
 
     //Checks the ball location
 
     // Add one to counter, and every 16 iterations check the border cases
-    if (++cont%16==0){
+    if (++cont%8==0){
       if ((b.y==scr.y-1)||(b.y==1)) // Check vertical borders, stop vert movement.
         b.movver=!b.movver;
       if ((b.x>=scr.x-2)||(b.x<=2)){ // Check horizontal borders, stop horizontal movement
@@ -269,11 +269,11 @@ int start_pong(struct AppData* parent_data) {
 
     // Update variables according to input
     switch (input) {
-      case 0:
-        endwin();
-        printf("An error occurred");
-        end++;
-        break;
+      //case 0x00:
+      //  endwin();
+      //  printf("An error occurred");
+      //  end++;
+      //  break;
       case 0x01:
         b2.y++;
         break;
@@ -364,7 +364,8 @@ int main()
                 return 0; // Invalid application
             }
         // When app is exited and returns, go back to the app select screen.
-
+	printf("APP ENDED");
+	usleep(5000000);
     }
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
