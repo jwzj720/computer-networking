@@ -23,27 +23,28 @@ struct AppData* app_data;
 /*
 * send_update just updates the data of the sendable packet. This a
 */
-void send_update(uint8_t data)
+uint8_t send_update(uint8_t data)
 {
   struct Packet* packet = app_data->sent_packet;
   packet->dlength = (size_t)1;
-  packet->data = (uint8_t* )malloc(sizeof(uint8_t)); //This multiplies by uint16_t, potential undefined behavior?
   //Put the remaining data into the newpack->data spot.
   packet->data[0] = data;
+  return packet->data[0];
 }
 
 uint8_t check_data(){
   struct Packet* packet = app_data->received_packet;
   if(packet->data[0] != 0x00 && packet->dlength==1)
   {
-    return packet->data[0];
+    uint8_t temp = packet->data[0];
     packet->data[0] = 0x00;
+    return temp;
   }
-    return 0;
+    return 0x00;
 }
 
 int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_mutex_t read_mutex) {
-  int p2_ready = 0;
+  uint8_t p2_ready = 0x00;
 
   app_data = parent_data;
 
@@ -85,25 +86,23 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   
   getch();
   // send mutex is default set to unlock on start, so it wont write until this runs.
-  
+  endwin();
+
   send_update((uint8_t)0x02);
+  pthread_mutex_unlock(&read_mutex);
 
   while(!p2_ready)
   {
     pthread_mutex_unlock(&send_mutex);
     pthread_mutex_lock(&send_mutex);
-    clear();
-    printw("Message SENT");
-    refresh();
-    usleep(5000000);
     send_update((uint8_t)0x02); // queue another message...
 
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data();
     pthread_mutex_unlock(&read_mutex);
-    printw("Message Read");
-    refresh();
-    usleep(5000000);
+    //printw("Message Read");
+    //refresh();
+    //usleep(5000000);
   }
   // Lock thread so nothing sends until unlocked.
   pthread_mutex_lock(&send_mutex);

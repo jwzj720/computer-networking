@@ -5,6 +5,7 @@
 #include "selection.h"
 #include "gui.h"
 #include "pong_game.h"
+#include <ncurses.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -45,14 +46,20 @@ void* read_thread(void* pinit)
     while(1)
     {
         // read a message
-        read_bits(rd);
+        ::read_bits(rd);
         
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
         data_to_packet(packet, rd->data);
-
-        //reset readrate and run variables each iteration.
+        printf("Read Packet; ");
+	for (size_t i=0; i<packet->dlength; i++)
+	{
+		printf("%02X ",packet->data[i]);
+	}
+	printf("\n");
+	
+	//reset readrate and run variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
     }
@@ -99,6 +106,12 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
             printf("Failed to send message\n");
             return NULL;
         }
+        printf("Sent Packet; ");
+	for (size_t i=0; i<pack_size; i++)
+	{
+		printf("%02X ",payload[i]);
+	}
+	printf("\n");
         // free packet data memory
         free(packet_data->data);
         packet_data->dlength=0;
@@ -137,6 +150,7 @@ int main()
 
     // Start send thread locked...
     pthread_mutex_lock(&send_mutex);
+    pthread_mutex_lock(&read_mutex);
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data) != 0) {
