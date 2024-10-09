@@ -89,8 +89,16 @@ void* send_thread(void* pinit)
     {
         pthread_mutex_lock(&send_mutex);
 
-        //TODO: if message app selected
-        int payload = send_message(*(int*)pinit)
+        // if message app selected
+        size_t data_size;
+        
+        uint8_t* payload = send_message(&data_size);
+        
+        if (send_bytes(payload, data_size, GPIO_SEND, pinit) != 0)
+        {
+            printf(stderr, "Failed to send messsage\n");
+            return 1;
+        }
 
         pthread_mutex_unlock(&send_mutex);
     }
@@ -106,6 +114,7 @@ int main()
     // Explanation
 
     // App Selection
+
 
     int pinit = pigpio_start(NULL, NULL);
 
