@@ -12,6 +12,14 @@ pthread_t write_thread;
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+struct AppData {
+    int pinit;
+    int selected_application;
+    int selected_recipient;  // not sure if we need this?
+};
+
+
 void* read_thread(void* pinit)
 {
     // Create Data reading object, which will store a message's data.
@@ -65,28 +73,36 @@ void* read_thread(void* pinit)
     return NULL;
 }
 
-void* send_thread(void* pinit) // TODO: include app choice
+void* send_thread(void* pinit) // passing app_data in instead of pinit
 {
+    struct AppData *app_data = (struct AppData*) pinit;
+
     while(1)
     {
         pthread_mutex_lock(&send_mutex);
 
-        int selected_application = 0; // TODO: don't hardcode this
         size_t data_size;
+        uint8_t* payload = NULL;
 
         // IF chat
-        if (selected_application == 0)
+        if (app_data->selected_application == 0) // Chat application
         {
-        uint8_t* payload = send_message(&data_size);
-        int eval = send_bytes(payload, data_size, GPIO_SEND, *(int*)pinit);
+            payload = send_message(&data_size);
+        }
+        else if (app_data->selected_application == 1) // Pong application
+        {
+            // payload = send_pong(&data_size);
+        }
+        else {
+            pthread_mutex_unlock(&send_mutex);
+            return NULL; // Invalid application
+        }
 
+        int eval = send_bytes(payload, data_size, GPIO_SEND, app_data->pinit);
         if (eval != 0)
         {
-            printf("Failed to send messsage\n");
-            return NULL;
-        }
-        }
-        else{
+            printf("Failed to send message\n");
+            pthread_mutex_unlock(&send_mutex);
             return NULL;
         }
 
@@ -95,60 +111,38 @@ void* send_thread(void* pinit) // TODO: include app choice
     return NULL;
 }
 
+
 int main()
 {
+    struct AppData app_data;
+
     // App Selection
+    app_data.selected_application = select_application(&send);
 
-    // WALT TODO: refactor so that selected application and selected recipient are passed to send_thread
+    // Initialize pigpio
+    app_data.pinit = pigpio_start(NULL, NULL);
 
-    // uint8_t send;
-    // int selected_application = select_application(&send);
-
-    // if (selected_application == 0) // CHAT
-    // {
-    //     int selected_recip = select_address(&send); // TODO: pass on to send stuff
-    // }
-    // else if (selected_application == 1) // PONG
-    // {
-    //     printf("PONG is not yet available");
-    //     return 1;
-    // }
-    // else {
-    //     printf("Invalid selection. Try again");
-    //     return 1;
-    // }
-
-    // inits
-    int pinit = pigpio_start(NULL, NULL);
-
-    if (pinit < 0)
+    if (app_data.pinit < 0)
     {
         fprintf(stderr, "Didn't initialize pigpio library\n");
-        return 1; // Return NULL to indicate failure
+        return 1;
     }
 
     // Set GPIO modes
-    if (set_mode(pinit, GPIO_SEND, PI_OUTPUT) != 0)
+    if (set_mode(app_data.pinit, GPIO_SEND, PI_OUTPUT) != 0 || 
+        set_mode(app_data.pinit, GPIO_RECEIVE, PI_INPUT) != 0)
     {
-        fprintf(stderr, "Failed to set GPIO_SEND mode\n");
-        pigpio_stop(pinit);
+        pigpio_stop(app_data.pinit);
         return 1;
     }
 
-    if (set_mode(pinit, GPIO_RECEIVE, PI_INPUT) != 0)
-    {
-        fprintf(stderr, "Failed to set GPIO_RECEIVE mode\n");
-        pigpio_stop(pinit);
-        return 1;
-    }
-
-    if(pthread_create(&reading_thread, NULL, read_thread, &pinit) != 0) {
+    if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
         perror("Could not create reading thread");
         return 1;
     }
     time_sleep(.5);
 
-    if(pthread_create(&write_thread, NULL, send_thread, &pinit) != 0) {
+    if(pthread_create(&write_thread, NULL, send_thread, &app_data) != 0) {
         perror("Could not create writing thread");
         return 1;
     }
@@ -156,7 +150,7 @@ int main()
     pthread_join(reading_thread, NULL);
     pthread_join(write_thread, NULL);
 
-    pigpio_stop(pinit);
+    pigpio_stop(app_data.pinit);
 
     return 0;
 }
