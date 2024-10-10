@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\begin{document}
+
+\section*{Progress Report 13}
+Stuart, Walt, Dan
+
+%% tasks and task owners for roughly the next 24 hours
+\section*{Next Goals and Deliverables}
+\begin{itemize}
+    \item Abstract packet creation to packet struct - Walt
+    \item Create packet data interpretation system - Stuart
+    \item Create pong game - Stuart
+    \item Generalize network layer to accept any application and send to any port - Walt/Dan
+    \item Implement error packet and handle no stop sequence - group
+    \item Run expiriments on baud rates, and profile program to determine where bottlenecks are. - group
+\end{itemize}
+
+%% Section enumerating progress from the previous day. Items people were responsible for in the last progress report must appear. Additional tasks that the group agreed to add since the last progress report may be presented here.
+\section*{Previous Goals and Deliverables}
+\begin{itemize}
+    \item Allow program to repeatedly send messages (DONE) - Dan
+    \item Create dynamic network system to allow users to log on/off freely (DONE) - Walt
+    \item Generalize packet creation to packet struct (IN PROGRESS) - Walt
+    \item Create packet data interpretation system (IN PROGRESS) - Stuart
+    \item Create pong game (IN PROGRESS) - Stuart
+    \item Build on router capabilities (error packet, handle no stop seq.) (DONE) - group
+\end{itemize}
+
+%% Sections above should be short bullets. Longer free form discussion of information from above goes here. These should still be short! More that a couple sentences and the discussion is better suited as a results write-up, appendix, or design document.
+\section*{Discussion}
+\begin{itemize}
+    \item Today we debugged and ran the dynamic router. Now new devices can be plugged in and the router will automatically recognize them and their address, 
+    and add it to the address book. The next step is adding routing capabilites to the clients, so they can daisy chain devices to together. 
+    We also want to add router - router connections, so that the network can have two routers and as many as six devices. 
+    \item Stuart has been working on the transport layer and how to determine types of data being sent in the data bytes of the packet.
+    \item Dan has been working on the chat application, and how to abstract applications from the network and link layer. We are very close with
+    this refactor, and Walt will be making the finishing touches tomorrow.
+    \item Finally, to prepare for writing the paper over the weekend we will be running experiments on the baud rate and profiling the program to determine
+    where the bottlenecks are. We will also be looking into how to handle errors in the network, and how to keep the program running in the case of bad packets.
+\end{itemize}
+
+%% The appendix pages go here if there are any...
+%\section*{Appendix}
+\end{document}

@@ -1,3 +1,4 @@
+#include "router.h"
 //struct User* addressBook[BOOKSIZE]; /* pointer table */
 struct User* addressBook = NULL;
 
@@ -9,12 +10,6 @@ struct User* addressBook = NULL;
 pthread_mutex_t addressBook_lock;  /* lock for synchronizing access to the address book */
 pthread_mutex_t gpio_out_lock;     /* lock for synchronizing access to GPIO_OUT_PINS */
 int pinit;
-
-
-
-int GPIO_IN_PINS[MAX_GPIO_PINS] = GPIO_RECEIVE_PINS;
-int GPIO_OUT_PINS[MAX_GPIO_PINS] = GPIO_SEND_PINS;
-
 
 /* HELPER FUNCTIONS */
 
@@ -74,7 +69,7 @@ void* read_thread(void* arg) {
     }
 
     //When done with the reading thread
-    callback_cancel(id);
+    callback_cancel(callback_id);
 
     // Free Data
     free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
@@ -84,6 +79,7 @@ void* read_thread(void* arg) {
 }
 
 void process_application_packet(struct Packet* packet) {
+    //parse_data()
     if (relay(packet) != 0) {
         fprintf(stderr, "Message relay error\n");
     }
