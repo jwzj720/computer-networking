@@ -87,11 +87,12 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
         // IF chat
         if (app_data->selected_application == 0) // Chat application
         {
+            printf("Text application\n");
             payload = send_message(&data_size);
         }
         else if (app_data->selected_application == 1) // Pong application
         {
-            // payload = send_pong(&data_size);
+            printf("Pong application\n");
         }
         else {
             pthread_mutex_unlock(&send_mutex);
