@@ -66,7 +66,7 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-int send_message(size_t* data_size)
+uint8_t* send_message(size_t* data_size)
 {
     // these just allocate right?
     uint8_t device_addr =   0x01;  // Single 8-bit device address
@@ -80,13 +80,17 @@ int send_message(size_t* data_size)
 
     printf("Size of encoded packet %ld\n", encoded_length);
 
-    uint8_t packet[50];
-    //size_t data_size = sizeof(payload);
-    data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
+    uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
+    *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
 
     // TODO: update GPIO to be dynamically updated based on who the sender is
     
-
-    printf("Message sent successfully")
+    printf("Message sent successfully \n");
     return packet;
+}
+
+void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
+    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
+    char* message = bytes_to_text(hamload, *decoded_len);
+    printf("Message received: %s\n", message);
 }

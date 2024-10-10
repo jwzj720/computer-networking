@@ -69,7 +69,7 @@ void* read_thread(void* arg) {
     }
 
     //When done with the reading thread
-    callback_cancel(id);
+    callback_cancel(callback_id);
 
     // Free Data
     free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
