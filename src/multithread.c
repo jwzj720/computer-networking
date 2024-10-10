@@ -148,7 +148,7 @@ int main()
         return 1;
     }
 
-    pthread_join(reading_thread, NULL);
+    // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
 
     pigpio_stop(app_data.pinit);

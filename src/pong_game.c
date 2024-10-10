@@ -11,7 +11,7 @@ typedef struct{
   bool movhor, movver; // If false/true correspond to left/right or up/down.
   } object;
 
-int main() {
+int start_pong() {
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
   initscr();
@@ -32,8 +32,7 @@ int main() {
                "\t          o888o        88ooo88  o888o o888o 888     888      \n"
                "\t                                             888ooo888     \n\n"
                "\tA game by vicente.bolea@gmail.com, modified for network play \n"
-               "\t \t\t\tPlayer 1 your controls are 'a' and 'q'                \n"
-               "\t \t\t\tPlayer 2 your controls are the arrows of the keyboard \n"
+               "\t \t\t\tYour controls are the arrows of the keyboard \n"
                "\t \t\t\tPush ANY key to start, 'p' for pause and ESC to quit" ); 
 
   /*
@@ -46,6 +45,7 @@ int main() {
 
   
   getch();
+  send_message();
   // Main Game loop. Runs until end is declared.
   for (nodelay(stdscr,1); !end; usleep(4000)) {
     // Add one to counter, and every 16 iterations check the border cases
