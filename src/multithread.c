@@ -5,6 +5,7 @@
 #include "send.h"
 #include "selection.h"
 #include <pthread.h>
+#include <ncurses.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -15,9 +16,14 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct AppData {
     int pinit;
-    int selected_application;
+    int selected_application; // 
     int selected_recipient;  // not sure if we need this?
 };
+
+typedef struct{
+  short int x, y;
+  bool selected; // If true, it is currently selected.
+} object;
 
 
 void* read_thread(void* pinit)
@@ -112,13 +118,24 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     return NULL;
 }
 
+int init_screen()
+{
+    // Initialize screen, colors, and register keypad.
+    object scr; int i = 0,cont=0; bool end=false;
+    initscr();
+    start_color();
+    init_pair(1,COLOR_BLUE,COLOR_BLACK);
+    keypad(stdscr,true);
+    noecho();
+    curs_set(0);
+    getmaxyx(stdscr,scr.y,scr.x);
+}
+
 
 int main()
 {
+    // Initialize app data object
     struct AppData app_data;
-
-    // App Selection
-    app_data.selected_application = select_application();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
@@ -147,6 +164,13 @@ int main()
         perror("Could not create writing thread");
         return 1;
     }
+
+    // Initialize router connection
+    // Pass in pthread address so that 
+    init_screen();
+
+    // App Selection
+    app_data.selected_application = select_application();
 
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
