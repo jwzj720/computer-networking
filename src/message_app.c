@@ -69,7 +69,6 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
 
 uint8_t* send_message(size_t* data_size)
 {
-    // these just allocate right?
     uint8_t device_addr = 0x01;
     uint8_t receiver_addr = select_address();
     print_byte_binary(receiver_addr);
@@ -79,12 +78,10 @@ uint8_t* send_message(size_t* data_size)
     size_t encoded_length;
     uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
 
-    printf("Size of encoded packet %ld\n", encoded_length);
+    //printf("Size of encoded packet %ld\n", encoded_length);
 
     uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
     *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
-
-    // TODO: update GPIO to be dynamically updated based on who the sender is
     
     printf("Message sent successfully \n");
     return packet;
