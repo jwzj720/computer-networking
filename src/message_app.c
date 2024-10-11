@@ -72,7 +72,7 @@ uint8_t* send_message(size_t* data_size)
     uint8_t device_addr = 0x01;
     char* receiver_name;
     uint8_t receiver_addr = select_address(&receiver_name);
-    print_byte_binary(receiver_addr);
+    //print_byte_binary(receiver_addr);
     size_t payload_length;
     uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
 
