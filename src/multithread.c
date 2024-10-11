@@ -121,7 +121,7 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
 int init_screen()
 {
     // Initialize screen, colors, and register keypad.
-    object scr; int i = 0,cont=0; bool end=false;
+    object scr;
     initscr();
     start_color();
     init_pair(1,COLOR_BLUE,COLOR_BLACK);
@@ -154,6 +154,7 @@ int main()
         return 1;
     }
 
+    // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
         perror("Could not create reading thread");
         return 1;
@@ -170,7 +171,7 @@ int main()
     init_screen();
 
     // App Selection
-    app_data.selected_application = select_application();
+    app_data.selected_application = app_screen()-1; // Subtract 1 for offbyone error
 
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);

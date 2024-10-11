@@ -45,7 +45,7 @@ int start_pong() {
 
   
   getch();
-  send_message();
+  //send_message();
   // Main Game loop. Runs until end is declared.
   for (nodelay(stdscr,1); !end; usleep(4000)) {
     // Add one to counter, and every 16 iterations check the border cases
