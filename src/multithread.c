@@ -6,6 +6,7 @@
 #include "selection.h"
 #include <pthread.h>
 #include <ncurses.h>
+#include "gui.h"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -118,24 +119,16 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     return NULL;
 }
 
-int init_screen()
-{
-    // Initialize screen, colors, and register keypad.
-    object scr;
-    initscr();
-    start_color();
-    init_pair(1,COLOR_BLUE,COLOR_BLACK);
-    keypad(stdscr,true);
-    noecho();
-    curs_set(0);
-    getmaxyx(stdscr,scr.y,scr.x);
-}
 
 
 int main()
 {
     // Initialize app data object
     struct AppData app_data;
+
+    // Initialize router connection
+    // Pass in pthread address so that 
+    init_screen();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
@@ -154,6 +147,9 @@ int main()
         return 1;
     }
 
+    // App Selection
+    app_data.selected_application = app_screen()-1; // Subtract 1 for offbyone error
+
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
         perror("Could not create reading thread");
@@ -166,12 +162,7 @@ int main()
         return 1;
     }
 
-    // Initialize router connection
-    // Pass in pthread address so that 
-    init_screen();
 
-    // App Selection
-    app_data.selected_application = app_screen()-1; // Subtract 1 for offbyone error
 
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);

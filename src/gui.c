@@ -1,29 +1,10 @@
-#include <ncurses.h>
-#include <string.h>
-#include <unistd.h> // For sleep function
-
-#define APP_COUNT 2
-
-typedef struct{
-  short int x, y;
-  bool selected; // If true, it is currently selected.
-} object;
+#include "gui.h"
 
 int init_screen()
 {
     initscr();
     noecho();          
     curs_set(FALSE);
-    clear();
-    // Display the text in a formatted way
-    mvprintw(4, 0,  "\t           OOOOOOO     OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO     OOOOOO \n"
-                    "\t           O      O       O          O          O          O       O          O       \n"
-                    "\t           OOOOOOO        O          O          O          O       O          O       \n"
-                    "\t           O      O       O          O          O          O       OOOOOO      OOOOO  \n"
-                    "\t           O       O      O          O          O          O       O                O \n"
-                    "\t           O      O       O          O          O          O       O                O \n"
-                    "\t           OOOOOOO     OOOOOOO       O          O       OOOOOOO    OOOOOOO    OOOOOO  \n"
-                    "\t \t\t\tWaiting to connect to network\n");
 
     // Position for the dots
     int dot_row = 10;
@@ -33,24 +14,24 @@ int init_screen()
 
     // Loop to animate dots. Loading loop breaks when connect is found.
     // TODO: Break infinite loop
-    while(1)
+    int i=0;
+    while(i<50)
     {
+        clear();
+        current_dot = (current_dot + 1) % 3; // Cycle through the dots
+        mvprintw(4, 0, "\t           OOOOOOo     OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO     OOOOOO \n"
+                       "\t           O       O      O          O          O          O       O          O       \n"
+                       "\t           OOOOOOOO       O          O          O          O       O          O       \n"
+                       "\t           O      O       O          O          O          O       OOOOOO      OOOOO  \n"
+                       "\t           O       O      O          O          O          O       O                O \n"
+                       "\t           O      O       O          O          O          O       O                O \n"
+                       "\t           OOOOOOO     OOOOOOO       O          O       OOOOOOO    OOOOOOO    OOOOOO  \n"
+                       "\t \t\t\tWaiting to connect to network\n");
         mvprintw(dot_row, dot_col, "%s", dots[current_dot]);
         refresh(); //May not need to refresh the screen here...
         usleep(500000); // Sleep for 500 milliseconds
 
-        current_dot = (current_dot + 1) % 3; // Cycle through the dots
-        clear(); // Clear the screen for the next update
-
-        // Redraw the "BITTIES" text
-        mvprintw(4, 0, "\t           OOOOOOo     OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO    OOOOOOO     OOOOOO \n"
-                       "\t           O      OO      O          O          O          O       O          O       \n"
-                       "\t           OOOOOOOO       O          O          O          O       O          O       \n"
-                       "\t           O      Oo      O          O          O          O       OOOOOO      OOOOO  \n"
-                       "\t           O      Oo      O          O          O          O       O                O \n"
-                       "\t           O      OO      O          O          O          O       O                O \n"
-                       "\t           OOOOOOO     OOOOOOO       O          O       OOOOOOO    OOOOOOO    OOOOOO  \n"
-                       "\t \t\t\tWaiting to connect to network\n");
+        
     }
 
     return 0;
@@ -73,33 +54,32 @@ int app_select()
 
     int selection = 0;
     int hover = 1;
-
+    char* apps[APP_COUNT] = {"CHATROOM","PONG"};
     while(!selection)
     {
         clear();
         mvprintw(y_start-1, x_start, "%s", text);
         mvprintw(y_start, x_start, "%s", text2);
 
-        attron((hover==1)? A_STANDOUT:A_NORMAL);
-        mvprintw(y_start+1,x_start,"%s","Chatroom");
-        attroff((hover==1)?A_STANDOUT:A_NORMAL);
-
-        attron((hover==2)?A_STANDOUT:A_NORMAL);
-        mvprintw(y_start+2,x_start,"%s","Pong");
-        attroff((hover==2)?A_STANDOUT:A_NORMAL);
+        for (int i=1; i<APP_COUNT+1;i++)
+        {
+            attron((hover==i)?A_STANDOUT:A_NORMAL);
+            mvprintw(y_start+i,x_start,"%s",apps[i-1]);
+            attroff((hover==1)?A_STANDOUT:A_NORMAL);
+        }
         refresh();
+        usleep(500000);
 
         switch (getch()) {
             case KEY_DOWN: 
                 hover = (hover % APP_COUNT)+1;
                 break;
             case KEY_UP:
-                hover = (hover-- % APP_COUNT) ? hover : APP_COUNT;
+                hover = (--hover % APP_COUNT) ? hover : APP_COUNT;
                 break;
             case KEY_ENTER: selection = hover; break; 
         }
         
-    }
-    
+    }    
     return selection;
 }
