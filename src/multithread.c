@@ -4,7 +4,9 @@
 #include "read.h"
 #include "send.h"
 #include "selection.h"
+#include "gui.h"
 #include <pthread.h>
+#include <ncurses.h>
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -15,10 +17,9 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct AppData {
     int pinit;
-    int selected_application;
+    int selected_application; // 
     int selected_recipient;  // not sure if we need this?
 };
-
 
 void* read_thread(void* pinit)
 {
@@ -111,12 +112,15 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
 }
 
 
+
 int main()
 {
+    // Initialize app data object
     struct AppData app_data;
 
-    // App Selection
-    app_data.selected_application = select_application();
+    // Initialize router connection
+    // Pass in pthread address so that 
+    init_screen();
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
@@ -135,6 +139,10 @@ int main()
         return 1;
     }
 
+    // App Selection
+    app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
+
+    // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
         perror("Could not create reading thread");
         return 1;
@@ -146,7 +154,9 @@ int main()
         return 1;
     }
 
-    pthread_join(reading_thread, NULL);
+
+
+    // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
 
     pigpio_stop(app_data.pinit);
