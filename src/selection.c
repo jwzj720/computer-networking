@@ -29,7 +29,7 @@ free(selected_app_c);
 return selected_app;
 }
 
-int select_address(){
+int select_address(char* rec_name){
     char* selected_address_c = malloc(sizeof(char*));
     printf("Select a recipient: \n");
     for (int i = 0; i < NUM_ADDRESSES; i++) {
@@ -47,6 +47,8 @@ int select_address(){
         }
     }
 
-    printf("Selected Address: %s\n", Address_Book[selected_address]);
+    //printf("Selected Address: %s\n", Address_Book[selected_address]);
+    rec_name = Address_Tenents[selected_address];
+    
     return (uint8_t)selected_address;
 }
