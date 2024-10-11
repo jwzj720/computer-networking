@@ -17,6 +17,7 @@ Each byte represents one character from the input string in its ASCII hex value
 uint8_t* text_to_bytes(size_t* len){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
+    fflush(stdin);
     printf("Please enter a message: ");
     fgets(input,sizeof(input),stdin);
 
