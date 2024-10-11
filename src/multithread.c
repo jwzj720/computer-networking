@@ -95,7 +95,6 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
             printf("Pong application\n");
         }
         else {
-            pthread_mutex_unlock(&send_mutex);
             return NULL; // Invalid application
         }
 
@@ -103,7 +102,6 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
         if (eval != 0)
         {
             printf("Failed to send message\n");
-            pthread_mutex_unlock(&send_mutex);
             return NULL;
         }
 
