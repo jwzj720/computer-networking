@@ -47,5 +47,5 @@ int select_address(){
     }
 
     printf("Selected Address: %s\n", Address_Book[selected_address]);
-    return selected_address;
+    return (uint8_t)selected_address;
 }
