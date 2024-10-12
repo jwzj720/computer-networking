@@ -14,11 +14,11 @@ OUTPUT:
 uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
 Each byte represents one character from the input string in its ASCII hex value
 */
-uint8_t* text_to_bytes(size_t* len){
+uint8_t* text_to_bytes(size_t* len, char rec_name){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
-    printf("Please enter a message: ");
+    printf("Please enter a message to send to %s: ", rec_name);
     fgets(input,sizeof(input),stdin);
 
     *len = strlen(input); // get length of input
@@ -33,10 +33,10 @@ uint8_t* text_to_bytes(size_t* len){
         hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
     }
 
-    for (size_t i = 0; i < *len; i++) {
-        printf("%02X ", hexList[i]); // Print each byte in hex format
-    }
-    printf("<- Hex values");
+    // for (size_t i = 0; i < *len; i++) {
+    //     printf("%02X ", hexList[i]); // Print each byte in hex format
+    // }
+    // printf("<- Hex values");
 
     printf("\n");
 
@@ -69,22 +69,20 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
 
 uint8_t* send_message(size_t* data_size)
 {
-    // these just allocate right?
     uint8_t device_addr = 0x01;
-    uint8_t receiver_addr = 0x00;
-
+    char* receiver_name;
+    uint8_t receiver_addr = select_address(&receiver_name);
+    //print_byte_binary(receiver_addr);
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length);
+    uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
 
     size_t encoded_length;
     uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
 
-    printf("Size of encoded packet %ld\n", encoded_length);
+    //printf("Size of encoded packet %ld\n", encoded_length);
 
     uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
     *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
-
-    // TODO: update GPIO to be dynamically updated based on who the sender is
     
     printf("Message sent successfully \n");
     return packet;
