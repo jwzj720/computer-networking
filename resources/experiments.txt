@@ -1,0 +1,77 @@
+Bitties Network Experiments
+10.12.24
+
+------------------------------------------
+Write scripts to run each experiment repeatdly and export data.
+
+Collect and export detailed logs from each experiment for post-processing and analysis in .csv or .txt files. 
+        - Python will be used to interperet this data.
+
+Speed Tests:
+
+Experiment 1: Latency of Message Transmission
+Objective: Measure how quickly a message can be sent, received, processed, and responded to.
+Setup:
+    - Embed the send_message function into the read_message function to create a round-trip cycle.
+    - Start with a simple fixed-size message.
+    - Measure the total round-trip time using timestamps taken before sending and after receiving a message.
+    - Average round-trip time over 100 iterations.
+
+Experiment 2: Maximum Send Rate
+Objective: Identify the fastest rate at which messages can be sent without system crashes.
+Setup: 
+    - Gradually increase the message sending rate from a low, stable rate to the maximum possible rate.
+    - Watch for errors as rates increase. When they are regularly occuring, stepdown to find the rate at which they don't
+    - Test tentative max send rate over 100 iterations.
+
+Experiment 3: Optimal Transmission Rate
+Objective: Determine the most reliable and stable transmission rate.
+Setup:
+    - Perform repeated message transmission at different rates (from low to high).
+    - Track error rates and message throughput.
+    - Identify the rate at which the error rate remains acceptably low (<1% errors).
+    - Test tentative reliable send rate over 100 iterations.
+
+
+Error Tests:
+
+Experiment 1: Error Frequency at Default Speed (same as optimal transmisision rate exp. but just focus more on errors)
+
+Experiment 2: Error Rate vs. Speed
+Objective: Understand how error rates change as the transmission speed increases.
+Setup:
+    - Track how the number and severity of errors increase with speed.
+    - Follow error rate as a function of transmission speed, identifying critical thresholds where errors become prohibitive.
+
+Experiment 3: Stress Test with Message Volume
+Objective: Determine how many messages can be processed before the system breaks.
+Setup: 
+    - Send messages continuously for a fixed period of time (1 hour perhaps)
+    - Monitor for system crashes.
+
+Experiment 4: Hamming Error Detection and Correction
+Objective: Intentionally damage packets during transmission
+Setup: 
+    - Put a bit flipping operator in logic before packet is sent.
+    - Report error messages and final received messages.
+
+Experiment 5: Max Message Side
+Objective: See how large of packets can be sent.
+Setup:
+    - Continuosly increase packet size until program breaks or delay become insufficient.
+
+
+Network Scalability Tests:
+
+Experiment 1: Two-Pair Communication Test
+Objective: Test how the network handles two independent pairs of devices communicating simultaneously.
+Setup: 
+    - Connect four devices to the network.
+    - Have two pairs of devices exchange messages in parallel.
+    - Monitor for message interference or delays between the two conversations.
+
+Experiment 2: Four Devices in a Shared Chatroom
+Objective: Test the network's capacity to handle multi-party communication.
+    Setup:
+    - Have all four devices join a shared chatroom, where messages are broadcast to all participants.
+    - Measure how well the system handles message distribution and synchronization.
