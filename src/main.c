@@ -17,8 +17,6 @@
 #define CONTROL_ADDRESS 0x00 /* Reserved address for control traffic */
 #define MAX_HOPS 16          /* Maximum number of hops allowed */
 #define UPDATE_INTERVAL 10   /* Interval for sending routing updates in seconds */
-#define GPIO_SEND 15
-#define GPIO_RECEIVE 4
 
 /* Structures */
 

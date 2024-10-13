@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "build_packet.h"
-#define BIT_COUNT 8
-#define MAX_BYTES 50
+#include "packet_defs.h"
+
 
 /*
  * ReadData struct is implemented at link layer. Used to read correct voltage changes 
@@ -23,16 +23,6 @@ struct ReadData{
     int counter;
     int values;
     int run;
-    uint8_t* data;
-};
-
-/*
- * Packet structure. Requires dlength, sending_addy and receiving_addy to be a valid packet.
-*/
-struct Packet{
-    size_t dlength; // Number of bytes in data
-    uint8_t sending_addy; 
-    uint8_t receiving_addy;
     uint8_t* data;
 };
 
