@@ -14,7 +14,8 @@
 #include <inttypes.h>
 #include <time.h>
 
-
+#define DEVICE_TIMEOUT 30  // Timeout in seconds
+#define MAINTENANCE_INTERVAL 5  // Check every 5 seconds
 #define MY_ID 1              // ID for this device
 #define CONTROL_ADDRESS 0x00 // Reserved address for control packets
 #define MAX_HOPS 16          // Maximum number of hops allowed
@@ -26,6 +27,7 @@ typedef struct RoutingEntry {
     uint8_t destination_id;
     uint8_t next_hop;
     uint8_t hop_count;
+    time_t last_heard;  // used for device disconnection
     struct RoutingEntry* next;
 } RoutingEntry;
 
@@ -58,7 +60,7 @@ int pinit;
 // Function Declarations
 RoutingEntry* find_routing_entry(uint8_t destination_id);
 void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len);
-void* routing_update_thread(void* arg);
+void* routing_maintenance_thread(void* arg);
 void* read_thread(void* arg);
 void process_application_packet(struct Packet* packet);
 void process_control_packet(struct Packet* packet, int gpio_in);
@@ -78,10 +80,85 @@ RoutingEntry* find_routing_entry(uint8_t destination_id) {
     return NULL;
 }
 
+void remove_device_mapping(uint8_t device_id) {
+    pthread_mutex_lock(&gpio_mapping_lock);
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].connected_device_id == device_id) {
+            gpio_pairs[i].connected_device_id = 0xFF;  // STOP SEQUENCE
+            printf("Removed mapping for device ID %" PRIu8 " from GPIO_IN %d and GPIO_OUT %d\n", device_id, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
+            break;
+        }
+    }
+    pthread_mutex_unlock(&gpio_mapping_lock);
+}
+
+
+void* routing_maintenance_thread(void* arg) {
+    while (1) {
+        sleep(MAINTENANCE_INTERVAL);
+
+        time_t now = time(NULL);
+        int routing_table_changed = 0;
+
+        pthread_mutex_lock(&routingTable_lock);
+        RoutingEntry** current_ptr = &routingTable;
+        while (*current_ptr != NULL) {
+            RoutingEntry* entry = *current_ptr;
+            if (entry->destination_id == MY_ID) {
+                current_ptr = &entry->next;
+                continue;
+            }
+            if (difftime(now, entry->last_heard) > DEVICE_TIMEOUT) {
+                printf("Removing device ID %" PRIu8 " due to timeout\n", entry->destination_id);
+                *current_ptr = entry->next;
+                remove_device_mapping(entry->destination_id);
+                free(entry);
+                routing_table_changed = 1;
+            } else {
+                current_ptr = &entry->next;
+            }
+        }
+        pthread_mutex_unlock(&routingTable_lock);
+
+        if (routing_table_changed) {
+            send_routing_update();
+        }
+    }
+    return NULL;
+}
+
+void send_routing_update() {
+    pthread_mutex_lock(&routingTable_lock);
+    uint8_t routing_data[256];
+    size_t data_len = 0;
+
+    RoutingEntry* current = routingTable;
+    while (current != NULL && data_len + 2 <= sizeof(routing_data)) {
+        routing_data[data_len++] = current->destination_id;
+        routing_data[data_len++] = current->hop_count;
+        current = current->next;
+    }
+    pthread_mutex_unlock(&routingTable_lock);
+
+    uint8_t temp_pack[512];
+    int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
+
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        int gpio_out = gpio_pairs[i].gpio_out;
+        if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
+            fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
+        } else {
+            //printf("Routing update sent on GPIO %d\n", gpio_out);
+            continue;
+        }
+    }
+}
+
 // Update the routing table based on received routing information 
 void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
     pthread_mutex_lock(&routingTable_lock);
 
+    int routing_table_changed = 0;  // Flag to track changes
     size_t i = 0;
     while (i + 2 <= data_len) {
         uint8_t dest_id = data[i];
@@ -101,62 +178,38 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
         }
 
         if (entry == NULL) {
-            // Add new routing entry 
+            // Add new routing entry
             RoutingEntry* newEntry = malloc(sizeof(RoutingEntry));
             newEntry->destination_id = dest_id;
             newEntry->next_hop = source_id;
             newEntry->hop_count = new_hop_count;
+            newEntry->last_heard = time(NULL);
             newEntry->next = routingTable;
             routingTable = newEntry;
             printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 "\n", dest_id, source_id, new_hop_count);
+            routing_table_changed = 1;
         } else {
-            // Update existing entry if new path is better 
+            // Update existing entry if new path is better
             if (new_hop_count < entry->hop_count) {
                 entry->next_hop = source_id;
                 entry->hop_count = new_hop_count;
+                entry->last_heard = time(NULL);
                 printf("Updated route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 "\n", dest_id, source_id, new_hop_count);
+                routing_table_changed = 1;
+            } else {
+                // Update last_heard timestamp
+                entry->last_heard = time(NULL);
             }
         }
         i += 2;
     }
 
     pthread_mutex_unlock(&routingTable_lock);
-}
 
-// Routing Update Thread 
-void* routing_update_thread(void* arg) {
-    int pinit = *(int*)arg;
-    while (1) {
-        // Build routing message
-        pthread_mutex_lock(&routingTable_lock);
-        uint8_t routing_data[256];
-        size_t data_len = 0;
-
-        RoutingEntry* current = routingTable;
-        while (current != NULL && data_len + 2 <= sizeof(routing_data)) {
-            routing_data[data_len++] = current->destination_id;
-            routing_data[data_len++] = current->hop_count;
-            current = current->next;
-        }
-        pthread_mutex_unlock(&routingTable_lock);
-
-        // Build the packet
-        uint8_t temp_pack[512];
-        int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
-
-        // Send routing update through all GPIO output ports
-        for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-            int gpio_out = gpio_pairs[i].gpio_out;
-            if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
-                fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
-            } else {
-                printf("Routing update sent on GPIO %d\n", gpio_out);
-            }
-        }
-
-        time_sleep(UPDATE_INTERVAL);
+    // Send routing update if the table has changed
+    if (routing_table_changed) {
+        send_routing_update();
     }
-    return NULL;
 }
 
 // Read Thread 
@@ -377,6 +430,7 @@ int main() {
     selfEntry->destination_id = MY_ID;
     selfEntry->next_hop = MY_ID;
     selfEntry->hop_count = 0;
+    selfEntry->last_heard = time(NULL); // Initialize last_heard
     selfEntry->next = NULL;
 
     pthread_mutex_lock(&routingTable_lock);
@@ -384,7 +438,7 @@ int main() {
     pthread_mutex_unlock(&routingTable_lock);
 
     // Start threads
-    pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, routing_update_tid;
+    pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, maintenance_tid;
 
     // Create read threads for each GPIO input
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
@@ -409,9 +463,9 @@ int main() {
         // Handle cleanup and exit
     }
 
-    // Create routing update thread
-    if (pthread_create(&routing_update_tid, NULL, routing_update_thread, &app_data.pinit) != 0) {
-        fprintf(stderr, "Failed to create routing update thread\n");
+    // Create routing maintenance thread
+    if (pthread_create(&maintenance_tid, NULL, routing_maintenance_thread, NULL) != 0) {
+        fprintf(stderr, "Failed to create routing maintenance thread\n");
         // Handle cleanup and exit
     }
 
@@ -420,7 +474,7 @@ int main() {
         pthread_join(read_tids[i], NULL);
     }
     pthread_join(send_tid, NULL);
-    pthread_join(routing_update_tid, NULL);
+    pthread_join(maintenance_tid, NULL);
 
     // Destroy mutexes
     pthread_mutex_destroy(&routingTable_lock);
