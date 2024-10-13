@@ -175,10 +175,8 @@ void* read_thread(void* arg) {
     return NULL;
 }
 
-// Process Application Packet 
 void process_application_packet(struct Packet* packet) {
-    size_t decoded_len;
-    read_message(packet->data, packet->dlength, &decoded_len);
+    read_message(packet->data, packet->dlength);
 }
 
 // Process Control Packet
@@ -216,43 +214,52 @@ void* send_thread(void* arg) {
 
     while (1) {
         size_t data_size;
-        uint8_t* payload = NULL;
+        uint8_t* encoded_payload = NULL;
 
-        
-
-        // For testing purposes, let's select the recipient each time 
+        // Select recipient each time
         app_data->selected_recipient = select_recipient();
 
+        // Get the encoded message from message_app
         if (app_data->selected_application == 0) {
-            payload = send_message(&data_size, app_data->selected_recipient);
+            encoded_payload = send_message(&data_size);
         } else if (app_data->selected_application == 1) {
-            // Pong application logic here 
+            // Pong application logic here
         } else {
             return NULL;
         }
-    
+
+        if (!encoded_payload || data_size == 0) {
+            fprintf(stderr, "Failed to get encoded message.\n");
+            continue;
+        }
+
         pthread_mutex_lock(&routingTable_lock);
         RoutingEntry* entry = find_routing_entry(app_data->selected_recipient);
         pthread_mutex_unlock(&routingTable_lock);
 
         if (entry == NULL) {
             fprintf(stderr, "No route to destination ID %" PRIu8 "\n", app_data->selected_recipient);
-            free(payload);
+            free(encoded_payload);
             continue;
         }
 
-        // Build the packet 
-        uint8_t temp_pack[512];
-        int packet_size = build_packet(MY_ID, app_data->selected_recipient, payload, data_size, temp_pack);
+        // Build the packet
+        uint8_t temp_pack[MAX_PACKET_SIZE];
+        int packet_size = build_packet(MY_ID, app_data->selected_recipient, encoded_payload, data_size, temp_pack);
+        free(encoded_payload); // Free encoded payload
 
-        // Send the packet to the next hop 
+        if (packet_size < 0) {
+            fprintf(stderr, "Failed to build packet.\n");
+            continue;
+        }
+
+        // Send the packet to the next hop
         if (send_bytes(temp_pack, packet_size, GPIO_SEND, app_data->pinit) != 0) {
             fprintf(stderr, "Failed to send message\n");
-            free(payload);
             continue;
         }
 
-        free(payload);
+        printf("Message sent successfully to ID %" PRIu8 "\n", app_data->selected_recipient);
     }
 
     return NULL;

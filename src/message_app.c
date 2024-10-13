@@ -1,95 +1,93 @@
-// Application to send and receive written text
-
 #include "message_app.h"
+#include "hamming.h"
 
-/* Converts a string of ASCII text to an array of hex values
+#define MAX_INPUT_LENGTH 256  // Adjust as needed
 
-This function takes input from the user, converts each character into its corresponding
-ASCII value, and stores these values as bytes (uint8_t) in a dynamically allocated array
-
-INPUT:
-len: Pointer to store the length of the byte array
-
-OUTPUT:
-uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
-Each byte represents one character from the input string in its ASCII hex value
-*/
-uint8_t* text_to_bytes(size_t* len, char rec_name){
-    // collect user input
+uint8_t* text_to_bytes(size_t* len){
+    // Collect user input
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
-    printf("Please enter a message to send to %s: ", rec_name);
-    fgets(input,sizeof(input),stdin);
+    printf("Please enter a message to send: ");
+    fgets(input, sizeof(input), stdin);
 
-    *len = strlen(input); // get length of input
-    if (input[*len-1] == '\n') input[*len-1] = '\0';  // Remove newline character
+    *len = strlen(input);
+    if (input[*len - 1] == '\n') input[*len - 1] = '\0';  // Remove newline
     *len = strlen(input);
 
-    // Allocate memory for the byte list (uint8_t array)
-    uint8_t* hexList = malloc(*len * sizeof(uint8_t));
-
-    // convert each char to byte and add to the list
-    for (size_t i = 0; i < *len; i++) {
-        hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
+    // Allocate memory for the byte list
+    uint8_t* byte_list = malloc(*len * sizeof(uint8_t));
+    if (!byte_list) {
+        fprintf(stderr, "Memory allocation failed in text_to_bytes.\n");
+        *len = 0;
+        return NULL;
     }
 
-    // for (size_t i = 0; i < *len; i++) {
-    //     printf("%02X ", hexList[i]); // Print each byte in hex format
-    // }
-    // printf("<- Hex values");
+    // Convert each character to byte
+    for (size_t i = 0; i < *len; i++) {
+        byte_list[i] = (uint8_t)input[i];
+    }
 
-    printf("\n");
-
-    return hexList; // return the byte array
+    return byte_list;
 }
 
-/* Converts an array of hex values back to a string of ASCII text
-
-This function takes an array of bytes (uint8_t array), interprets each byte as an ASCII
-character, and reconstructs the original string of text from the array
-
-INPUTS:
-const uint8_t bytes: A pointer to the byte array containing the ASCII values
-size_t len: Length of the byte array
-
-OUTPUT:
-char* text_out: string containing the reconstructed ASCII text
-*/
 char* bytes_to_text(const uint8_t* bytes, size_t len){
-    char* text_out = malloc(len+1);
-
-    for (size_t i = 0; i < len; i++) {
-        text_out[i] = (char)bytes[i];  // convert each byte to a char
+    char* text_out = malloc(len + 1);
+    if (!text_out) {
+        fprintf(stderr, "Memory allocation failed in bytes_to_text.\n");
+        return NULL;
     }
 
-    text_out[len] = '\0'; 
+    for (size_t i = 0; i < len; i++) {
+        text_out[i] = (char)bytes[i];
+    }
+
+    text_out[len] = '\0';
 
     return text_out;
 }
 
-uint8_t* send_message(size_t* data_size, uint8_t* receiver_addr)
-{
-    //uint8_t device_addr = 0x01;
-    //char* receiver_name;
-    //uint8_t receiver_addr = select_address(&receiver_name);
-    //print_byte_binary(receiver_addr);
+uint8_t* send_message(size_t* data_size) {
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
+    uint8_t* payload = text_to_bytes(&payload_length);
 
+    if (!payload || payload_length == 0) {
+        fprintf(stderr, "No message entered.\n");
+        *data_size = 0;
+        return NULL;
+    }
+
+    // Apply Hamming encoding to the payload
     size_t encoded_length;
-    uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
+    uint8_t* encoded_payload = ham_encode(payload, payload_length, &encoded_length);
+    free(payload); // Free the original payload
 
-    printf("Size of encoded packet %ld\n", encoded_length);
+    if (!encoded_payload || encoded_length == 0) {
+        fprintf(stderr, "Failed to encode message.\n");
+        *data_size = 0;
+        return NULL;
+    }
 
-    uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
-    *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
-    
-    printf("Message sent successfully \n");
-    return hamload;
+    *data_size = encoded_length;
+    return encoded_payload;
 }
 
-void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
-    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
-    char* message = bytes_to_text(hamload, *decoded_len);
+void read_message(uint8_t* encoded_data, size_t encoded_len) {
+    size_t decoded_len;
+    uint8_t* decoded_data = ham_decode(encoded_data, encoded_len, &decoded_len);
+
+    if (!decoded_data || decoded_len == 0) {
+        fprintf(stderr, "Failed to decode the message or message is empty.\n");
+        return;
+    }
+
+    char* message = bytes_to_text(decoded_data, decoded_len);
+    free(decoded_data); // Free decoded data
+
+    if (!message) {
+        fprintf(stderr, "Failed to convert decoded data to text.\n");
+        return;
+    }
+
     printf("Message received: %s\n", message);
+    free(message); // Free message string
 }
