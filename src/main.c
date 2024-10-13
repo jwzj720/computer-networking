@@ -532,7 +532,7 @@ int main() {
         fprintf(stderr, "Failed to create send thread\n");
         // Handle cleanup and exit
     }
-
+    send_routing_update();
     // Create routing maintenance thread
     if (pthread_create(&maintenance_tid, NULL, routing_maintenance_thread, NULL) != 0) {
         fprintf(stderr, "Failed to create routing maintenance thread\n");
