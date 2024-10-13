@@ -274,7 +274,7 @@ void* send_thread(void* arg) {
             encoded_payload = send_message(&data_size, &recipient_id);
         } else if (app_data->selected_application == 1) {
             // Pong application logic...
-            continue; // For now, skip if not implemented
+            continue; // For now, skip until Stuart has logic for pong.
         } else {
             return NULL;
         }

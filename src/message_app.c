@@ -4,7 +4,7 @@
 #include "hamming.h"
 #include "selection.h"
 
-#define MAX_INPUT_LENGTH 256  // Adjust as needed
+#define MAX_INPUT_LENGTH 256  
 
 uint8_t* text_to_bytes(size_t* len){
     // Collect user input
@@ -14,7 +14,7 @@ uint8_t* text_to_bytes(size_t* len){
     fgets(input, sizeof(input), stdin);
 
     *len = strlen(input);
-    if (input[*len - 1] == '\n') input[*len - 1] = '\0';  // Remove newline
+    if (input[*len - 1] == '\n') input[*len - 1] = '\0';  
     *len = strlen(input);
 
     // Allocate memory for the byte list

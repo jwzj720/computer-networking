@@ -8,7 +8,7 @@
 struct GPIO_Pair {
     int gpio_in;
     int gpio_out;
-    uint8_t connected_device_id; // ID of the device connected to this port
+    uint8_t connected_device_id; 
 };
 
 extern struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS];
