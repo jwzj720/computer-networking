@@ -54,7 +54,7 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len);
 void* routing_update_thread(void* arg);
 void* read_thread(void* arg);
 void process_application_packet(struct Packet* packet);
-void process_control_packet(struct Packet* packet);
+void process_control_packet(struct Packet* packet, int gpio_in);
 int relay(struct Packet* packet);
 void* send_thread(void* arg);
 
@@ -171,7 +171,7 @@ void* read_thread(void* arg) {
         if (packet->receiving_addy == MY_ID) {
             process_application_packet(packet);
         } else if (packet->receiving_addy == CONTROL_ADDRESS) {
-            process_control_packet(packet);
+            process_control_packet(packet, gpio_in); // Added gpio_in
         } else {
             relay(packet);
         }
