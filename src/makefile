@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -Wall -pthread
 
 # Libraries
-LIBS = -lpigpiod_if2 -lrt -lncurses
+LIBS = -lpigpiod_if2 -lrt 
 
 ROUTER_SRCS = main.c message_app.c hamming.c selection.c read.c send.c build_packet.c 
 

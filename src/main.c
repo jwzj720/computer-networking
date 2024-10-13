@@ -86,10 +86,22 @@ RoutingEntry* find_routing_entry(uint8_t destination_id) {
 }
 
 void send_initial_discovery_packet() {
-    uint8_t discovery_data[2];
-    discovery_data[0] = MY_ID;  // Include your own ID in the discovery packet
-    discovery_data[1] = 0;      // No hops, since it's directly from the device
+    pthread_mutex_lock(&routingTable_lock);
 
+    uint8_t routing_data[6];
+    size_t data_len = 0;
+
+    // Include selfEntry in the initial discovery packet
+    routing_data[data_len++] = selfEntry->destination_id;
+    routing_data[data_len++] = selfEntry->hop_count;
+    // Add sequence number (4 bytes)
+    routing_data[data_len++] = (selfEntry->sequence_number >> 24) & 0xFF;
+    routing_data[data_len++] = (selfEntry->sequence_number >> 16) & 0xFF;
+    routing_data[data_len++] = (selfEntry->sequence_number >> 8) & 0xFF;
+    routing_data[data_len++] = selfEntry->sequence_number & 0xFF;
+
+    pthread_mutex_unlock(&routingTable_lock);
+    
     uint8_t temp_pack[512];
     int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, discovery_data, sizeof(discovery_data), temp_pack);
 
@@ -247,6 +259,14 @@ void* read_thread(void* arg) {
 
         struct Packet* packet = generate_packet(rd->data);
         print_packet_debug(packet->data, packet->dlength);
+        
+        if (packet->sending_addy == MY_ID) {
+            printf("Received packet sent by ourselves. Discarding.\n");
+            free(packet->data);
+            free(packet);
+            reset_reader(rd);
+            continue;
+        }
 
         if (packet->receiving_addy == MY_ID) {
             process_application_packet(packet);
@@ -272,6 +292,12 @@ void* read_thread(void* arg) {
 void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
     pthread_mutex_lock(&routingTable_lock);
 
+     if (source_id == MY_ID) {
+        printf("Received routing update from ourselves. Ignoring.\n");
+        pthread_mutex_unlock(&routingTable_lock);
+        return;
+    }
+    
     int routing_table_changed = 0;  // Flag to track changes
     size_t i = 0;
     while (i + 6 <= data_len) {
@@ -339,25 +365,31 @@ void process_application_packet(struct Packet* packet) {
 }
 // Process Control Packet
 void process_control_packet(struct Packet* packet, int gpio_in) {
-    if (packet->receiving_addy == CONTROL_ADDRESS) {
-        // Discovery packet processing
-        update_routing_table(packet->sending_addy, packet->data, packet->dlength);
-
-        // Map the sending device ID to the GPIO input port
-        pthread_mutex_lock(&gpio_mapping_lock);
-        for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-            if (gpio_pairs[i].gpio_in == gpio_in) {
-                gpio_pairs[i].connected_device_id = packet->sending_addy;
-                printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
-                       packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
-                break;
-            }
-        }
-        pthread_mutex_unlock(&gpio_mapping_lock);
-
-        // Send back your own discovery packet to notify the sender
-        send_initial_discovery_packet();
+    // Ignore control packets sent by ourselves
+    if (packet->sending_addy == MY_ID) {
+        printf("Received control packet from ourselves. Ignoring.\n");
+        return;
     }
+
+    // Update the routing table
+    update_routing_table(packet->sending_addy, packet->data, packet->dlength);
+
+    // Map the sending device ID to the GPIO input port
+    pthread_mutex_lock(&gpio_mapping_lock);
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].gpio_in == gpio_in) {
+            gpio_pairs[i].connected_device_id = packet->sending_addy;
+            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
+                   packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
+            break;
+        }
+    }
+    pthread_mutex_unlock(&gpio_mapping_lock);
+
+    // Set flag for deferred routing update
+    pthread_mutex_lock(&routing_update_lock);
+    routing_update_needed = 1;
+    pthread_mutex_unlock(&routing_update_lock);
 }
 
 // Relay Packet 
