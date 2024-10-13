@@ -189,29 +189,6 @@ void send_routing_update() {
     pthread_mutex_unlock(&gpio_mapping_lock);
 }
 
-// Update the routing table based on received routing information 
-void process_control_packet(struct Packet* packet, int gpio_in) {
-    // Update routing table
-    update_routing_table(packet->sending_addy, packet->data, packet->dlength);
-
-    // Map the sending device ID to the GPIO input port
-    pthread_mutex_lock(&gpio_mapping_lock);
-    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-        if (gpio_pairs[i].gpio_in == gpio_in) {
-            gpio_pairs[i].connected_device_id = packet->sending_addy;
-            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
-                   packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
-            break;
-        }
-    }
-    pthread_mutex_unlock(&gpio_mapping_lock);
-
-    // Do NOT call send_routing_update() here
-    // Instead, set the flag for a deferred routing update
-    pthread_mutex_lock(&routing_update_lock);
-    routing_update_needed = 1;
-    pthread_mutex_unlock(&routing_update_lock);
-}
 
 // Read Thread 
 void* read_thread(void* arg) {
@@ -259,6 +236,7 @@ void process_application_packet(struct Packet* packet) {
 void process_control_packet(struct Packet* packet, int gpio_in) {
     // Update routing table
     update_routing_table(packet->sending_addy, packet->data, packet->dlength);
+
     // Map the sending device ID to the GPIO input port
     pthread_mutex_lock(&gpio_mapping_lock);
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
@@ -271,8 +249,11 @@ void process_control_packet(struct Packet* packet, int gpio_in) {
     }
     pthread_mutex_unlock(&gpio_mapping_lock);
 
-    // Send routing update after processing control packet
-    send_routing_update();
+    // Do NOT call send_routing_update() here
+    // Instead, set the flag for a deferred routing update
+    pthread_mutex_lock(&routing_update_lock);
+    routing_update_needed = 1;
+    pthread_mutex_unlock(&routing_update_lock);
 }
 
 // Relay Packet 
