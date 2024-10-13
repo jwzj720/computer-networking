@@ -11,7 +11,7 @@ typedef struct{
   bool movhor, movver; // If false/true correspond to left/right or up/down.
   } object;
 
-int start_pong() {
+int start_pong(struct packet*) {
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
   initscr();
@@ -48,6 +48,9 @@ int start_pong() {
   //send_message();
   // Main Game loop. Runs until end is declared.
   for (nodelay(stdscr,1); !end; usleep(4000)) {
+
+    //Checks the ball location
+
     // Add one to counter, and every 16 iterations check the border cases
     if (++cont%16==0){
       if ((b.y==scr.y-1)||(b.y==1)) // Check vertical borders, stop vert movement.
@@ -83,13 +86,33 @@ int start_pong() {
      * This will include setting packet data byte to the appropriate movement key
      */
     switch (getch()) {
-      case KEY_DOWN: b1.y++; break;
-      case KEY_UP:   b1.y--; break;
-      case 'q':      b2.y--; break;
-      case 'a':      b2.y++; break;
-      case 'p':      getchar(); break;
-      case 0x1B:    endwin(); end++; break; // This is the escape button
+      case KEY_DOWN:
+        send_update(0x01);
+        b1.y++;
+        
+        break;
+      case KEY_UP: 
+        send_update(0x02);  
+        b1.y--;
+        
+        break;
+      case 0x1B:
+        send_update(0x03);  
+        endwin();
+        end++;
+        // send end message...
+        break; // This is the escape button
     }
+
+    // Check the cache for user input
+    /* 
+    * Unlock thread so that send can send the message now. Then relock the thread. This won't be called until after
+    the sending is done, because you can't lock a unlocked thread.
+    */
+    pthread_mutex_unlock(&send_mutex);
+
+    pthread_mutex_lock(&send_mutex);
+    
     // Erases and then redraws the screen.
     erase();
     mvprintw(2,scr.x/2-2,"%i | %i",b1.c,b2.c);
@@ -102,4 +125,30 @@ int start_pong() {
     attroff(COLOR_PAIR(1));
   }
   return 0;
+}
+
+uint8_t* send_update(uint8_t data)
+{
+  uint8_t device_addr = 0x01;
+  char* receiver_name;
+  uint8_t receiver_addr = select_address(&receiver_name);
+  //print_byte_binary(receiver_addr);
+  size_t payload_length;
+  uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
+
+  size_t encoded_length;
+
+  //printf("Size of encoded packet %ld\n", encoded_length);
+
+  uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
+  *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
+  
+  printf("Message sent successfully \n");
+  return packet;
+}
+
+void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
+//    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
+    char* message = bytes_to_text(packet, packet_len);
+    printf("Message received: %s\n", message);
 }

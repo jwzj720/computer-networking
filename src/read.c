@@ -80,7 +80,7 @@ uint8_t* read_bits(struct ReadData* rd)
 * Take read data and convert it to packets
 * Right now this funciton re-allocates memory every packet receipt.
 */
-struct Packet* generate_packet(uint8_t* data)
+struct Packet* data_to_packet(uint8_t* data)
 {
     struct Packet* newpack = malloc(sizeof(struct Packet));
     // TODO: Handle bad packet headers (Right now not having enough received data will cause

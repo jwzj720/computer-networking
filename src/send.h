@@ -10,4 +10,5 @@
 
 #define BAUD_RATE 100
 int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi);
+struct Packet* packet_to_data(struct Packet* packet);
 #endif /*SEND_H*/

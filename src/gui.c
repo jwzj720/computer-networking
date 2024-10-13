@@ -86,9 +86,7 @@ int app_select()
 		usleep(1000000);
 		selection = hover;
 	       	endwin();
-		break; 
-		
-
+		break;
         }
         
     }    
