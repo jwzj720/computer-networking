@@ -70,6 +70,8 @@ void process_control_packet(struct Packet* packet, int gpio_in);
 int relay(struct Packet* packet);
 void* send_thread(void* arg);
 void send_routing_update();
+void send_initial_discovery_packet();
+
 
 // Find a routing table entry for a given client 
 RoutingEntry* find_routing_entry(uint8_t destination_id) {
@@ -82,6 +84,29 @@ RoutingEntry* find_routing_entry(uint8_t destination_id) {
     }
     return NULL;
 }
+
+void send_initial_discovery_packet() {
+    uint8_t discovery_data[2];
+    discovery_data[0] = MY_ID;  // Include your own ID in the discovery packet
+    discovery_data[1] = 0;      // No hops, since it's directly from the device
+
+    uint8_t temp_pack[512];
+    int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, discovery_data, sizeof(discovery_data), temp_pack);
+
+    pthread_mutex_lock(&gpio_mapping_lock);
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].connected_device_id != 0xFF) {
+            int gpio_out = gpio_pairs[i].gpio_out;
+            if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
+                fprintf(stderr, "Failed to send discovery packet on GPIO %d\n", gpio_out);
+            } else {
+                printf("Discovery packet sent on GPIO %d\n", gpio_out);
+            }
+        }
+    }
+    pthread_mutex_unlock(&gpio_mapping_lock);
+}
+
 
 void remove_device_mapping(uint8_t device_id) {
     pthread_mutex_lock(&gpio_mapping_lock);
@@ -314,33 +339,25 @@ void process_application_packet(struct Packet* packet) {
 }
 // Process Control Packet
 void process_control_packet(struct Packet* packet, int gpio_in) {
-    // Update routing table
-    update_routing_table(packet->sending_addy, packet->data, packet->dlength);
+    if (packet->receiving_addy == CONTROL_ADDRESS) {
+        // Discovery packet processing
+        update_routing_table(packet->sending_addy, packet->data, packet->dlength);
 
-    // Map the sending device ID to the GPIO input port
-    pthread_mutex_lock(&gpio_mapping_lock);
-    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-        if (gpio_pairs[i].gpio_in == gpio_in) {
-            gpio_pairs[i].connected_device_id = packet->sending_addy;
-            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
-                   packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
-            break;
+        // Map the sending device ID to the GPIO input port
+        pthread_mutex_lock(&gpio_mapping_lock);
+        for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+            if (gpio_pairs[i].gpio_in == gpio_in) {
+                gpio_pairs[i].connected_device_id = packet->sending_addy;
+                printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
+                       packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
+                break;
+            }
         }
-    }
-    pthread_mutex_unlock(&gpio_mapping_lock);
+        pthread_mutex_unlock(&gpio_mapping_lock);
 
-    // Update last_heard for the directly connected neighbor
-    pthread_mutex_lock(&routingTable_lock);
-    RoutingEntry* entry = find_routing_entry(packet->sending_addy);
-    if (entry != NULL) {
-        entry->last_heard = time(NULL);
+        // Send back your own discovery packet to notify the sender
+        send_initial_discovery_packet();
     }
-    pthread_mutex_unlock(&routingTable_lock);
-
-    // Set flag for deferred routing update
-    pthread_mutex_lock(&routing_update_lock);
-    routing_update_needed = 1;
-    pthread_mutex_unlock(&routing_update_lock);
 }
 
 // Relay Packet 
@@ -542,7 +559,7 @@ int main() {
         fprintf(stderr, "Failed to create send thread\n");
         // Handle cleanup and exit
     }
-    send_routing_update();
+    send_initial_discovery_packet();
     // Create routing maintenance thread
     if (pthread_create(&maintenance_tid, NULL, routing_maintenance_thread, NULL) != 0) {
         fprintf(stderr, "Failed to create routing maintenance thread\n");
