@@ -13,8 +13,8 @@
 #include <inttypes.h>
 #include <time.h>
 
-#define DEVICE_TIMEOUT 30  // Timeout in seconds
-#define MAINTENANCE_INTERVAL 5  // Check every 5 seconds
+#define DEVICE_TIMEOUT 90  // Timeout in seconds
+#define MAINTENANCE_INTERVAL 30  // Check every 30 seconds
 #define MY_ID 1              // ID for this device
 #define CONTROL_ADDRESS 0x00 // Reserved address for control packets
 #define MAX_HOPS 16          // Maximum number of hops allowed
@@ -45,10 +45,10 @@ struct ReadThreadData {
 };
 
 struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27, 0}, 
-    {24, 25, 0},
-    {22, 23, 0},
-    {20, 21, 0}
+    {26, 27, 0xF0}, 
+    {24, 25, 0xF0},
+    {22, 23, 0xF0},
+    {20, 21, 0xF0}
 };
 
 // Global Variables
