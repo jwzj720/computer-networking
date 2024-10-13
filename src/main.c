@@ -6,7 +6,6 @@
 #include "send.h"
 #include "gpio_pairs.h"
 #include "selection.h"
-#include "router.h"
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -66,7 +65,7 @@ void process_application_packet(struct Packet* packet);
 void process_control_packet(struct Packet* packet, int gpio_in);
 int relay(struct Packet* packet);
 void* send_thread(void* arg);
-
+void send_routing_update();
 
 // Find a routing table entry for a given client 
 RoutingEntry* find_routing_entry(uint8_t destination_id) {
