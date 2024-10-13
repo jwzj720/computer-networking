@@ -163,9 +163,12 @@ void send_routing_update() {
     uint8_t routing_data[256];
     size_t data_len = 0;
 
+    int entries_added = 0; // Keep track of entries added to routing_data
+
     RoutingEntry* current = routingTable;
     while (current != NULL && data_len + 6 <= sizeof(routing_data)) {
-        if (current->destination_id != MY_ID) { // Exclude selfEntry
+        // Include selfEntry if it's the only entry
+        if (current->destination_id != MY_ID || routingTable->next == NULL) {
             routing_data[data_len++] = current->destination_id;
             routing_data[data_len++] = current->hop_count;
             // Add sequence number (4 bytes)
@@ -173,10 +176,17 @@ void send_routing_update() {
             routing_data[data_len++] = (current->sequence_number >> 16) & 0xFF;
             routing_data[data_len++] = (current->sequence_number >> 8) & 0xFF;
             routing_data[data_len++] = current->sequence_number & 0xFF;
+            entries_added++;
         }
         current = current->next;
     }
     pthread_mutex_unlock(&routingTable_lock);
+
+    if (entries_added == 0) {
+        // No entries to send, skip sending the update
+        printf("No routing entries to send in update. Skipping.\n");
+        return;
+    }
 
     // Build the packet and send as before
     uint8_t temp_pack[512];
