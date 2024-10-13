@@ -226,13 +226,74 @@ void* read_thread(void* arg) {
 
     return NULL;
 }
+//update routing table
+void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
+    pthread_mutex_lock(&routingTable_lock);
+
+    int routing_table_changed = 0;  // Flag to track changes
+    size_t i = 0;
+    while (i + 6 <= data_len) {
+        uint8_t dest_id = data[i];
+        uint8_t hop_count = data[i + 1];
+        uint32_t seq_num = (data[i + 2] << 24) | (data[i + 3] << 16) | (data[i + 4] << 8) | data[i + 5];
+
+        if (dest_id == MY_ID) {
+            i += 6;
+            continue;
+        }
+
+        RoutingEntry* entry = find_routing_entry(dest_id);
+        uint8_t new_hop_count = hop_count + 1;
+
+        if (new_hop_count > MAX_HOPS) {
+            i += 6;
+            continue;
+        }
+
+        if (entry == NULL) {
+            // Add new routing entry
+            RoutingEntry* newEntry = malloc(sizeof(RoutingEntry));
+            newEntry->destination_id = dest_id;
+            newEntry->next_hop = source_id;
+            newEntry->hop_count = new_hop_count;
+            newEntry->sequence_number = seq_num;
+            newEntry->last_heard = time(NULL);
+            newEntry->next = routingTable;
+            routingTable = newEntry;
+            printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 ", Seq: %" PRIu32 "\n", dest_id, source_id, new_hop_count, seq_num);
+            routing_table_changed = 1;
+        } else {
+            // Update existing entry if new sequence number is higher
+            if (seq_num > entry->sequence_number ||
+                (seq_num == entry->sequence_number && new_hop_count < entry->hop_count)) {
+                entry->next_hop = source_id;
+                entry->hop_count = new_hop_count;
+                entry->sequence_number = seq_num;
+                printf("Updated route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 ", Seq: %" PRIu32 "\n", dest_id, source_id, new_hop_count, seq_num);
+                routing_table_changed = 1;
+            }
+            // Update last_heard timestamp regardless
+            entry->last_heard = time(NULL);
+        }
+        i += 6;
+    }
+
+    pthread_mutex_unlock(&routingTable_lock);
+
+    // Send routing update if the table has changed
+    if (routing_table_changed) {
+        // Set flag for deferred routing update
+        pthread_mutex_lock(&routing_update_lock);
+        routing_update_needed = 1;
+        pthread_mutex_unlock(&routing_update_lock);
+    }
+}
 
 void process_application_packet(struct Packet* packet) {
     // Delegate message decoding to message_app
     read_message(packet->data, packet->dlength);
 }
 // Process Control Packet
-
 void process_control_packet(struct Packet* packet, int gpio_in) {
     // Update routing table
     update_routing_table(packet->sending_addy, packet->data, packet->dlength);
