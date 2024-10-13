@@ -1,5 +1,6 @@
 #include "message_app.h"
 #include "build_packet.h"
+#include "packet_defs.h"
 #include "hamming.h"
 #include "read.h"
 #include "send.h"
@@ -12,15 +13,14 @@
 #include <inttypes.h>
 #include <time.h>
 
-/* Constants */
-#define MY_ID 1              /* Unique ID for this device */
-#define CONTROL_ADDRESS 0x00 /* Reserved address for control traffic */
-#define MAX_HOPS 16          /* Maximum number of hops allowed */
-#define UPDATE_INTERVAL 10   /* Interval for sending routing updates in seconds */
 
-/* Structures */
+#define MY_ID 1              // ID for this device
+#define CONTROL_ADDRESS 0x00 // Reserved address for control packets
+#define MAX_HOPS 16          // Maximum number of hops allowed
+#define UPDATE_INTERVAL 10   // Interval for sending routing updates in seconds
 
-/* Routing Table Entry */
+
+// Routing Table Entry
 typedef struct RoutingEntry {
     uint8_t destination_id;
     uint8_t next_hop;
@@ -28,19 +28,19 @@ typedef struct RoutingEntry {
     struct RoutingEntry* next;
 } RoutingEntry;
 
-/* Application Data */
+// Application Data 
 struct AppData {
     int pinit;
     int selected_application;
     uint8_t selected_recipient;
 };
 
-/* Global Variables */
+// Global Variables
 RoutingEntry* routingTable = NULL;
 pthread_mutex_t routingTable_lock;
 int pinit;
 
-/* Function Declarations */
+// Function Declarations
 RoutingEntry* find_routing_entry(uint8_t destination_id);
 void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len);
 void* routing_update_thread(void* arg);
@@ -50,9 +50,8 @@ void process_control_packet(struct Packet* packet);
 int relay(struct Packet* packet);
 void* send_thread(void* arg);
 
-/* Function Definitions */
 
-/* Find a routing table entry for a given destination */
+// Find a routing table entry for a given destination 
 RoutingEntry* find_routing_entry(uint8_t destination_id) {
     RoutingEntry* current = routingTable;
     while (current != NULL) {
@@ -64,7 +63,7 @@ RoutingEntry* find_routing_entry(uint8_t destination_id) {
     return NULL;
 }
 
-/* Update the routing table based on received routing information */
+// Update the routing table based on received routing information 
 void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
     pthread_mutex_lock(&routingTable_lock);
 
@@ -109,11 +108,11 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
     pthread_mutex_unlock(&routingTable_lock);
 }
 
-/* Routing Update Thread */
+// Routing Update Thread 
 void* routing_update_thread(void* arg) {
     int pinit = *(int*)arg;
     while (1) {
-        /* Build routing update message */
+        // Build routing message 
         pthread_mutex_lock(&routingTable_lock);
         uint8_t routing_data[256];
         size_t data_len = 0;
@@ -126,11 +125,11 @@ void* routing_update_thread(void* arg) {
         }
         pthread_mutex_unlock(&routingTable_lock);
 
-        /* Build the packet */
+        // Build the packet 
         uint8_t temp_pack[512];
         int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
 
-        /* Send routing update */
+        // Send routing update
         if (send_bytes(temp_pack, packet_size, GPIO_SEND, pinit) != 0) {
             fprintf(stderr, "Failed to send routing update\n");
         } else {
@@ -142,7 +141,7 @@ void* routing_update_thread(void* arg) {
     return NULL;
 }
 
-/* Read Thread */
+// Read Thread 
 void* read_thread(void* arg) {
     int pinit = *(int*)arg;
 
@@ -176,19 +175,19 @@ void* read_thread(void* arg) {
     return NULL;
 }
 
-/* Process Application Packet */
+// Process Application Packet 
 void process_application_packet(struct Packet* packet) {
     size_t decoded_len;
     read_message(packet->data, packet->dlength, &decoded_len);
 }
 
-/* Process Control Packet */
+// Process Control Packet
 void process_control_packet(struct Packet* packet) {
-    /* Update routing table */
+    //Update routing table 
     update_routing_table(packet->sending_addy, packet->data, packet->dlength);
 }
 
-/* Relay Packet */
+// Relay Packet 
 int relay(struct Packet* packet) {
     pthread_mutex_lock(&routingTable_lock);
     RoutingEntry* entry = find_routing_entry(packet->receiving_addy);
@@ -199,11 +198,11 @@ int relay(struct Packet* packet) {
         return 1;
     }
 
-    /* Build the packet */
+    // Build the packet 
     uint8_t temp_pack[512];
     int packet_size = build_packet(packet->sending_addy, packet->receiving_addy, packet->data, packet->dlength, temp_pack);
 
-    /* Send the packet to the next hop */
+    // Send the packet to the next hop 
     if (send_bytes(temp_pack, packet_size, GPIO_SEND, pinit) != 0) {
         fprintf(stderr, "Failed to relay packet\n");
         return 1;
@@ -211,7 +210,7 @@ int relay(struct Packet* packet) {
     return 0;
 }
 
-/* Send Thread */
+// Send Thread 
 void* send_thread(void* arg) {
     struct AppData* app_data = (struct AppData*)arg;
 
@@ -240,11 +239,11 @@ void* send_thread(void* arg) {
             continue;
         }
 
-        /* Build the packet */
+        // Build the packet 
         uint8_t temp_pack[512];
         int packet_size = build_packet(MY_ID, app_data->selected_recipient, payload, data_size, temp_pack);
 
-        /* Send the packet to the next hop */
+        // Send the packet to the next hop 
         if (send_bytes(temp_pack, packet_size, GPIO_SEND, app_data->pinit) != 0) {
             fprintf(stderr, "Failed to send message\n");
             free(payload);
@@ -260,10 +259,10 @@ void* send_thread(void* arg) {
 int main() {
     struct AppData app_data;
 
-    /* Application selection */
+    // Application selection 
     app_data.selected_application = select_application();
 
-    /* Initialize pigpio */
+    // Initialize pigpio 
     app_data.pinit = pigpio_start(NULL, NULL);
     pinit = app_data.pinit;
 
@@ -272,20 +271,20 @@ int main() {
         return 1;
     }
 
-    /* Set GPIO modes */
+    // Set GPIO modes 
     if (set_mode(app_data.pinit, GPIO_SEND, PI_OUTPUT) != 0 ||
         set_mode(app_data.pinit, GPIO_RECEIVE, PI_INPUT) != 0) {
         pigpio_stop(app_data.pinit);
         return 1;
     }
 
-    /* Initialize locks */
+    // locks
     if (pthread_mutex_init(&routingTable_lock, NULL) != 0) {
         fprintf(stderr, "Mutex initialization failed\n");
         return 1;
     }
 
-    /* Initialize routing table with self entry */
+    // routing table
     RoutingEntry* selfEntry = malloc(sizeof(RoutingEntry));
     selfEntry->destination_id = MY_ID;
     selfEntry->next_hop = MY_ID;
@@ -296,7 +295,7 @@ int main() {
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
 
-    /* Create threads */
+    // start threads
     pthread_t read_tid, send_tid, routing_update_tid;
 
     if (pthread_create(&read_tid, NULL, read_thread, &app_data.pinit) != 0) {
@@ -314,12 +313,12 @@ int main() {
         return 1;
     }
 
-    /* Wait for threads to finish */
+    // join threads
     pthread_join(read_tid, NULL);
     pthread_join(send_tid, NULL);
     pthread_join(routing_update_tid, NULL);
 
-    /* Clean up */
+    // stop pigpio and locks
     pthread_mutex_destroy(&routingTable_lock);
     pigpio_stop(app_data.pinit);
 
