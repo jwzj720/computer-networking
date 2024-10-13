@@ -259,16 +259,15 @@ void* send_thread(void* arg) {
 
     while (1) {
         size_t data_size;
+        uint8_t recipient_id;
         uint8_t* encoded_payload = NULL;
 
-        const char* recipient_name;
-        uint8_t recipient_id = select_address(&recipient_name);
-        app_data->selected_recipient = recipient_id;
-
         if (app_data->selected_application == 0) {
-            encoded_payload = send_message(&data_size, recipient_name);
+            // Call send_message which now handles recipient selection
+            encoded_payload = send_message(&data_size, &recipient_id);
         } else if (app_data->selected_application == 1) {
             // Pong application logic...
+            continue; // For now, skip if not implemented
         } else {
             return NULL;
         }
@@ -278,12 +277,15 @@ void* send_thread(void* arg) {
             continue;
         }
 
+        // Store the recipient ID in app_data
+        app_data->selected_recipient = recipient_id;
+
         pthread_mutex_lock(&routingTable_lock);
-        RoutingEntry* entry = find_routing_entry(app_data->selected_recipient);
+        RoutingEntry* entry = find_routing_entry(recipient_id);
         pthread_mutex_unlock(&routingTable_lock);
 
         if (entry == NULL) {
-            fprintf(stderr, "No route to destination ID %" PRIu8 "\n", app_data->selected_recipient);
+            fprintf(stderr, "No route to destination ID %" PRIu8 "\n", recipient_id);
             free(encoded_payload);
             continue;
         }
@@ -298,7 +300,7 @@ void* send_thread(void* arg) {
 
         // Build the packet
         uint8_t temp_pack[MAX_PACKET_SIZE];
-        int packet_size = build_packet(MY_ID, app_data->selected_recipient, encoded_payload, data_size, temp_pack);
+        int packet_size = build_packet(MY_ID, recipient_id, encoded_payload, data_size, temp_pack);
         free(encoded_payload); // Free encoded payload
 
         if (packet_size < 0) {
@@ -312,7 +314,7 @@ void* send_thread(void* arg) {
             continue;
         }
 
-        printf("Message sent successfully to ID %" PRIu8 "\n", app_data->selected_recipient);
+        printf("Message sent successfully to ID %" PRIu8 "\n", recipient_id);
     }
 
     return NULL;
