@@ -5,9 +5,7 @@
 #include "send.h"
 #include "selection.h"
 #include "gui.h"
-#include <pthread.h>
-#include <ncurses.h>
-#include "objects.h"
+#include "pong_game.c"
 
 pthread_t reading_thread;
 pthread_t write_thread;
@@ -18,10 +16,13 @@ pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void* read_thread(void* pinit)
 {
+    // Allocate memory for the packet object... Still need to allcate the packet data memory.
     struct AppData *app_data = (struct AppData*) pinit;
 
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader(1);
+
+    struct Packet* packet = app_data->received_packet;
     
     // Check data was allocated
     if (rd->data == NULL)
@@ -48,14 +49,11 @@ void* read_thread(void* pinit)
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
-        struct Packet* packet = data_to_packet(rd->data);
-        size_t decoded_len;
-        
-        // TODO: if app[0]:
-        read_message(packet->data, packet->dlength, &decoded_len);
-
-	    free(packet->data);
+        free(packet->data);
 	    free(packet);
+        packet = data_to_packet(rd->data);
+        size_t decoded_len;
+
         //reset readrate and run variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
@@ -74,46 +72,40 @@ void* read_thread(void* pinit)
 void* send_thread(void* pinit) // passing app_data in instead of pinit
 {
     struct AppData *app_data = (struct AppData*) pinit;
+    // Allocate memory for the packet object... Still need to allcate the packet data memory.
     app_data->sent_packet = malloc(sizeof(struct Packet));
     struct Packet* packet_data = app_data->sent_packet;
 
-    packet_data->dlength = (size_t)temp;
-    newpack->sending_addy = data[2];
-    newpack->receiving_addy = data[3];
-    newpack->data = (uint8_t *)malloc(sizeof(uint8_t) * newpack->dlength);
-    uint8_t device_addr = 0x01;
-    char* receiver_name;
-    uint8_t receiver_addr = select_address(&receiver_name);
-    //print_byte_binary(receiver_addr);
-    size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
-    
+    // Allocate payload memory
+    uint8_t* payload = (uint8_t*)malloc(50 * sizeof(uint8_t));
+
+    // Wont start sending until thread first locked.
+
     while(1)
     {
         // Lock the send data while being sent...
         pthread_mutex_lock(&send_mutex);
 
-        size_t data_size;
-        uint8_t* payload = NULL;
-
+        size_t pack_size;
         
-        int eval = send_bytes(payload, data_size, GPIO_SEND, app_data->pinit);
+        // put sendable data into payload variable and define packet size
+        pack_size = build_packet(packet_data, payload);
+
+        // Send the message
+        int eval = send_bytes(payload, pack_size, GPIO_SEND, app_data->pinit);
         if (eval != 0)
         {
             printf("Failed to send message\n");
             return NULL;
         }
+        // free packet data memory
+        free(packet_data->data);
+        packet_data->dlength=0;
         // unlock so it can be repopulated.
         pthread_mutex_unlock(&send_mutex);
     }
     return NULL;
 }
-
-struct AppData* create_app()
-{
-
-}
-
 
 int main()
 {
@@ -145,6 +137,8 @@ int main()
     // App Selection
     app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
 
+    // Start send thread locked...
+    pthread_mutex_lock(&send_mutex);
 
     // Create reading/writing threads
     if(pthread_create(&reading_thread, NULL, read_thread, &app_data) != 0) {
@@ -157,26 +151,31 @@ int main()
         perror("Could not create writing thread");
         return 1;
     }
+    // Main Running loop
+    while (1)
+    {
+        app_data.selected_application = app_select()-1;
 
-    if (app_data->selected_application == 0) // Chat application
-        {
-            start_message(); //Run the message app
-            // printf("Text application\n");
-	        // fflush(stdin);
-            // payload = send_message(&data_size);
-        }
-        else if (app_data->selected_application == 1) // Pong application
-        {
-            start_pong();
-            printf("Pong application\n");
-        }
-        else {
-            return NULL; // Invalid application
-        }
+        if (app_data->selected_application == 0) // Chat application
+            {
+                start_message(&app_data); //Run the message app
+                // printf("Text application\n");
+                // fflush(stdin);
+                // payload = send_message(&data_size);
+            }
+            else if (app_data->selected_application == 1) // Pong application
+            {
+                start_pong(&app_data, send_mutex, read_mutex);
+            }
+            else {
+                return NULL; // Invalid application
+            }
+        // When app is exited and returns, go back to the app select screen.
 
-
+    }
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
+    pthread_join(read_thread, NULL);
 
     pigpio_stop(app_data.pinit);
 

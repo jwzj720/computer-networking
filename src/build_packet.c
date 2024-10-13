@@ -1,23 +1,42 @@
 #include "build_packet.h"
 
-size_t build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
+// size_t build_packet(uint8_t device_addr, uint8_t receiver_addr, uint8_t *data, size_t data_size, uint8_t *packet) {
+    
+//     size_t offset = 0;
+    
+//     memset(packet, 0, 50);  // 128 bytes is the maximum packet size
+
+//     uint16_t data_length = data_size;
+//     packet[offset++] = (data_length >> 8) & 0xFF; // Higher byte
+//     packet[offset++] = data_length & 0xFF;        // Lower byte
+
+
+//     packet[offset++] = device_addr;
+
+//     packet[offset++] = receiver_addr;
+
+//     memcpy(&packet[offset], data, data_size);
+//     printf("Data size when build_packet called: %zu \n", data_size);    
+//     return 4 + data_size;
+// }
+
+size_t build_packet(struct Packet* send_pack, uint8_t *packet) {
     
     size_t offset = 0;
-    
     memset(packet, 0, 50);  // 128 bytes is the maximum packet size
 
-    uint16_t data_length = data_size;
+    uint16_t data_length = send_pack->dlength;
     packet[offset++] = (data_length >> 8) & 0xFF; // Higher byte
     packet[offset++] = data_length & 0xFF;        // Lower byte
 
 
-    packet[offset++] = device_addr;
+    packet[offset++] = send_pack->sending_addy;
 
-    packet[offset++] = receiver_addr;
+    packet[offset++] = send_pack->receiving_addy;
 
-    memcpy(&packet[offset], data, data_size);
-    printf("Data size when build_packet called: %zu \n", data_size);    
-    return 4 + data_size;
+    memcpy(&packet[offset], send_pack->data, send_pack->dlength);
+    printf("Data size when build_packet called: %zu \n", send_pack->dlength);    
+    return 4 + send_pack->dlength;
 }
 
 // Function to print the packet in hex

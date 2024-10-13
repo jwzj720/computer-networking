@@ -1,17 +1,29 @@
+/* CURRENT LIKELY PROBLEMS
+- when setting the value of data to be sent across wire, look at better way to set value of single uint8_t* to be a uint8_t.
+
+
+*/
+
+
+
+
+
 /*
 * This pong game originated from code written by @vicentebolea on github.
 * To see the original project, visit https://github.com/vicentebolea/Pong-curses/blob/master/pong.c
 */
 #include <unistd.h>
 #include <ncurses.h>
+#include <pthread.h>
+#include "objects.h"
+#include "read.h"
 
-// Declares the Ball object used by the game
-typedef struct{
-  short int x, y, c;
-  bool movhor, movver; // If false/true correspond to left/right or up/down.
-  } object;
+struct AppData* app_data;
 
-int start_pong(struct packet*) {
+int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_mutex_t read_mutex) {
+  int p1_ready,p2_ready = 0;
+
+  app_data = parent_data;
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
   initscr();
@@ -45,7 +57,22 @@ int start_pong(struct packet*) {
 
   
   getch();
-  //send_message();
+  p1_ready = 1;
+  // send mutex is default set to unlock on start, so it wont write until this runs.
+  send_update(0x02);
+
+  while(!p2_ready)
+  {
+    pthread_mutex_unlock(&send_mutex);
+    pthread_mutex_lock(&send_mutex);
+    send_update(0x02); // queue another message...
+
+    pthread_mutex_lock(&read_mutex);
+    p2_ready = check_data();
+    pthread_mutex_unlock(&read_mutex);
+  }
+  // Lock thread so nothing sends until unlocked.
+  pthread_mutex_lock(&send_mutex);
   // Main Game loop. Runs until end is declared.
   for (nodelay(stdscr,1); !end; usleep(4000)) {
 
@@ -104,15 +131,36 @@ int start_pong(struct packet*) {
         break; // This is the escape button
     }
 
-    // Check the cache for user input
     /* 
     * Unlock thread so that send can send the message now. Then relock the thread. This won't be called until after
-    the sending is done, because you can't lock a unlocked thread.
+    the sending is done
     */
     pthread_mutex_unlock(&send_mutex);
-
     pthread_mutex_lock(&send_mutex);
-    
+
+    // see if opponent has sent any new moves.
+    pthread_mutex_lock(&read_mutex);
+    uint8_t input = check_data();
+    pthread_mutex_unlock(&read_mutex);
+
+    // Update variables according to input
+    switch (input) {
+      // case 0:
+      //   endwin();
+      //   printf("An error occurred");
+      //   end++;
+      //   break;
+      case 0x01:
+        b2.y++;
+        break;
+      case 0x02: 
+        b2.y--;
+        break;
+      case 0x03:  
+        endwin();
+        end++;
+        break; // This is the escape button
+    }
     // Erases and then redraws the screen.
     erase();
     mvprintw(2,scr.x/2-2,"%i | %i",b1.c,b2.c);
@@ -124,31 +172,32 @@ int start_pong(struct packet*) {
       mvprintw(b2.y+i,b2.x,"|");}
     attroff(COLOR_PAIR(1));
   }
+
+  //unlock thread mutex when finished.
   return 0;
 }
 
-uint8_t* send_update(uint8_t data)
+/*
+* send_update just updates the data of the sendable packet. This a
+*/
+void send_update(uint8_t data)
 {
-  uint8_t device_addr = 0x01;
-  char* receiver_name;
-  uint8_t receiver_addr = select_address(&receiver_name);
-  //print_byte_binary(receiver_addr);
-  size_t payload_length;
-  uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
-
-  size_t encoded_length;
-
-  //printf("Size of encoded packet %ld\n", encoded_length);
-
-  uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
-  *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
-  
-  printf("Message sent successfully \n");
+  struct Packet* packet = app_data->sent_packet
+  packet->dlength = (size_t)1;
+  packet->data = (uint8_t* )malloc(sizeof(uint8_t)); //This multiplies by uint16_t, potential undefined behavior?
+  //Put the remaining data into the newpack->data spot.
+  packet->data[0] = data;
   return packet;
 }
 
-void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
-//    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
-    char* message = bytes_to_text(packet, packet_len);
-    printf("Message received: %s\n", message);
+uint8_t check_data(){
+  struct Packet* packet = app_data->received_packet;
+  if(packet->data!=NULL && packet->dlength==1)
+  {
+    return data[0];
+  }
+  else
+  {
+    return 0;
+  }
 }
