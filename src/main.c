@@ -51,7 +51,7 @@ int relay(struct Packet* packet);
 void* send_thread(void* arg);
 
 
-// Find a routing table entry for a given destination 
+// Find a routing table entry for a given client 
 RoutingEntry* find_routing_entry(uint8_t destination_id) {
     RoutingEntry* current = routingTable;
     while (current != NULL) {
@@ -86,7 +86,7 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
         }
 
         if (entry == NULL) {
-            /* Add new routing entry */
+            // Add new routing entry 
             RoutingEntry* newEntry = malloc(sizeof(RoutingEntry));
             newEntry->destination_id = dest_id;
             newEntry->next_hop = source_id;
@@ -95,7 +95,7 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
             routingTable = newEntry;
             printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 "\n", dest_id, source_id, new_hop_count);
         } else {
-            /* Update existing entry if new path is better */
+            // Update existing entry if new path is better 
             if (new_hop_count < entry->hop_count) {
                 entry->next_hop = source_id;
                 entry->hop_count = new_hop_count;
@@ -218,17 +218,19 @@ void* send_thread(void* arg) {
         size_t data_size;
         uint8_t* payload = NULL;
 
+        
+
+        // For testing purposes, let's select the recipient each time 
+        app_data->selected_recipient = select_recipient();
+
         if (app_data->selected_application == 0) {
-            payload = send_message(&data_size);
+            payload = send_message(&data_size, app_data->selected_recipient);
         } else if (app_data->selected_application == 1) {
-            /* Pong application logic here */
+            // Pong application logic here 
         } else {
             return NULL;
         }
-
-        /* For testing purposes, let's select the recipient each time */
-        app_data->selected_recipient = select_recipient();
-
+    
         pthread_mutex_lock(&routingTable_lock);
         RoutingEntry* entry = find_routing_entry(app_data->selected_recipient);
         pthread_mutex_unlock(&routingTable_lock);
