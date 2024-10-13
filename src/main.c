@@ -43,10 +43,10 @@ struct ReadThreadData {
 };
 
 struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27, 0}, 
-    {24, 25, 0},
-    {22, 23, 0},
-    {20, 21, 0}
+    {26, 27, 0xFF}, 
+    {24, 25, 0xFF},
+    {22, 23, 0xFF},
+    {20, 21, 0xFF}
 };
 
 // Global Variables
@@ -144,15 +144,18 @@ void send_routing_update() {
     uint8_t temp_pack[512];
     int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
 
+    pthread_mutex_lock(&gpio_mapping_lock);
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-        int gpio_out = gpio_pairs[i].gpio_out;
-        if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
-            fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
-        } else {
-            printf("Routing update sent on GPIO %d\n", gpio_out);
-            continue;
+        if (gpio_pairs[i].connected_device_id != 0xFF) { 
+            int gpio_out = gpio_pairs[i].gpio_out;
+            if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
+                fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
+            } else {
+                printf("Routing update sent on GPIO %d\n", gpio_out);
+            }
         }
     }
+    pthread_mutex_unlock(&gpio_mapping_lock);
 }
 
 // Update the routing table based on received routing information 
@@ -190,17 +193,15 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
             printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 "\n", dest_id, source_id, new_hop_count);
             routing_table_changed = 1;
         } else {
-            // Update existing entry if new path is better
+
             if (new_hop_count < entry->hop_count) {
                 entry->next_hop = source_id;
                 entry->hop_count = new_hop_count;
-                entry->last_heard = time(NULL);
                 printf("Updated route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 "\n", dest_id, source_id, new_hop_count);
                 routing_table_changed = 1;
-            } else {
-                // Update last_heard timestamp
-                entry->last_heard = time(NULL);
-            }
+            } 
+            // Update last_heard timestamp regardless
+            entry->last_heard = time(NULL);
         }
         i += 2;
     }
@@ -264,11 +265,15 @@ void process_control_packet(struct Packet* packet, int gpio_in) {
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
         if (gpio_pairs[i].gpio_in == gpio_in) {
             gpio_pairs[i].connected_device_id = packet->sending_addy;
-            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n", packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
+            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n",
+                   packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
             break;
         }
     }
     pthread_mutex_unlock(&gpio_mapping_lock);
+
+    // Send routing update after processing control packet
+    send_routing_update();
 }
 
 // Relay Packet 
@@ -437,7 +442,7 @@ int main() {
     pthread_mutex_lock(&routingTable_lock);
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
-    
+
     send_routing_update();
 
     // Start threads
