@@ -1,5 +1,8 @@
+// message_app.c
+
 #include "message_app.h"
 #include "hamming.h"
+#include "selection.h"
 
 #define MAX_INPUT_LENGTH 256  // Adjust as needed
 
@@ -46,7 +49,10 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-uint8_t* send_message(size_t* data_size) {
+uint8_t* send_message(size_t* data_size, uint8_t* recipient_id) {
+    // Select recipient
+    *recipient_id = select_recipient();
+
     size_t payload_length;
     uint8_t* payload = text_to_bytes(&payload_length);
 
