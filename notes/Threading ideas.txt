@@ -1,0 +1,12 @@
+When thinking about the writing thread, it would likely need to access the same piece of memory
+that a packet is being written into. The way threading works, if the thread is locked and another lock
+is reached, thread 2 wont be able to proceed until thread 1 is unlocked. So it is totally reasonable
+for us to repeatedly send packet data from the write thread, as long as we lock the thread during use.
+Then we just need to also lock the thread at the location where the packet is being written, and the write will
+have to wait for the packet in memory to be completed before writing.
+
+Another note, in order to keep the writing thread from constantly writing empty messages or the same message,
+we probably either want a shared variable that says when a message is ready to send, or we could just
+create the writing thread every time we want to write out a message, and then rejoin the thread when the writing is done.
+That way we aren't having to deal with separate memory allocation, and can just put the packet we
+want to send straight into the parameters for the thread's function every time we want to send.
