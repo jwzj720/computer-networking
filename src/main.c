@@ -41,6 +41,13 @@ struct ReadThreadData {
     int gpio_in;
 };
 
+struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
+    {26, 27, 0}, // Initially set connected_device_id to 0 (no device connected)
+    {24, 25, 0},
+    {22, 23, 0},
+    {20, 21, 0}
+};
+
 // Global Variables
 RoutingEntry* routingTable = NULL;
 pthread_mutex_t routingTable_lock;
