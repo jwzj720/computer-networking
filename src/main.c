@@ -42,7 +42,7 @@ struct ReadThreadData {
 };
 
 struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27, 0}, // Initially set connected_device_id to 0 (no device connected)
+    {26, 27, 0}, 
     {24, 25, 0},
     {22, 23, 0},
     {20, 21, 0}

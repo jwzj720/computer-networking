@@ -30,7 +30,7 @@ uint8_t select_recipient() {
     char selected_address_c[10];  // Fixed-size array
     printf("Select a recipient: \n");
     for (int i = 0; i < NUM_ADDRESSES; i++) {
-        printf("[%d] %s (ID: 0x%02X)\n", i, Address_Tenants[i], i + 1); // Assuming IDs start at 1
+        printf("[%d] %s (ID: 0x%02X)\n", i, Address_Tenants[i], i + 1); 
     }
     // Get user input
     int selected_address = -1;
@@ -43,7 +43,7 @@ uint8_t select_recipient() {
         }
     }
 
-    uint8_t recipient_id = selected_address + 1; // Assuming recipient IDs start at 1
+    uint8_t recipient_id = selected_address + 1; 
     printf("Selected Recipient: %s (ID: 0x%02X)\n", Address_Tenants[selected_address], recipient_id);
 
     return recipient_id;
