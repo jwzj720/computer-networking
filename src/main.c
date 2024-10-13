@@ -117,9 +117,11 @@ void* routing_maintenance_thread(void* arg) {
                 current_ptr = &entry->next;
             }
         }
+
         pthread_mutex_unlock(&routingTable_lock);
 
         if (routing_table_changed) {
+            printf("Routing table changed. Sending routing update...\n");
             send_routing_update();
         }
     }
@@ -147,7 +149,7 @@ void send_routing_update() {
         if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
             fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
         } else {
-            //printf("Routing update sent on GPIO %d\n", gpio_out);
+            printf("Routing update sent on GPIO %d\n", gpio_out);
             continue;
         }
     }
@@ -435,6 +437,8 @@ int main() {
     pthread_mutex_lock(&routingTable_lock);
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
+    
+    send_routing_update();
 
     // Start threads
     pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, maintenance_tid;

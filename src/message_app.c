@@ -4,8 +4,6 @@
 #include "hamming.h"
 #include "selection.h"
 
-#define MAX_INPUT_LENGTH 256  
-
 uint8_t* text_to_bytes(size_t* len){
     // Collect user input
     char input[MAX_INPUT_LENGTH + 1];
