@@ -4,6 +4,7 @@
 #include "hamming.h"
 #include "read.h"
 #include "send.h"
+#include "gpio_pairs.h"
 #include "selection.h"
 #include "router.h"
 #include <pthread.h>
@@ -35,9 +36,16 @@ struct AppData {
     uint8_t selected_recipient;
 };
 
+struct ReadThreadData {
+    int pinit;
+    int gpio_in;
+};
+
 // Global Variables
 RoutingEntry* routingTable = NULL;
 pthread_mutex_t routingTable_lock;
+pthread_mutex_t gpio_mapping_lock;
+
 int pinit;
 
 // Function Declarations
@@ -112,7 +120,7 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
 void* routing_update_thread(void* arg) {
     int pinit = *(int*)arg;
     while (1) {
-        // Build routing message 
+        // Build routing message
         pthread_mutex_lock(&routingTable_lock);
         uint8_t routing_data[256];
         size_t data_len = 0;
@@ -125,15 +133,18 @@ void* routing_update_thread(void* arg) {
         }
         pthread_mutex_unlock(&routingTable_lock);
 
-        // Build the packet 
+        // Build the packet
         uint8_t temp_pack[512];
         int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
 
-        // Send routing update
-        if (send_bytes(temp_pack, packet_size, GPIO_SEND, pinit) != 0) {
-            fprintf(stderr, "Failed to send routing update\n");
-        } else {
-            printf("Routing update sent\n");
+        // Send routing update through all GPIO output ports
+        for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+            int gpio_out = gpio_pairs[i].gpio_out;
+            if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
+                fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
+            } else {
+                printf("Routing update sent on GPIO %d\n", gpio_out);
+            }
         }
 
         time_sleep(UPDATE_INTERVAL);
@@ -143,11 +154,13 @@ void* routing_update_thread(void* arg) {
 
 // Read Thread 
 void* read_thread(void* arg) {
-    int pinit = *(int*)arg;
+    struct ReadThreadData* data = (struct ReadThreadData*)arg;
+    int pinit = data->pinit;
+    int gpio_in = data->gpio_in;
 
     struct ReadData* rd = create_reader(MY_ID);
 
-    int callback_id = callback_ex(pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+    int callback_id = callback_ex(pinit, gpio_in, EITHER_EDGE, get_bit, rd);
 
     while (1) {
         read_bits(rd);
@@ -171,21 +184,46 @@ void* read_thread(void* arg) {
     callback_cancel(callback_id);
     free(rd->data);
     free(rd);
+    free(data);
 
     return NULL;
 }
 
 void process_application_packet(struct Packet* packet) {
+    // Delegate message decoding to message_app
     read_message(packet->data, packet->dlength);
 }
-
 // Process Control Packet
-void process_control_packet(struct Packet* packet) {
-    //Update routing table 
+void process_control_packet(struct Packet* packet, int gpio_in) {
+    // Update routing table
     update_routing_table(packet->sending_addy, packet->data, packet->dlength);
+
+    // Map the sending device ID to the GPIO input port
+    pthread_mutex_lock(&gpio_mapping_lock);
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].gpio_in == gpio_in) {
+            gpio_pairs[i].connected_device_id = packet->sending_addy;
+            printf("Mapped device ID %" PRIu8 " to GPIO_IN %d and GPIO_OUT %d\n", packet->sending_addy, gpio_pairs[i].gpio_in, gpio_pairs[i].gpio_out);
+            break;
+        }
+    }
+    pthread_mutex_unlock(&gpio_mapping_lock);
 }
 
 // Relay Packet 
+int get_gpio_out_for_next_hop(uint8_t next_hop_id) {
+    pthread_mutex_lock(&gpio_mapping_lock);
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].connected_device_id == next_hop_id) {
+            int gpio_out = gpio_pairs[i].gpio_out;
+            pthread_mutex_unlock(&gpio_mapping_lock);
+            return gpio_out;
+        }
+    }
+    pthread_mutex_unlock(&gpio_mapping_lock);
+    return -1; // Not found
+}
+
 int relay(struct Packet* packet) {
     pthread_mutex_lock(&routingTable_lock);
     RoutingEntry* entry = find_routing_entry(packet->receiving_addy);
@@ -196,12 +234,19 @@ int relay(struct Packet* packet) {
         return 1;
     }
 
-    // Build the packet 
+    // Determine the GPIO output port based on the next hop
+    int gpio_out = get_gpio_out_for_next_hop(entry->next_hop);
+    if (gpio_out == -1) {
+        fprintf(stderr, "No GPIO output port found for next hop %" PRIu8 "\n", entry->next_hop);
+        return 1;
+    }
+
+    // Build the packet
     uint8_t temp_pack[512];
     int packet_size = build_packet(packet->sending_addy, packet->receiving_addy, packet->data, packet->dlength, temp_pack);
 
-    // Send the packet to the next hop 
-    if (send_bytes(temp_pack, packet_size, GPIO_SEND, pinit) != 0) {
+    // Send the packet to the next hop
+    if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
         fprintf(stderr, "Failed to relay packet\n");
         return 1;
     }
@@ -216,14 +261,14 @@ void* send_thread(void* arg) {
         size_t data_size;
         uint8_t* encoded_payload = NULL;
 
-        // Select recipient each time
-        app_data->selected_recipient = select_recipient();
+        const char* recipient_name;
+        uint8_t recipient_id = select_address(&recipient_name);
+        app_data->selected_recipient = recipient_id;
 
-        // Get the encoded message from message_app
         if (app_data->selected_application == 0) {
-            encoded_payload = send_message(&data_size);
+            encoded_payload = send_message(&data_size, recipient_name);
         } else if (app_data->selected_application == 1) {
-            // Pong application logic here
+            // Pong application logic...
         } else {
             return NULL;
         }
@@ -243,6 +288,14 @@ void* send_thread(void* arg) {
             continue;
         }
 
+        // Determine the GPIO output port based on the next hop
+        int gpio_out = get_gpio_out_for_next_hop(entry->next_hop);
+        if (gpio_out == -1) {
+            fprintf(stderr, "No GPIO output port found for next hop %" PRIu8 "\n", entry->next_hop);
+            free(encoded_payload);
+            continue;
+        }
+
         // Build the packet
         uint8_t temp_pack[MAX_PACKET_SIZE];
         int packet_size = build_packet(MY_ID, app_data->selected_recipient, encoded_payload, data_size, temp_pack);
@@ -254,7 +307,7 @@ void* send_thread(void* arg) {
         }
 
         // Send the packet to the next hop
-        if (send_bytes(temp_pack, packet_size, GPIO_SEND, app_data->pinit) != 0) {
+        if (send_bytes(temp_pack, packet_size, gpio_out, app_data->pinit) != 0) {
             fprintf(stderr, "Failed to send message\n");
             continue;
         }
@@ -280,21 +333,38 @@ int main() {
         return 1;
     }
 
-    // Set GPIO modes 
-    if (set_mode(app_data.pinit, GPIO_SEND, PI_OUTPUT) != 0 ||
-        set_mode(app_data.pinit, GPIO_RECEIVE, PI_INPUT) != 0) {
+    // Set GPIO modes for all GPIO pairs
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (set_mode(app_data.pinit, gpio_pairs[i].gpio_out, PI_OUTPUT) != 0 ||
+            set_mode(app_data.pinit, gpio_pairs[i].gpio_in, PI_INPUT) != 0) {
+            pigpio_stop(app_data.pinit);
+            return 1;
+        }
+    }
+
+    // Initialize mutexes
+    if (pthread_mutex_init(&routingTable_lock, NULL) != 0) {
+        fprintf(stderr, "Mutex initialization failed\n");
         pigpio_stop(app_data.pinit);
         return 1;
     }
 
-    // locks
-    if (pthread_mutex_init(&routingTable_lock, NULL) != 0) {
+    if (pthread_mutex_init(&gpio_mapping_lock, NULL) != 0) {
         fprintf(stderr, "Mutex initialization failed\n");
+        pthread_mutex_destroy(&routingTable_lock);
+        pigpio_stop(app_data.pinit);
         return 1;
     }
 
-    // routing table
+    // Initialize routing table
     RoutingEntry* selfEntry = malloc(sizeof(RoutingEntry));
+    if (!selfEntry) {
+        fprintf(stderr, "Memory allocation failed for routing table\n");
+        pthread_mutex_destroy(&routingTable_lock);
+        pthread_mutex_destroy(&gpio_mapping_lock);
+        pigpio_stop(app_data.pinit);
+        return 1;
+    }
     selfEntry->destination_id = MY_ID;
     selfEntry->next_hop = MY_ID;
     selfEntry->hop_count = 0;
@@ -304,31 +374,50 @@ int main() {
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
 
-    // start threads
-    pthread_t read_tid, send_tid, routing_update_tid;
+    // Start threads
+    pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, routing_update_tid;
 
-    if (pthread_create(&read_tid, NULL, read_thread, &app_data.pinit) != 0) {
-        fprintf(stderr, "Failed to create read thread\n");
-        return 1;
+    // Create read threads for each GPIO input
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        struct ReadThreadData* rt_data = malloc(sizeof(struct ReadThreadData));
+        if (!rt_data) {
+            fprintf(stderr, "Memory allocation failed for ReadThreadData\n");
+            // Handle cleanup and exit
+        }
+        rt_data->pinit = app_data.pinit;
+        rt_data->gpio_in = gpio_pairs[i].gpio_in;
+
+        if (pthread_create(&read_tids[i], NULL, read_thread, rt_data) != 0) {
+            fprintf(stderr, "Failed to create read thread for GPIO %d\n", gpio_pairs[i].gpio_in);
+            free(rt_data);
+            // Handle cleanup and exit
+        }
     }
 
+    // Create send thread
     if (pthread_create(&send_tid, NULL, send_thread, &app_data) != 0) {
         fprintf(stderr, "Failed to create send thread\n");
-        return 1;
+        // Handle cleanup and exit
     }
 
+    // Create routing update thread
     if (pthread_create(&routing_update_tid, NULL, routing_update_thread, &app_data.pinit) != 0) {
         fprintf(stderr, "Failed to create routing update thread\n");
-        return 1;
+        // Handle cleanup and exit
     }
 
-    // join threads
-    pthread_join(read_tid, NULL);
+    // Join threads
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        pthread_join(read_tids[i], NULL);
+    }
     pthread_join(send_tid, NULL);
     pthread_join(routing_update_tid, NULL);
 
-    // stop pigpio and locks
+    // Destroy mutexes
     pthread_mutex_destroy(&routingTable_lock);
+    pthread_mutex_destroy(&gpio_mapping_lock);
+
+    // Stop pigpio
     pigpio_stop(app_data.pinit);
 
     return 0;
