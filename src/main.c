@@ -113,8 +113,13 @@ void* routing_maintenance_thread(void* arg) {
             }
             if (difftime(now, entry->last_heard) > DEVICE_TIMEOUT) {
                 printf("Removing device ID %" PRIu8 " due to timeout\n", entry->destination_id);
+
+                // Remove device mapping only if the next_hop is directly connected
+                if (entry->destination_id == entry->next_hop) {
+                    remove_device_mapping(entry->destination_id);
+                }
+
                 *current_ptr = entry->next;
-                remove_device_mapping(entry->destination_id);
                 free(entry);
                 routing_table_changed = 1;
             } else {
@@ -160,13 +165,15 @@ void send_routing_update() {
 
     RoutingEntry* current = routingTable;
     while (current != NULL && data_len + 6 <= sizeof(routing_data)) {
-        routing_data[data_len++] = current->destination_id;
-        routing_data[data_len++] = current->hop_count;
-        // Add sequence number (4 bytes)
-        routing_data[data_len++] = (current->sequence_number >> 24) & 0xFF;
-        routing_data[data_len++] = (current->sequence_number >> 16) & 0xFF;
-        routing_data[data_len++] = (current->sequence_number >> 8) & 0xFF;
-        routing_data[data_len++] = current->sequence_number & 0xFF;
+        if (current->destination_id != MY_ID) { // Exclude selfEntry
+            routing_data[data_len++] = current->destination_id;
+            routing_data[data_len++] = current->hop_count;
+            // Add sequence number (4 bytes)
+            routing_data[data_len++] = (current->sequence_number >> 24) & 0xFF;
+            routing_data[data_len++] = (current->sequence_number >> 16) & 0xFF;
+            routing_data[data_len++] = (current->sequence_number >> 8) & 0xFF;
+            routing_data[data_len++] = current->sequence_number & 0xFF;
+        }
         current = current->next;
     }
     pthread_mutex_unlock(&routingTable_lock);
@@ -257,7 +264,7 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
             newEntry->next_hop = source_id;
             newEntry->hop_count = new_hop_count;
             newEntry->sequence_number = seq_num;
-            newEntry->last_heard = time(NULL);
+            newEntry->last_heard = (source_id == dest_id) ? time(NULL) : 0; // Update only if direct
             newEntry->next = routingTable;
             routingTable = newEntry;
             printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 ", Seq: %" PRIu32 "\n", dest_id, source_id, new_hop_count, seq_num);
@@ -272,8 +279,10 @@ void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
                 printf("Updated route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 ", Seq: %" PRIu32 "\n", dest_id, source_id, new_hop_count, seq_num);
                 routing_table_changed = 1;
             }
-            // Update last_heard timestamp regardless
-            entry->last_heard = time(NULL);
+            // Update last_heard timestamp only if directly connected
+            if (source_id == dest_id) {
+                entry->last_heard = time(NULL);
+            }
         }
         i += 6;
     }
@@ -310,8 +319,15 @@ void process_control_packet(struct Packet* packet, int gpio_in) {
     }
     pthread_mutex_unlock(&gpio_mapping_lock);
 
-    // Do NOT call send_routing_update() here
-    // Instead, set the flag for a deferred routing update
+    // Update last_heard for the directly connected neighbor
+    pthread_mutex_lock(&routingTable_lock);
+    RoutingEntry* entry = find_routing_entry(packet->sending_addy);
+    if (entry != NULL) {
+        entry->last_heard = time(NULL);
+    }
+    pthread_mutex_unlock(&routingTable_lock);
+
+    // Set flag for deferred routing update
     pthread_mutex_lock(&routing_update_lock);
     routing_update_needed = 1;
     pthread_mutex_unlock(&routing_update_lock);
