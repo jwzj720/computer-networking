@@ -1,5 +1,5 @@
-#ifndef ROUTER_H
-#define ROUTER_H
+#ifndef MESSAGE_APP_H
+#define MESSAGE_APP_H
 
 #include <stdio.h>
 #include <string.h>
@@ -11,11 +11,9 @@
 #include "selection.h"
 
 #define MAX_INPUT_LENGTH 280
-#define GPIO_SEND 27 //TODO: change this to be dynamically updated
+
 
 uint8_t* send_message(size_t* data_size);
-void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len);
-uint8_t* text_to_bytes(size_t* length, char rec_name);
-char* bytes_to_text(const uint8_t* bytes, size_t len);
+void read_message(uint8_t* encoded_data, size_t encoded_len);
 
-#endif
+#endif /* MESSAGE_APP_H */
