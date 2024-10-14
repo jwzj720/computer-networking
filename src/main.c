@@ -137,56 +137,14 @@ void* routing_maintenance_thread(void* arg) {
     while (1) {
         sleep(MAINTENANCE_INTERVAL);
 
-        time_t now = time(NULL);
-        int routing_table_changed = 0;
-
+        // Increment your own sequence number
         pthread_mutex_lock(&routingTable_lock);
-        RoutingEntry** current_ptr = &routingTable;
-        while (*current_ptr != NULL) {
-            RoutingEntry* entry = *current_ptr;
-            if (entry->destination_id == MY_ID) {
-                current_ptr = &entry->next;
-                continue;
-            }
-            if (difftime(now, entry->last_heard) > DEVICE_TIMEOUT) {
-                printf("Removing device ID %" PRIu8 " due to timeout\n", entry->destination_id);
-
-                // Remove device mapping only if the next_hop is directly connected
-                if (entry->destination_id == entry->next_hop) {
-                    remove_device_mapping(entry->destination_id);
-                }
-
-                *current_ptr = entry->next;
-                free(entry);
-                routing_table_changed = 1;
-            } else {
-                current_ptr = &entry->next;
-            }
-        }
+        selfEntry->sequence_number++;
         pthread_mutex_unlock(&routingTable_lock);
 
-        if (routing_table_changed) {
-            printf("Routing table changed. Scheduling routing update...\n");
-
-            // Increment your own sequence number
-            pthread_mutex_lock(&routingTable_lock);
-            selfEntry->sequence_number++;
-            pthread_mutex_unlock(&routingTable_lock);
-
-            // Set flag for deferred routing update
-            pthread_mutex_lock(&routing_update_lock);
-            routing_update_needed = 1;
-            pthread_mutex_unlock(&routing_update_lock);
-        }
-
-        // Check if a routing update is needed
-        pthread_mutex_lock(&routing_update_lock);
-        if (routing_update_needed) {
-            printf("Sending deferred routing update...\n");
-            send_routing_update();
-            routing_update_needed = 0;
-        }
-        pthread_mutex_unlock(&routing_update_lock);
+        // Send routing update
+        printf("Sending periodic routing update.\n");
+        send_routing_update();
     }
     return NULL;
 }
@@ -231,13 +189,11 @@ void send_routing_update() {
 
     pthread_mutex_lock(&gpio_mapping_lock);
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
-        if (gpio_pairs[i].connected_device_id != 0xFF) { 
-            int gpio_out = gpio_pairs[i].gpio_out;
-            if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
-                fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
-            } else {
-                printf("Routing update sent on GPIO %d\n", gpio_out);
-            }
+        int gpio_out = gpio_pairs[i].gpio_out;
+        if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
+            fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
+        } else {
+            printf("Routing update sent on GPIO %d\n", gpio_out);
         }
     }
     pthread_mutex_unlock(&gpio_mapping_lock);
