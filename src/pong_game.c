@@ -86,6 +86,8 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   // send mutex is default set to unlock on start, so it wont write until this runs.
   send_update((uint8_t)0x02);
 
+  clear();
+
   while(!p2_ready)
   {
     pthread_mutex_unlock(&send_mutex);
