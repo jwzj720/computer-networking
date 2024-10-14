@@ -1,7 +1,7 @@
 CC = gcc
 
 # Flags
-CFLAGS = -Wall -pthread
+CFLAGS = -Wall -pthread -o
 
 # Libraries
 LIBS = -lpigpiod_if2 -lrt 
