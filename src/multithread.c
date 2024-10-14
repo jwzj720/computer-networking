@@ -51,13 +51,14 @@ void* read_thread(void* pinit)
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
         pthread_mutex_lock(&read_mutex);
+        printf("read entered, getting message...\n");
         data_to_packet(packet, rd->data);
         printf("Read Packet; ");
-	for (size_t i=0; i<packet->dlength; i++)
-	{
-		printf("%02X ",packet->data[i]);
-	}
-	printf("\n");
+        for (size_t i=0; i<packet->dlength; i++)
+        {
+            printf("%02X ",packet->data[i]);
+        }
+        printf("\n");
 	
 	//reset readrate and run variables each iteration.
         reset_reader(rd);
@@ -93,6 +94,7 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     {
         // Lock the send data while being sent...
         pthread_mutex_lock(&send_mutex);
+        printf("write entered, sending message...\n");
 
         size_t pack_size;
         
@@ -171,7 +173,7 @@ int main()
             {
                 //start_message(&app_data); //Run the message app
                 printf("Text application\n");
-		usleep(5000000);
+		        sleep(5000000);
                 fflush(stdin);
                 // payload = send_message(&data_size);
             }

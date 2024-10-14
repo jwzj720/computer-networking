@@ -50,7 +50,8 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
 
   app_data->sent_packet->sending_addy = 0x01;
   char* receiver_name;
-  app_data->sent_packet->receiving_addy = select_address(&receiver_name);
+  //app_data->sent_packet->receiving_addy = select_address(&receiver_name);
+  app_data->sent_packet->receiving_addy = 0x02;
 
   // Initialize screen, colors, and register keypad.
   object scr; int i = 0,cont=0; bool end=false;
@@ -87,7 +88,7 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   getch();
   // send mutex is default set to unlock on start, so it wont write until this runs.
   endwin();
-
+  printf("Sending first update\n");
   send_update((uint8_t)0x02);
   pthread_mutex_unlock(&read_mutex);
 
@@ -95,14 +96,15 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   {
     pthread_mutex_unlock(&send_mutex);
     pthread_mutex_lock(&send_mutex);
+    printf("Sent Message\n");
     send_update((uint8_t)0x02); // queue another message...
 
     pthread_mutex_lock(&read_mutex);
     p2_ready = check_data();
     pthread_mutex_unlock(&read_mutex);
-    //printw("Message Read");
+    printf("Message Read\n");
     //refresh();
-    //usleep(5000000);
+    usleep(5000000);
   }
   // Lock thread so nothing sends until unlocked.
   pthread_mutex_lock(&send_mutex);
