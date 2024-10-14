@@ -3,9 +3,8 @@
 
 #include "objects.h"
 
-int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_mutex_t read_mutex);
-uint8_t send_update(uint8_t data);
-uint8_t check_data();
+uint8_t send_update(struct AppData* app_data,uint8_t data);
+uint8_t check_data(struct AppData* app_data);
 
 
 #endif
