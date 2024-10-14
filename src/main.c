@@ -55,6 +55,7 @@ int gpio_pins[NUM_GPIO_PINS] = {26, 24, 22, 20};
 RoutingEntry* routingTable = NULL;
 pthread_mutex_t routingTable_lock;
 pthread_mutex_t gpio_mapping_lock;
+pthread_mutex_t gpio_locks[NUM_GPIO_PAIRS];
 int pinit;
 
 // Function Declarations
@@ -71,7 +72,7 @@ void send_routing_update();
 void print_routing_table();
 int get_gpio_out_for_next_hop(uint8_t next_hop_id);
 void remove_device_mapping(uint8_t device_id);
-
+int gpio_out_to_index(int gpio_out);
 
 
 void zero_all_lights(int pi) {
@@ -105,6 +106,15 @@ RoutingEntry* find_routing_entry(uint8_t destination_id) {
     return NULL;
 }
 
+int gpio_out_to_index(int gpio_out) {
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+        if (gpio_pairs[i].gpio_out == gpio_out) {
+            return i;
+        }
+    }
+    return -1;  // GPIO not found
+}
+
 // Send Routing Update
 void send_routing_update() {
     pthread_mutex_lock(&routingTable_lock);
@@ -119,7 +129,6 @@ void send_routing_update() {
             continue;
         }
 
-        // Add destination ID and metric
         routing_data[data_len++] = current->destination_id;
         routing_data[data_len++] = current->metric;
 
@@ -136,74 +145,24 @@ void send_routing_update() {
     uint8_t temp_pack[512];
     int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, data_len, temp_pack);
 
-    // Send to all directly connected neighbors
-    pthread_mutex_lock(&gpio_mapping_lock);
+    pthread_mutex_lock(&gpio_mapping_lock);  // Lock the GPIO mapping
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
         int gpio_out = gpio_pairs[i].gpio_out;
+        
+        // Lock the mutex for the gpio_out
+        int gpio_index = gpio_out_to_index(gpio_out);
+        pthread_mutex_lock(&gpio_locks[gpio_index]);  // Ensure exclusive access
+
         if (send_bytes(temp_pack, packet_size, gpio_out, pinit) != 0) {
             fprintf(stderr, "Failed to send routing update on GPIO %d\n", gpio_out);
         } else {
             printf("Routing update sent on GPIO %d\n", gpio_out);
         }
+
+        // Unlock the mutex after sending
+        pthread_mutex_unlock(&gpio_locks[gpio_index]);
     }
-    pthread_mutex_unlock(&gpio_mapping_lock);
-}
-
-// Update Routing Table using Bellman-Ford Algorithm
-void update_routing_table(uint8_t source_id, uint8_t* data, size_t data_len) {
-    pthread_mutex_lock(&routingTable_lock);
-
-    int routing_table_changed = 0;  // Flag to track changes
-    size_t i = 0;
-    while (i + 2 <= data_len) {
-        uint8_t dest_id = data[i];
-        uint8_t received_metric = data[i + 1];
-
-        if (dest_id == MY_ID) {
-            i += 2;
-            continue;
-        }
-
-        uint8_t new_metric = received_metric + 1;
-        if (new_metric > MAX_HOPS) {
-            new_metric = 255; // Mark as unreachable
-        }
-
-        RoutingEntry* entry = find_routing_entry(dest_id);
-
-        if (entry == NULL) {
-            // Add new routing entry
-            RoutingEntry* newEntry = malloc(sizeof(RoutingEntry));
-            if (!newEntry) {
-                fprintf(stderr, "Failed to allocate memory for new routing entry.\n");
-                pthread_mutex_unlock(&routingTable_lock);
-                return;
-            }
-            newEntry->destination_id = dest_id;
-            newEntry->next_hop = source_id;
-            newEntry->metric = new_metric;
-            newEntry->last_updated = time(NULL);
-            newEntry->next = routingTable;
-            routingTable = newEntry;
-            routing_table_changed = 1;
-            printf("Added route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Metric: %" PRIu8 "\n", dest_id, source_id, new_metric);
-        } else {
-            if (new_metric < entry->metric || entry->next_hop == source_id) {
-                entry->next_hop = source_id;
-                entry->metric = new_metric;
-                entry->last_updated = time(NULL);
-                routing_table_changed = 1;
-                printf("Updated route to ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Metric: %" PRIu8 "\n", dest_id, source_id, new_metric);
-            }
-        }
-        i += 2;
-    }
-
-    pthread_mutex_unlock(&routingTable_lock);
-
-    if (routing_table_changed) {
-        send_routing_update(); // Trigger immediate update
-    }
+    pthread_mutex_unlock(&gpio_mapping_lock);  // Unlock GPIO mapping
 }
 
 // Expire stale routes
@@ -367,11 +326,9 @@ void* send_thread(void* arg) {
         uint8_t* encoded_payload = NULL;
 
         if (app_data->selected_application == 0) {
-            // Call send_message which now handles recipient selection
             encoded_payload = send_message(&data_size, &recipient_id);
         } else if (app_data->selected_application == 1) {
-            // Pong application logic...
-            continue; // For now, skip until logic for pong is implemented.
+            continue; // Skip pong for now
         } else {
             return NULL;
         }
@@ -381,7 +338,6 @@ void* send_thread(void* arg) {
             continue;
         }
 
-        // Store the recipient ID in app_data
         app_data->selected_recipient = recipient_id;
 
         pthread_mutex_lock(&routingTable_lock);
@@ -394,7 +350,6 @@ void* send_thread(void* arg) {
             continue;
         }
 
-        // Determine the GPIO output port based on the next hop
         int gpio_out = get_gpio_out_for_next_hop(entry->next_hop);
         if (gpio_out == -1) {
             fprintf(stderr, "No GPIO output port found for next hop %" PRIu8 "\n", entry->next_hop);
@@ -402,29 +357,35 @@ void* send_thread(void* arg) {
             continue;
         }
 
-        // Build the packet
+        // Lock the mutex for the gpio_out
+        int gpio_index = gpio_out_to_index(gpio_out); 
+        pthread_mutex_lock(&gpio_locks[gpio_index]);
+
+        // Build and send the packet
         uint8_t temp_pack[512];
         int packet_size = build_packet(MY_ID, recipient_id, encoded_payload, data_size, temp_pack);
-        //free(encoded_payload); // Free encoded payload
 
         if (packet_size < 0) {
             fprintf(stderr, "Failed to build packet.\n");
+            pthread_mutex_unlock(&gpio_locks[gpio_index]);
             continue;
         }
 
-        // Send the packet to the next hop
         if (send_bytes(temp_pack, packet_size, gpio_out, app_data->pinit) != 0) {
-            fprintf(stderr, "Failed to send message\n");
-            continue;
+            fprintf(stderr, "Failed to send message on GPIO %d\n", gpio_out);
+        } else {
+            printf("Message sent successfully to ID %" PRIu8 " on GPIO %d\n", recipient_id, gpio_out);
         }
 
-        printf("Message sent successfully to ID %" PRIu8 "\n", recipient_id);
+        // Unlock the mutex after sending
+        pthread_mutex_unlock(&gpio_locks[gpio_index]);
+
+        free(encoded_payload);
     }
 
-    free(encoded_payload);
-    free(temp_pack);
     return NULL;
 }
+
 
 int main() {
 
@@ -467,6 +428,13 @@ int main() {
         pigpio_stop(app_data.pinit);
         return 1;
     }
+
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+    if (pthread_mutex_init(&gpio_locks[i], NULL) != 0) {
+        fprintf(stderr, "Failed to initialize mutex for GPIO pair %d\n", i);
+        return 1;
+    }
+}
 
     // Initialize routing table with self entry
     RoutingEntry* selfEntry = malloc(sizeof(RoutingEntry));
@@ -537,6 +505,10 @@ int main() {
     // Destroy mutexes
     pthread_mutex_destroy(&routingTable_lock);
     pthread_mutex_destroy(&gpio_mapping_lock);
+
+    for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
+    pthread_mutex_destroy(&gpio_locks[i]);
+    }
     // Stop pigpio
     pigpio_stop(app_data.pinit);
 
