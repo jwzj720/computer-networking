@@ -43,11 +43,13 @@ struct ReadThreadData {
 
 // GPIO Pairs
 struct GPIO_Pair gpio_pairs[NUM_GPIO_PAIRS] = {
-    {26, 27, 0xF0},
-    {24, 25, 0xF0},
-    {22, 23, 0xF0},
-    {20, 21, 0xF0}
+    {26, 27, 0xFF},
+    {24, 25, 0xFF},
+    {22, 23, 0xFF},
+    {20, 21, 0xFF}
 };
+
+int gpio_pins[NUM_GPIO_PINS] = {26, 24, 22, 20};  
 
 // Global Variables
 RoutingEntry* routingTable = NULL;
@@ -69,6 +71,15 @@ void send_routing_update();
 void print_routing_table();
 int get_gpio_out_for_next_hop(uint8_t next_hop_id);
 void remove_device_mapping(uint8_t device_id);
+
+
+
+void zero_all_lights(int pi) {
+    for (int i = 0; i < NUM_GPIO_PINS; i++) {
+        gpio_write(pi, gpio_pins[i], 0);  // Set each pin LOW (turn off)
+    }
+    printf("All lights have been set to 0.\n");
+}
 
 void print_routing_table() {
     pthread_mutex_lock(&routingTable_lock);
@@ -258,6 +269,7 @@ void* read_thread(void* arg) {
                 process_application_packet(packet);
             }
         } else {
+            print("Relaying packet\n");
             relay(packet);
         }
 
@@ -393,7 +405,7 @@ void* send_thread(void* arg) {
         // Build the packet
         uint8_t temp_pack[512];
         int packet_size = build_packet(MY_ID, recipient_id, encoded_payload, data_size, temp_pack);
-        free(encoded_payload); // Free encoded payload
+        //free(encoded_payload); // Free encoded payload
 
         if (packet_size < 0) {
             fprintf(stderr, "Failed to build packet.\n");
@@ -409,10 +421,13 @@ void* send_thread(void* arg) {
         printf("Message sent successfully to ID %" PRIu8 "\n", recipient_id);
     }
 
+    free(encoded_payload);
+    free(temp_pack);
     return NULL;
 }
 
 int main() {
+
     struct AppData app_data;
 
     // Application selection
@@ -420,6 +435,9 @@ int main() {
 
     // Initialize pigpio
     app_data.pinit = pigpio_start(NULL, NULL);
+
+    zero_all_lights(app_data.pinit);
+    
     pinit = app_data.pinit;
 
     if (app_data.pinit < 0) {
@@ -468,7 +486,7 @@ int main() {
     pthread_mutex_lock(&routingTable_lock);
     routingTable = selfEntry;
     pthread_mutex_unlock(&routingTable_lock);
-
+    send_routing_update();
     // Start threads
     pthread_t read_tids[NUM_GPIO_PAIRS], send_tid, maintenance_tid;
 
