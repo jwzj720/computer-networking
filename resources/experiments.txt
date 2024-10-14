@@ -32,7 +32,6 @@ Setup:
     - Identify the rate at which the error rate remains acceptably low (<1% errors).
     - Test tentative reliable send rate over 100 iterations.
 
-
 Error Tests:
 
 Experiment 1: Error Frequency at Default Speed (same as optimal transmisision rate exp. but just focus more on errors)
@@ -59,7 +58,6 @@ Experiment 5: Max Message Side
 Objective: See how large of packets can be sent.
 Setup:
     - Continuosly increase packet size until program breaks or delay become insufficient.
-
 
 Network Scalability Tests:
 

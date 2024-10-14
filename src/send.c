@@ -37,8 +37,8 @@ void tail(int out_pin, int pi, int half_bit_time_us)
 
 }
 
-int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi) {
-    int bit_time_us = 1000000 / BAUD_RATE; 
+int send_bytes(uint8_t *packet, size_t packet_size, int out_pin, int pi, int baud_rate) {
+    int bit_time_us = 1000000 / baud_rate; 
     int half_bit_time_us = bit_time_us / 2;
     
     header(out_pin, pi, half_bit_time_us);

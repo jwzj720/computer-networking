@@ -1,4 +1,4 @@
-// Hamming 8,4 encoding with error correction & detection
+// Hamming 8,4 encoding with error correction/detection
 
 #include "hamming.h"
 
