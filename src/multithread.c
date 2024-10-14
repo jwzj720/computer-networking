@@ -46,7 +46,7 @@ void* read_thread(void* pinit)
     while(1)
     {
         // read a message
-        ::read_bits(rd);
+        read_bits(rd);
         
         // Data received, lock threading to hold reading until packet is interpreted.
         // We don't want rd->data to be overwritten during this time.
