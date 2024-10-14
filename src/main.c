@@ -77,6 +77,7 @@ void remove_device_mapping(uint8_t device_id);
 void zero_all_lights(int pi) {
     for (int i = 0; i < NUM_GPIO_PINS; i++) {
         gpio_write(pi, gpio_pins[i], 0);  // Set each pin LOW (turn off)
+        gpio_write(pi, gpio_pins[i], 0);
     }
     printf("All lights have been set to 0.\n");
 }
@@ -442,7 +443,7 @@ int main() {
     app_data.pinit = pigpio_start(NULL, NULL);
 
     zero_all_lights(app_data.pinit);
-    
+
     pinit = app_data.pinit;
 
     if (app_data.pinit < 0) {
