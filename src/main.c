@@ -71,7 +71,19 @@ int relay(struct Packet* packet);
 void* send_thread(void* arg);
 void send_routing_update();
 void send_initial_discovery_packet();
+void print_routing_table();
 
+void print_routing_table() {
+    pthread_mutex_lock(&routingTable_lock);
+    RoutingEntry* current = routingTable;
+    printf("Routing Table:\n");
+    while (current != NULL) {
+        printf("Destination ID: %" PRIu8 ", Next Hop: %" PRIu8 ", Hops: %" PRIu8 ", Seq: %" PRIu32 "\n",
+               current->destination_id, current->next_hop, current->hop_count, current->sequence_number);
+        current = current->next;
+    }
+    pthread_mutex_unlock(&routingTable_lock);
+}
 
 // Find a routing table entry for a given client 
 RoutingEntry* find_routing_entry(uint8_t destination_id) {
@@ -103,7 +115,7 @@ void send_initial_discovery_packet() {
     pthread_mutex_unlock(&routingTable_lock);
     
     uint8_t temp_pack[512];
-    int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, discovery_data, sizeof(discovery_data), temp_pack);
+    int packet_size = build_packet(MY_ID, CONTROL_ADDRESS, routing_data, sizeof(routing_data), temp_pack);
 
     pthread_mutex_lock(&gpio_mapping_lock);
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
@@ -233,6 +245,7 @@ void* read_thread(void* arg) {
         }
 
         free(packet->data);
+
         free(packet);
         reset_reader(rd);
     }
@@ -354,12 +367,14 @@ int get_gpio_out_for_next_hop(uint8_t next_hop_id) {
     for (int i = 0; i < NUM_GPIO_PAIRS; i++) {
         if (gpio_pairs[i].connected_device_id == next_hop_id) {
             int gpio_out = gpio_pairs[i].gpio_out;
+            printf("Next hop %" PRIu8 " found at GPIO_OUT %d\n", next_hop_id, gpio_out);
             pthread_mutex_unlock(&gpio_mapping_lock);
             return gpio_out;
         }
     }
     pthread_mutex_unlock(&gpio_mapping_lock);
-    return -1; // Not found
+    printf("Next hop %" PRIu8 " not found in GPIO mappings\n", next_hop_id);
+    return -1;  // Not found
 }
 
 int relay(struct Packet* packet) {
@@ -368,6 +383,7 @@ int relay(struct Packet* packet) {
     pthread_mutex_unlock(&routingTable_lock);
 
     if (entry == NULL) {
+        print_routing_table();
         fprintf(stderr, "No route to destination ID %" PRIu8 "\n", packet->receiving_addy);
         return 1;
     }
