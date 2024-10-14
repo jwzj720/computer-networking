@@ -37,6 +37,7 @@ uint8_t check_data(){
   if(packet->data[0] != 0x00 && packet->dlength==1)
   {
     return packet->data[0];
+    packet->data[0] = 0x00;
   }
     return 0;
 }
@@ -107,7 +108,7 @@ int start_pong(struct AppData* parent_data, pthread_mutex_t send_mutex, pthread_
   // Lock thread so nothing sends until unlocked.
   pthread_mutex_lock(&send_mutex);
   // Main Game loop. Runs until end is declared.
-  for (nodelay(stdscr,1); !end; usleep(4000)) {
+  for (nodelay(stdscr,1); !end; usleep(500000)) {
 
     //Checks the ball location
 
