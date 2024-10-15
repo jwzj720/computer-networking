@@ -48,7 +48,7 @@ int select_address(char* rec_name){
     }
 
     //printf("Selected Address: %s\n", Address_Book[selected_address]);
-    rec_name = Address_Tenents[selected_address];
+    //rec_name = Address_Tenents[selected_address];
     
     return (uint8_t)selected_address;
 }

@@ -53,10 +53,11 @@ void send_response(struct AppData *app_data, uint8_t *received_data, size_t rece
     pthread_mutex_unlock(&send_mutex);
 }
 
-void* read_thread(void* pinit)
+void* read_thread(void* app_dati)
 {
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader(1);
+    struct AppData *app_data = (struct AppData*) app_dati;
     
     // Check data was allocated
     if (rd->data == NULL)
