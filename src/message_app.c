@@ -70,11 +70,11 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
 uint8_t* send_message(size_t* data_size)
 {
     uint8_t device_addr = 0x01;
-    char* receiver_name;
-    uint8_t receiver_addr = select_address(&receiver_name);
+    // char* receiver_name;
+    uint8_t receiver_addr = 0x02; //select_address(&receiver_name);
     //print_byte_binary(receiver_addr);
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
+    uint8_t* payload = text_to_bytes(&payload_length, 'dan');
 
     size_t encoded_length;
     uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
