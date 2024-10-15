@@ -20,6 +20,7 @@ struct AppData {
     int send_rate;
     int message_size;
     struct timespec send_time;  // Store the time the message was sent
+    char* message;
 };
 
 void send_response(struct AppData *app_data, uint8_t *received_data, size_t received_size)
@@ -143,7 +144,7 @@ void* send_thread(void* app_dati) // passing app_data in instead of pinit
         {
         printf("Text application\n");
 	    fflush(stdin);
-            payload = send_message(&data_size);
+            payload = send_message(&data_size, app_data->message);
         }
         else if (app_data->selected_application == 1) // Pong application
         {
@@ -174,8 +175,8 @@ void* send_thread(void* app_dati) // passing app_data in instead of pinit
 // baud rate, msg size, pigpio init=0
 int main(int argc, char *argv[])
 {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: %s <SEND_RATE> <MESSAGE_SIZE> <PIGPIO_INIT>\n", argv[0]);
+    if (argc != 5) {
+        fprintf(stderr, "Usage: %s <SEND_RATE> <MESSAGE_SIZE> <PIGPIO_INIT> <MSG>\n", argv[0]);
         return 1;
     }
 
@@ -185,6 +186,7 @@ int main(int argc, char *argv[])
     app_data.send_rate = atoi(argv[1]);      // Send rate passed from command line
     app_data.message_size = atoi(argv[2]);   // Message size passed from command line
     app_data.pinit = atoi(argv[3]);          // Pigpio initialization value from command line
+    app_data.message = atoi(argv[4])        // Messsage to transmit
 
     // Initialize router connection
     // Pass in pthread address so that 

@@ -8,6 +8,7 @@ EXE_PATH = './test_program'
 PIGPIO_INIT = '0'               # Replace with actual pigpio initialization value if needed
 BAUD_RATES = [10, 50, 100, 125, 150, 175, 200, 225, 250]  # BAUD
 MESSAGE_SIZE = 100               # Number of messages to send per rate
+MSG = "This is the test message for Bitties Network Implementation. It is average length and hopefully works."
 
 # Output CSVs
 SPEED_TEST_FILE = 'speed_tests.csv'
@@ -40,7 +41,7 @@ for rate in BAUD_RATES:
     print(f"Running speed test with send rate: {rate} msg/s")
     start_time = time.time()
 
-    process = subprocess.Popen([EXE_PATH, PIGPIO_INIT, str(rate), str(MESSAGE_SIZE)],
+    process = subprocess.Popen([EXE_PATH, PIGPIO_INIT, str(rate), str(MESSAGE_SIZE), str(MSG)],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
 

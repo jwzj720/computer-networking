@@ -14,12 +14,15 @@ OUTPUT:
 uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
 Each byte represents one character from the input string in its ASCII hex value
 */
-uint8_t* text_to_bytes(size_t* len){
+uint8_t* text_to_bytes(size_t* len, char* message){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
-    fflush(stdin);
+    strncpy(input, message, MAX_INPUT_LENGTH);
+    input[MAX_INPUT_LENGTH] = '\0';
+    //fflush(stdin);
     //printf("Please enter a message to send to %s: ", rec_name);
-    fgets(input,sizeof(input),stdin);
+    //fgets(input,sizeof(input),stdin);
+
 
     *len = strlen(input); // get length of input
     if (input[*len-1] == '\n') input[*len-1] = '\0';  // Remove newline character
@@ -67,14 +70,14 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-uint8_t* send_message(size_t* data_size)
+uint8_t* send_message(size_t* data_size, char* message)
 {
     uint8_t device_addr = 0x1B; // GPIO PIN HARDCODE
     // char* receiver_name;
     uint8_t receiver_addr = 0x1A; //select_address(&receiver_name);
     //print_byte_binary(receiver_addr);
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length);
+    uint8_t* payload = text_to_bytes(&payload_length, message);
 
     size_t encoded_length;
     uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
