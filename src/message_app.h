@@ -11,7 +11,7 @@
 #include "selection.h"
 
 #define MAX_INPUT_LENGTH 280
-#define GPIO_SEND 27 //TODO: change this to be dynamically updated
+#define GPIO_SEND 22 //TODO: change this to be dynamically updated
 
 uint8_t* send_message(size_t* data_size);
 void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len);
