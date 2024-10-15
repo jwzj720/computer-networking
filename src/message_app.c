@@ -14,7 +14,7 @@ OUTPUT:
 uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
 Each byte represents one character from the input string in its ASCII hex value
 */
-uint8_t* text_to_bytes(size_t* len, char rec_name){
+uint8_t* text_to_bytes(size_t* len){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
@@ -74,7 +74,7 @@ uint8_t* send_message(size_t* data_size)
     uint8_t receiver_addr = 0x02; //select_address(&receiver_name);
     //print_byte_binary(receiver_addr);
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length, 'dan');
+    uint8_t* payload = text_to_bytes(&payload_length);
 
     size_t encoded_length;
     uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
