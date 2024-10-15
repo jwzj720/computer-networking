@@ -14,8 +14,9 @@ OUTPUT:
 uint8_t* hexList: A dynamically allocated byte array containing the ASCII values of each character in the input string.
 Each byte represents one character from the input string in its ASCII hex value
 */
-uint8_t* text_to_bytes(size_t* len, char rec_name){
+int text_to_bytes(struct Packet* packet, char rec_name){
     // collect user input
+    size_t* len = &packet->dlength;
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
     printf("Please enter a message to send to %s: ", rec_name);
@@ -26,11 +27,11 @@ uint8_t* text_to_bytes(size_t* len, char rec_name){
     *len = strlen(input);
 
     // Allocate memory for the byte list (uint8_t array)
-    uint8_t* hexList = malloc(*len * sizeof(uint8_t));
+    // uint8_t* hexList = malloc(*len * sizeof(uint8_t));
 
     // convert each char to byte and add to the list
     for (size_t i = 0; i < *len; i++) {
-        hexList[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
+        packet->data[i] = (uint8_t)input[i]; // Store ASCII as raw bytes
     }
 
     // for (size_t i = 0; i < *len; i++) {
@@ -39,8 +40,8 @@ uint8_t* text_to_bytes(size_t* len, char rec_name){
     // printf("<- Hex values");
 
     printf("\n");
-
-    return hexList; // return the byte array
+    return 0;
+    //return hexList; // return the byte array
 }
 
 /* Converts an array of hex values back to a string of ASCII text
@@ -67,36 +68,53 @@ char* bytes_to_text(const uint8_t* bytes, size_t len){
     return text_out;
 }
 
-int start_message()
+int start_chat(struct AppData* app_data)
 {
+    send_message(app_data);
     printf("Message app started");
+    read_message(app_data);
     return 0;
 }
 
-uint8_t* send_message(size_t* data_size)
+uint8_t* send_message(struct AppData* app_data)
 {
-    
-    uint8_t device_addr = 0x01;
+    struct Packet* packet = app_data->sent_packet;
+    packet->sending_addy = 0x01;
     char* receiver_name;
-    uint8_t receiver_addr = select_address(&receiver_name);
+    packet->receiving_addy = select_address(&receiver_name);
     //print_byte_binary(receiver_addr);
     size_t payload_length;
-    uint8_t* payload = text_to_bytes(&payload_length, *receiver_name);
+    
+    // Setting the data object should be sufficient to have data sent...
+    text_to_bytes(packet, *receiver_name);
 
-    size_t encoded_length;
-    uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
+    //size_t encoded_length;
+    //uint8_t* hamload = ham_encode(payload, payload_length, &encoded_length);
 
     //printf("Size of encoded packet %ld\n", encoded_length);
 
-    uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
-    *data_size = build_packet(device_addr, receiver_addr, hamload, encoded_length, packet);
-    
+    //uint8_t* packet = (uint8_t*)malloc(50 * sizeof(uint8_t));
+    //*data_size = build_packet(packet/*, hamload, encoded_length*/, payload);
+    unlock(0); //unlock the write thread
+    usleep(500);
+    lock(0); //relock
     printf("Message sent successfully \n");
     return packet;
 }
 
-void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
-    uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
-    char* message = bytes_to_text(hamload, *decoded_len);
+// void read_message(uint8_t* packet, size_t packet_len, size_t* decoded_len){
+//     uint8_t* hamload = ham_decode(packet, packet_len, decoded_len);
+//     char* message = bytes_to_text(hamload, *decoded_len);
+//     printf("Message received: %s\n", message);
+// }
+
+void read_message(struct AppData* app_data){
+    struct Packet* packet = app_data->received_packet;
+  if(packet->dlength != 0)
+  {
+    char* message = bytes_to_text(packet->data,packet->dlength);
     printf("Message received: %s\n", message);
+    free(message);
+    packet->dlength = 0;
+  }
 }

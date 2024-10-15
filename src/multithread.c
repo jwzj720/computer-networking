@@ -127,6 +127,43 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     return NULL;
 }
 
+// 0 is send thread, 1 is read thread
+int lock(int i)
+{
+    if (i==0)
+    {
+        pthread_mutex_lock(&send_mutex);
+        return 0;
+    }
+    else if (i==1)
+    {
+        pthread_mutex_lock(&read_mutex);
+        return 0;
+    }
+    else
+    {
+        return 1
+    }
+}
+
+int unlock(int i)
+{
+    if (i==0)
+    {
+        pthread_mutex_unlock(&send_mutex);
+        return 0;
+    }
+    else if (i==1)
+    {
+        pthread_mutex_unlock(&read_mutex);
+        return 0;
+    }
+    else
+    {
+        return 1
+    }
+}
+
 int start_pong(struct AppData* parent_data) {
   uint8_t p2_ready = 0x00;
 
@@ -350,11 +387,7 @@ int main()
         //app_data.selected_application = app_select()-1;
         if (app_data.selected_application == 0) // Chat application
             {
-                //start_message(&app_data); //Run the message app
-                printf("Text application\n");
-		        sleep(5000000);
-                fflush(stdin);
-                // payload = send_message(&data_size);
+                start_chat(&app_data);
             }
             else if (app_data.selected_application == 1) // Pong application
             {
