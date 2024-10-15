@@ -13,7 +13,7 @@
 #include "send.h"
 #include "read.h"
 
-#define MAX_PAYLOAD_SIZE 18  // Adjusted to fit within packet size constraints
+#define MAX_PAYLOAD_SIZE 18  
 
 typedef struct {
     int pinit;
@@ -25,7 +25,6 @@ typedef struct {
 
 typedef struct {
     FileTransferConfig config;
-    // Additional fields if needed
 } FileTransferApp;
 
 void FileTransferApp_init(FileTransferApp* app, FileTransferConfig config);
