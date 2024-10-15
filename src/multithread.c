@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     app_data.send_rate = atoi(argv[1]);      // Send rate passed from command line
     app_data.message_size = atoi(argv[2]);   // Message size passed from command line
     app_data.pinit = atoi(argv[3]);          // Pigpio initialization value from command line
-    app_data.message = atoi(argv[4])        // Messsage to transmit
+    app_data.message = argv[4];        // Messsage to transmit
 
     // Initialize router connection
     // Pass in pthread address so that 
