@@ -7,7 +7,7 @@
 #include "send.h"
 #include "selection.h"
 #include "gui.h"
-#include "FileTransferApp.h"
+#include "file_app.h"
 #include <pthread.h>
 #include <ncurses.h>
 

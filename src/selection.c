@@ -50,7 +50,7 @@ int select_address(char** rec_name) {
         }
     }
 
-    // Assign the selected address to the pointer in the caller's scope
+    
     *rec_name = Address_Tenents[selected_address];
     
     return (uint8_t)selected_address;
