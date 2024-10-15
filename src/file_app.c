@@ -65,21 +65,26 @@ void FileTransferApp_sendFile(FileTransferApp* app) {
     }
 
     // Calculate number of packets
-    size_t total_packets = (file_length + MAX_PAYLOAD_SIZE - 1) / MAX_PAYLOAD_SIZE;
+    uint16_t total_packets = (file_length + MAX_PAYLOAD_SIZE - 1) / MAX_PAYLOAD_SIZE;
 
-    for (size_t packet_num = 0; packet_num < total_packets; ++packet_num) {
+    for (uint16_t packet_num = 0; packet_num < total_packets; ++packet_num) {
         size_t offset = packet_num * MAX_PAYLOAD_SIZE;
         size_t payload_length = ((file_length - offset) > MAX_PAYLOAD_SIZE) ? MAX_PAYLOAD_SIZE : (file_length - offset);
 
         uint8_t* payload = &file_data[offset];
 
-        // Include sequence number in the payload
-        uint8_t seq_num = (uint8_t)packet_num; // Assuming total packets <= 256
+        // Include sequence number (2 bytes) and total_packets (2 bytes) in the payload
+        uint16_t seq_num = packet_num;
 
-        size_t packet_payload_length = payload_length + 1; // +1 for sequence number
+        size_t packet_payload_length = payload_length + 4; // +2 for seq_num, +2 for total_packets
         uint8_t* packet_payload = malloc(packet_payload_length);
-        packet_payload[0] = seq_num;
-        memcpy(&packet_payload[1], payload, payload_length);
+
+        // Pack seq_num and total_packets into the payload
+        packet_payload[0] = (seq_num >> 8) & 0xFF;         // seq_num high byte
+        packet_payload[1] = seq_num & 0xFF;                // seq_num low byte
+        packet_payload[2] = (total_packets >> 8) & 0xFF;   // total_packets high byte
+        packet_payload[3] = total_packets & 0xFF;          // total_packets low byte
+        memcpy(&packet_payload[4], payload, payload_length);
 
         size_t encoded_length;
         uint8_t* hamload = ham_encode(packet_payload, packet_payload_length, &encoded_length);
@@ -96,7 +101,7 @@ void FileTransferApp_sendFile(FileTransferApp* app) {
         // Send the packet using existing send_bytes function
         int eval = send_bytes(packet, packet_size, app->config.out_pin, app->config.pinit);
         if (eval != 0) {
-            printf("Failed to send packet %zu\n", packet_num);
+            printf("Failed to send packet %u\n", packet_num);
             // Handle error appropriately
         }
 
@@ -111,18 +116,12 @@ void FileTransferApp_sendFile(FileTransferApp* app) {
 
 void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, size_t packet_len)
 {
-    static uint16_t expected_packets = 256; // Adjust as needed
+    static uint16_t expected_packets = 0;
     static uint16_t total_received = 0;
     static uint8_t** received_packets = NULL;
     static size_t* packet_lengths = NULL;
     static int* packet_received_flags = NULL;
     static size_t total_length = 0;
-
-    if (received_packets == NULL) {
-        received_packets = calloc(expected_packets, sizeof(uint8_t*));
-        packet_lengths = calloc(expected_packets, sizeof(size_t));
-        packet_received_flags = calloc(expected_packets, sizeof(int));
-    }
 
     size_t decoded_len;
     uint8_t* hamload = ham_decode(packet_data, packet_len, &decoded_len);
@@ -131,9 +130,29 @@ void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, s
         return;
     }
 
-    // Extract sequence number
-    uint8_t seq_num = hamload[0];
-    size_t payload_length = decoded_len - 1;
+    if (decoded_len < 4) {
+        printf("Invalid packet length\n");
+        free(hamload);
+        return;
+    }
+
+    uint16_t seq_num = ((uint16_t)hamload[0] << 8) | hamload[1];
+    uint16_t total_packets_in_packet = ((uint16_t)hamload[2] << 8) | hamload[3];
+
+    size_t payload_length = decoded_len - 4;
+
+    if (expected_packets == 0) {
+        expected_packets = total_packets_in_packet;
+        received_packets = calloc(expected_packets, sizeof(uint8_t*));
+        packet_lengths = calloc(expected_packets, sizeof(size_t));
+        packet_received_flags = calloc(expected_packets, sizeof(int));
+    }
+
+    if (expected_packets != total_packets_in_packet) {
+        printf("Inconsistent total_packets received. Expected: %u, Received: %u\n", expected_packets, total_packets_in_packet);
+        free(hamload);
+        return;
+    }
 
     if (seq_num >= expected_packets) {
         printf("Invalid sequence number: %u\n", seq_num);
@@ -142,14 +161,13 @@ void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, s
     }
 
     if (packet_received_flags[seq_num]) {
-        // Packet already received
         free(hamload);
         return;
     }
 
     // Store the payload
     received_packets[seq_num] = malloc(payload_length);
-    memcpy(received_packets[seq_num], &hamload[1], payload_length);
+    memcpy(received_packets[seq_num], &hamload[4], payload_length);
     packet_lengths[seq_num] = payload_length;
     packet_received_flags[seq_num] = 1;
     total_received++;
@@ -162,18 +180,17 @@ void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, s
         // Reconstruct the file
         uint8_t* file_data = malloc(total_length);
         size_t offset = 0;
-        for (size_t i = 0; i < expected_packets; ++i) {
+        for (uint16_t i = 0; i < expected_packets; ++i) {
             if (packet_received_flags[i]) {
                 memcpy(&file_data[offset], received_packets[i], packet_lengths[i]);
                 offset += packet_lengths[i];
                 free(received_packets[i]);
             } else {
-                printf("Missing packet %zu\n", i);
-                // Handle missing packet (e.g., request retransmission)
+                printf("Missing packet %u\n", i);
             }
         }
 
-        // Write the file
+        // Write file
         char output_filename[256];
         printf("Please enter the output filename: ");
         fgets(output_filename, sizeof(output_filename), stdin);
@@ -183,17 +200,18 @@ void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, s
 
         printf("File received and saved as %s\n", output_filename);
 
-        // Free resources
+        // Free 
         free(file_data);
         free(received_packets);
         free(packet_lengths);
         free(packet_received_flags);
 
         // Reset static variables
+        expected_packets = 0;
+        total_received = 0;
         received_packets = NULL;
         packet_lengths = NULL;
         packet_received_flags = NULL;
-        total_received = 0;
         total_length = 0;
     }
 }
