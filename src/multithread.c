@@ -1,3 +1,5 @@
+// multithread.c
+
 #include "message_app.h"
 #include "build_packet.h"
 #include "hamming.h"
@@ -5,6 +7,7 @@
 #include "send.h"
 #include "selection.h"
 #include "gui.h"
+#include "FileTransferApp.h"
 #include <pthread.h>
 #include <ncurses.h>
 
@@ -14,15 +17,20 @@ pthread_t write_thread;
 pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t read_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
 struct AppData {
     int pinit;
-    int selected_application; // 
-    int selected_recipient;  // not sure if we need this?
+    int selected_application; // 0 for messaging, 1 for file transfer
+    uint8_t device_addr;
+    uint8_t receiver_addr;
+    int out_pin;
+    int in_pin;
 };
 
-void* read_thread(void* pinit)
+void* read_thread(void* arg)
 {
+    struct AppData* app_data = (struct AppData*) arg;
+    int pinit = app_data->pinit;
+
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader(1);
     
@@ -33,14 +41,25 @@ void* read_thread(void* pinit)
         return NULL;
     }
     // Register the callback with user data
-    int id = callback_ex(*(int*)pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+    int id = callback_ex(pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
     if (id < 0)
     {
         fprintf(stderr, "Failed to set callback\n");
-        pigpio_stop(*(int*)pinit);
+        pigpio_stop(pinit);
         
         return NULL;
     }
+
+    // Create FileTransferApp instance
+    FileTransferApp ft_app;
+    FileTransferConfig config = {
+        .pinit = pinit,
+        .device_addr = app_data->device_addr,
+        .receiver_addr = app_data->receiver_addr,
+        .out_pin = app_data->out_pin,
+        .in_pin = app_data->in_pin
+    };
+    FileTransferApp_init(&ft_app, config);
 
     // THIS is the per message read loop
     while(1)
@@ -54,56 +73,88 @@ void* read_thread(void* pinit)
         struct Packet* packet = generate_packet(rd->data);
         size_t decoded_len;
         
-        // TODO: if app[0]:
-        read_message(packet->data, packet->dlength, &decoded_len);
+        if (app_data->selected_application == 0) // Messaging application
+        {
+            read_message(packet->data, packet->dlength, &decoded_len);
+        }
+        else if (app_data->selected_application == 1) // File transfer application
+        {
+            // Pass the packet data to FileTransferApp_receivePacket
+            FileTransferApp_receivePacket(&ft_app, packet->data, packet->dlength);
+        }
+        else
+        {
+            printf("Invalid application selected.\n");
+        }
 
-	    free(packet->data);
-	    free(packet);
-        //reset readrate and run variables each iteration.
+        free(packet->data);
+        free(packet);
+        // Reset read variables each iteration.
         reset_reader(rd);
         pthread_mutex_unlock(&read_mutex);
     }
 
-    //When done with the reading thread
+    // When done with the reading thread
     callback_cancel(id);
 
     // Free Data
-    free(rd->data); //Do we need to free the data? pretty sure this is done in the read_to_file.
+    free(rd->data);
     free(rd);
 
     return NULL;
 }
 
-void* send_thread(void* pinit) // passing app_data in instead of pinit
+void* send_thread(void* arg)
 {
-    struct AppData *app_data = (struct AppData*) pinit;
+    struct AppData *app_data = (struct AppData*) arg;
+
+    // Create FileTransferApp instance
+    FileTransferApp ft_app;
+    FileTransferConfig config = {
+        .pinit = app_data->pinit,
+        .device_addr = app_data->device_addr,
+        .receiver_addr = app_data->receiver_addr,
+        .out_pin = app_data->out_pin,
+        .in_pin = app_data->in_pin
+    };
+    FileTransferApp_init(&ft_app, config);
 
     while(1)
     {
         pthread_mutex_lock(&send_mutex);
 
-        size_t data_size;
-        uint8_t* payload = NULL;
+        if (app_data->selected_application == 0) // Messaging application
+        {
+            printf("Text messaging application\n");
+            fflush(stdin);
+            size_t data_size;
+            uint8_t* packet = send_message(&data_size);
+            if (packet == NULL) {
+                printf("Failed to prepare message\n");
+                pthread_mutex_unlock(&send_mutex);
+                continue;
+            }
 
-        // IF chat
-        if (app_data->selected_application == 0) // Chat application
-        {
-            printf("Text application\n");
-	    fflush(stdin);
-            payload = send_message(&data_size);
+            int eval = send_bytes(packet, data_size, app_data->out_pin, app_data->pinit);
+            if (eval != 0)
+            {
+                printf("Failed to send message\n");
+                free(packet);
+                pthread_mutex_unlock(&send_mutex);
+                continue;
+            }
+
+            free(packet);
         }
-        else if (app_data->selected_application == 1) // Pong application
+        else if (app_data->selected_application == 1) // File transfer application
         {
-            printf("Pong application\n");
+            printf("File transfer application\n");
+            FileTransferApp_sendFile(&ft_app);
         }
         else {
-            return NULL; // Invalid application
-        }
-        int eval = send_bytes(payload, data_size, GPIO_SEND, app_data->pinit);
-        if (eval != 0)
-        {
-            printf("Failed to send message\n");
-            return NULL;
+            printf("Invalid application selected.\n");
+            pthread_mutex_unlock(&send_mutex);
+            continue;
         }
 
         pthread_mutex_unlock(&send_mutex);
@@ -111,15 +162,12 @@ void* send_thread(void* pinit) // passing app_data in instead of pinit
     return NULL;
 }
 
-
-
 int main()
 {
     // Initialize app data object
     struct AppData app_data;
 
-    // Initialize router connection
-    // Pass in pthread address so that 
+    // Initialize GUI or any other setup if needed
     init_screen();
 
     // Initialize pigpio
@@ -132,18 +180,24 @@ int main()
     }
 
     // Set GPIO modes
-    if (set_mode(app_data.pinit, GPIO_SEND, PI_OUTPUT) != 0 || 
-        set_mode(app_data.pinit, GPIO_RECEIVE, PI_INPUT) != 0)
+    app_data.out_pin = GPIO_SEND;
+    app_data.in_pin = GPIO_RECEIVE;
+    if (set_mode(app_data.pinit, app_data.out_pin, PI_OUTPUT) != 0 || 
+        set_mode(app_data.pinit, app_data.in_pin, PI_INPUT) != 0)
     {
         pigpio_stop(app_data.pinit);
         return 1;
     }
 
+    // Addresses (set your own device and receiver addresses)
+    app_data.device_addr = 0x01;
+    app_data.receiver_addr = select_address(NULL); // Implement this function or set a fixed address
+
     // App Selection
-    app_data.selected_application = app_select()-1; // Subtract 1 for offbyone error
+    app_data.selected_application = app_select() - 1; // Subtract 1 for zero-based index
 
     // Create reading/writing threads
-    if(pthread_create(&reading_thread, NULL, read_thread, &app_data.pinit) != 0) {
+    if(pthread_create(&reading_thread, NULL, read_thread, &app_data) != 0) {
         perror("Could not create reading thread");
         return 1;
     }
@@ -154,10 +208,9 @@ int main()
         return 1;
     }
 
-
-
     // Wait for writing to complete before continuing
     pthread_join(write_thread, NULL);
+    pthread_join(reading_thread, NULL);
 
     pigpio_stop(app_data.pinit);
 
