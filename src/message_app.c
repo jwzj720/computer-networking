@@ -16,9 +16,9 @@ Each byte represents one character from the input string in its ASCII hex value
 */
 uint8_t* text_to_bytes(size_t* len, char* message){
     // collect user input
-    char input[MAX_INPUT_LENGTH + 1];
-    strncpy(input, message, MAX_INPUT_LENGTH);
-    input[MAX_INPUT_LENGTH] = '\0';
+    char input[strlen(message) + 1];
+    strncpy(input, message, strlen(message));
+    input[strlen(message)] = '\0';
     //fflush(stdin);
     //printf("Please enter a message to send to %s: ", rec_name);
     //fgets(input,sizeof(input),stdin);
