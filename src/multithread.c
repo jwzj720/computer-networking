@@ -58,6 +58,10 @@ void* read_thread(void* app_dati)
     // Create Data reading object, which will store a message's data.
     struct ReadData *rd = create_reader(1);
     struct AppData *app_data = (struct AppData*) app_dati;
+
+    app_data.send_rate = atoi(argv[1]);      // Send rate passed from command line
+    app_data.message_size = atoi(argv[2]);   // Message size passed from command line
+    app_data.pinit = atoi(argv[3]);          // Pigpio initialization value from command line
     
     // Check data was allocated
     if (rd->data == NULL)
@@ -66,7 +70,7 @@ void* read_thread(void* app_dati)
         return NULL;
     }
     // Register the callback with user data
-    int id = callback_ex(*(int*)pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
+    int id = callback_ex(*(int*)app_data->pinit, GPIO_RECEIVE, EITHER_EDGE, get_bit, rd);
     if (id < 0)
     {
         fprintf(stderr, "Failed to set callback\n");
@@ -132,7 +136,6 @@ void* send_thread(void* app_dati) // passing app_data in instead of pinit
         size_t data_size;
         uint8_t* payload = NULL;
 
-        struct timespec start_time, end_time;
         //clock_gettime(CLOCK_MONOTONIC, &start_time);  // Start timing
 
         // IF chat
@@ -149,7 +152,8 @@ void* send_thread(void* app_dati) // passing app_data in instead of pinit
         else {
             return NULL; // Invalid application
         }
-        struct timespec start_time;  // Capture the sending time
+        //struct timespec start_time;  // Capture the sending time
+        struct timespec start_time;
         clock_gettime(CLOCK_MONOTONIC, &start_time);  // Start timing
 
         int eval = send_bytes(payload, data_size, GPIO_SEND, app_data->pinit, app_data->send_rate);

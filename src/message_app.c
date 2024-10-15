@@ -18,7 +18,7 @@ uint8_t* text_to_bytes(size_t* len, char rec_name){
     // collect user input
     char input[MAX_INPUT_LENGTH + 1];
     fflush(stdin);
-    printf("Please enter a message to send to %s: ", (char)rec_name);
+    //printf("Please enter a message to send to %s: ", rec_name);
     fgets(input,sizeof(input),stdin);
 
     *len = strlen(input); // get length of input

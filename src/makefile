@@ -10,7 +10,7 @@ MULTI_THREAD_SRCS = multithread.c message_app.c hamming.c selection.c read.c sen
 
 ROUTER_SRCS = router.c message_app.c hamming.c selection.c read.c send.c build_packet.c 
 
-MULTI_THREAD_TARGET = multi
+MULTI_THREAD_TARGET = test_program
 
 ROUTER_TARGET = router	
 
