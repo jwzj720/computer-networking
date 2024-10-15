@@ -1,4 +1,4 @@
-
+// FileTransferApp.c
 
 #include "file_app.h"
 
@@ -109,111 +109,91 @@ void FileTransferApp_sendFile(FileTransferApp* app) {
     printf("File sent successfully\n");
 }
 
-void FileTransferApp_receiveFile(FileTransferApp* app) {
-    // Initialize data structures for receiving packets
-    uint16_t expected_packets = 256; // Maximum number of packets (adjust as needed)
-    uint8_t** received_packets = calloc(expected_packets, sizeof(uint8_t*));
-    size_t* packet_lengths = calloc(expected_packets, sizeof(size_t));
-    int* packet_received_flags = calloc(expected_packets, sizeof(int));
-    size_t total_received = 0;
-    size_t total_length = 0;
+void FileTransferApp_receivePacket(FileTransferApp* app, uint8_t* packet_data, size_t packet_len)
+{
+    static uint16_t expected_packets = 256; // Adjust as needed
+    static uint16_t total_received = 0;
+    static uint8_t** received_packets = NULL;
+    static size_t* packet_lengths = NULL;
+    static int* packet_received_flags = NULL;
+    static size_t total_length = 0;
 
-    printf("Waiting to receive file...\n");
+    if (received_packets == NULL) {
+        received_packets = calloc(expected_packets, sizeof(uint8_t*));
+        packet_lengths = calloc(expected_packets, sizeof(size_t));
+        packet_received_flags = calloc(expected_packets, sizeof(int));
+    }
 
-    while (1) {
-        // Read data from hardware using your existing read_bits function
-        struct ReadData* rd = create_reader(1);
-        int id = callback_ex(app->config.pinit, app->config.in_pin, EITHER_EDGE, get_bit, rd);
-        if (id < 0) {
-            fprintf(stderr, "Failed to set callback\n");
-            pigpio_stop(app->config.pinit);
-            return;
-        }
+    size_t decoded_len;
+    uint8_t* hamload = ham_decode(packet_data, packet_len, &decoded_len);
+    if (hamload == NULL) {
+        printf("Failed to decode packet\n");
+        return;
+    }
 
-        // Read a message
-        read_bits(rd);
+    // Extract sequence number
+    uint8_t seq_num = hamload[0];
+    size_t payload_length = decoded_len - 1;
 
-        // Process the received data
-        struct Packet* packet = generate_packet(rd->data);
-        size_t decoded_len;
-
-        uint8_t* hamload = ham_decode(packet->data, packet->dlength, &decoded_len);
-        if (hamload == NULL) {
-            printf("Failed to decode packet\n");
-            free(packet->data);
-            free(packet);
-            reset_reader(rd);
-            continue;
-        }
-
-        // Extract sequence number
-        uint8_t seq_num = hamload[0];
-        size_t payload_length = decoded_len - 1;
-
-        if (seq_num >= expected_packets) {
-            printf("Invalid sequence number: %u\n", seq_num);
-            free(hamload);
-            free(packet->data);
-            free(packet);
-            reset_reader(rd);
-            continue;
-        }
-
-        if (packet_received_flags[seq_num]) {
-            // Packet already received
-            free(hamload);
-            free(packet->data);
-            free(packet);
-            reset_reader(rd);
-            continue;
-        }
-
-        // Store the payload
-        received_packets[seq_num] = malloc(payload_length);
-        memcpy(received_packets[seq_num], &hamload[1], payload_length);
-        packet_lengths[seq_num] = payload_length;
-        packet_received_flags[seq_num] = 1;
-        total_received++;
-        total_length += payload_length;
-
+    if (seq_num >= expected_packets) {
+        printf("Invalid sequence number: %u\n", seq_num);
         free(hamload);
-        free(packet->data);
-        free(packet);
-        reset_reader(rd);
-
-        // Check if file transfer is complete
-        if (total_received >= expected_packets) {
-            break;
-        }
+        return;
     }
 
-    // Reconstruct the file
-    uint8_t* file_data = malloc(total_length);
-    size_t offset = 0;
-    for (size_t i = 0; i < expected_packets; ++i) {
-        if (packet_received_flags[i]) {
-            memcpy(&file_data[offset], received_packets[i], packet_lengths[i]);
-            offset += packet_lengths[i];
-            free(received_packets[i]);
-        } else {
-            printf("Missing packet %zu\n", i);
-            // Handle missing packet (e.g., request retransmission)
-        }
+    if (packet_received_flags[seq_num]) {
+        // Packet already received
+        free(hamload);
+        return;
     }
 
-    // Write the file
-    char output_filename[256];
-    printf("Please enter the output filename: ");
-    fgets(output_filename, sizeof(output_filename), stdin);
-    output_filename[strcspn(output_filename, "\n")] = '\0';
+    // Store the payload
+    received_packets[seq_num] = malloc(payload_length);
+    memcpy(received_packets[seq_num], &hamload[1], payload_length);
+    packet_lengths[seq_num] = payload_length;
+    packet_received_flags[seq_num] = 1;
+    total_received++;
+    total_length += payload_length;
 
-    write_bytes_to_file(output_filename, file_data, total_length);
+    free(hamload);
 
-    printf("File received and saved as %s\n", output_filename);
+    // Check if all packets have been received
+    if (total_received >= expected_packets) {
+        // Reconstruct the file
+        uint8_t* file_data = malloc(total_length);
+        size_t offset = 0;
+        for (size_t i = 0; i < expected_packets; ++i) {
+            if (packet_received_flags[i]) {
+                memcpy(&file_data[offset], received_packets[i], packet_lengths[i]);
+                offset += packet_lengths[i];
+                free(received_packets[i]);
+            } else {
+                printf("Missing packet %zu\n", i);
+                // Handle missing packet (e.g., request retransmission)
+            }
+        }
 
-    // Free resources
-    free(file_data);
-    free(received_packets);
-    free(packet_lengths);
-    free(packet_received_flags);
+        // Write the file
+        char output_filename[256];
+        printf("Please enter the output filename: ");
+        fgets(output_filename, sizeof(output_filename), stdin);
+        output_filename[strcspn(output_filename, "\n")] = '\0';
+
+        write_bytes_to_file(output_filename, file_data, total_length);
+
+        printf("File received and saved as %s\n", output_filename);
+
+        // Free resources
+        free(file_data);
+        free(received_packets);
+        free(packet_lengths);
+        free(packet_received_flags);
+
+        // Reset static variables
+        received_packets = NULL;
+        packet_lengths = NULL;
+        packet_received_flags = NULL;
+        total_received = 0;
+        total_length = 0;
+    }
 }
