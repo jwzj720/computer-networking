@@ -8,7 +8,7 @@
 #include <math.h>
 
 #define NUM_APPS 2
-#define NUM_ADDRESSES 3
+#define NUM_ADDRESSES 5
 
 #define GPIO_SEND 27
 #define GPIO_RECEIVE 26
